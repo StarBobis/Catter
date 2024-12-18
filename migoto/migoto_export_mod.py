@@ -9,7 +9,7 @@ from ..utils.json_utils import *
 from dataclasses import dataclass, field
 from ..core.common.d3d11_game_type import D3D11Element,D3D11GameType
 
-from enum import StrEnum
+# from enum import StrEnum
 
 import bpy
 import shutil
@@ -262,7 +262,7 @@ class DrawIBModel:
             self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
 
 
-class M_SectionType(StrEnum):
+class M_SectionType:
     Present = "Present"
     Constants = "Constants"
     Key = "Key"
