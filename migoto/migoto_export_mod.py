@@ -573,17 +573,23 @@ class UnityVSModModel:
                     # Add texture slot check, hash style texture also need this.
                     if not GenerateModConfig.forbid_auto_texture_ini():
                         texture_override_ib_section.append(vlr_filterindex_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-                        slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict[part_name]
-                        for slot,resource_name in slot_replace_dict.items():
-                            texture_override_ib_section.append(vlr_filterindex_indent  + "checktextureoverride = " + slot)
+                        slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+
+                        # It may not have auto texture
+                        if slot_replace_dict is not None:
+                            for slot,resource_name in slot_replace_dict.items():
+                                texture_override_ib_section.append(vlr_filterindex_indent  + "checktextureoverride = " + slot)
 
                     # Add ib replace
                     texture_override_ib_section.append(vlr_filterindex_indent + "ib = " + ib_resource_name)
 
                     # Add slot style texture slot replace.
                     if not GenerateModConfig.forbid_auto_texture_ini() and not GenerateModConfig.hash_style_auto_texture():
-                        for slot,resource_name in slot_replace_dict.items():
-                            texture_override_ib_section.append(vlr_filterindex_indent + slot + " = " + resource_name)
+                        slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                        # It may not have auto texture
+                        if slot_replace_dict is not None:
+                            for slot,resource_name in slot_replace_dict.items():
+                                texture_override_ib_section.append(vlr_filterindex_indent + slot + " = " + resource_name)
 
                     # 如果不使用GPU-Skinning即为Object类型，此时需要在ib下面替换对应槽位
                     if not d3d11GameType.GPU_PreSkinning:
