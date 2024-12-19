@@ -181,18 +181,26 @@ class DrawIBModel:
                     # 如果patchBLENDWEIGHTS则移除BLENWEIGHTS
                     # TODO 检查BLENDWEIGHT和BLENDWEIGHTS读取到Blender的处理方式是否相同，如果相同则全部变为BLENDWEIGHTS
                     # 数据类型里面也得改
+                    blendweights_name = ""
                     if d3d11gametype.PatchBLENDWEIGHTS:
                         if "BLENDWEIGHTS" in vb_elementname_bytelist_dict:
                             del vb_elementname_bytelist_dict["BLENDWEIGHTS"]
+                            blendweights_name = "BLENDWEIGHTS"
                         elif "BLENDWEIGHT" in vb_elementname_bytelist_dict:
                             del vb_elementname_bytelist_dict["BLENDWEIGHT"]
+                            blendweights_name = "BLENDWEIGHT"
 
                     tmp_categoryname_bytelist_dict:dict[str,list] = {}
                     for element_name in d3d11gametype.OrderedFullElementList:
+
+                        if d3d11gametype.PatchBLENDWEIGHTS and element_name == blendweights_name:
+                            continue
+
                         d3d11Element = d3d11gametype.ElementNameD3D11ElementDict[element_name]
                         category_name = d3d11Element.Category
                         element_stride = d3d11Element.ByteWidth
 
+                        # TODO KeyError: 'BLENDWEIGHTS'
                         add_byte_list = vb_elementname_bytelist_dict[element_name]
                         vertex_number = int(len(add_byte_list) / element_stride)
                         # print(vertex_number)
