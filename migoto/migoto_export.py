@@ -390,15 +390,6 @@ def ExportToWorkSpace(self,context):
         else:
             self.report({'INFO'}, "导出成功！成功导出的部位数量：" + str(export_time))
 
-    # 调用生成二创模型方法。
-    if context.scene.dbmt.generate_mod_after_export:
-        result = DBMTUtils.dbmt_run_generate_mod()
-        if result == "success":
-            self.report({'INFO'}, "生成二创模型成功!")
-        else:
-            self.report({'ERROR'}, result)
-            return {'FINISHED'}
-
     self.report({'INFO'}, "一键导出工作空间运行完成" )
     return {'FINISHED'}
 

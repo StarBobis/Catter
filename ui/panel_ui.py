@@ -92,25 +92,25 @@ class CatterConfigUI(bpy.types.Panel):
         
 
 
-class PanelModelSingleIO(bpy.types.Panel):
-    bl_label = "模型手动导入导出" 
-    bl_idname = "VIEW3D_PT_CATTER_ModelImport_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Catter'
+# class PanelModelSingleIO(bpy.types.Panel):
+#     bl_label = "模型手动导入导出" 
+#     bl_idname = "VIEW3D_PT_CATTER_ModelImport_panel"
+#     bl_space_type = 'VIEW_3D'
+#     bl_region_type = 'UI'
+#     bl_category = 'Catter'
 
-    def draw(self, context):
-        layout = self.layout
+#     def draw(self, context):
+#         layout = self.layout
         
-        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="导入 .ib & .vb 模型文件")
-        operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
-        # 手动导出同理，点这个之后默认路径为OutputFolder，这样直接就能去导出不用翻很久文件夹找路径了
-        operator_export_ibvb = layout.operator("export_mesh.migoto_mmt", text="导出 .ib & .vb 模型文件")
-        operator_export_ibvb.filepath = MainConfig.path_workspace_folder() + "1.vb"
+#         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
+#         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
+#         # 手动导出同理，点这个之后默认路径为OutputFolder，这样直接就能去导出不用翻很久文件夹找路径了
+#         operator_export_ibvb = layout.operator("export_mesh.migoto_mmt", text="手动导出 .ib & .vb 模型文件")
+#         operator_export_ibvb.filepath = MainConfig.path_workspace_folder() + "1.vb"
 
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
-    bl_label = "从当前工作空间中导入导出" 
+    bl_label = "Model IO" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -120,15 +120,20 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
         layout = self.layout
 
         row = layout.row()
+
         MainConfig.read_from_main_json()
         row.label(text="当前工作空间: " + MainConfig.workspacename)
 
-        # TODO 这俩要抽象出单独一个导入导出的，再由不同接口调用。
-        layout.operator("dbmt.import_all_from_workspace", text="一键导入")
+        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
+        operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
+        # 手动导出同理，点这个之后默认路径为OutputFolder，这样直接就能去导出不用翻很久文件夹找路径了
+        operator_export_ibvb = layout.operator("export_mesh.migoto_mmt", text="手动导出 .ib & .vb 模型文件")
+        operator_export_ibvb.filepath = MainConfig.path_workspace_folder() + "1.vb"
 
         draw_seperator(self)
-        layout.prop(context.scene.dbmt,"generate_mod_after_export",text="一键导出后自动生成二创模型")
-        layout.operator("dbmt.export_all_to_workspace", text="一键导出")
+
+        layout.operator("dbmt.import_all_from_workspace", text="一键导入当前工作空间内容")
+        layout.operator("dbmt.export_all_to_workspace", text="一键导出到当前工作空间")
 
 
 class PanelGenerateMod(bpy.types.Panel):

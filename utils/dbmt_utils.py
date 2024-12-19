@@ -6,7 +6,6 @@ from .property_utils import *
 from .global_config import *
 
 
-# TODO 不应该写单独的方法，否则会导致缺少类似命名空间的限制功能，导致调用的时候难以区分不同方法。
 class DBMTUtils:
 
     @classmethod
@@ -69,17 +68,6 @@ class DBMTUtils:
 
         return draw_ib_list
 
-
-    # Get every drawib folder path from output folder.
-    @classmethod
-    def get_import_drawib_folder_path_dict_Deprecated(cls)->list:
-        output_folder_path = MainConfig.path_workspace_folder()
-        draw_ib_list = DBMTUtils.get_extract_drawib_list_from_workspace_config_json()
-        import_folder_path_dict = {}
-        for draw_ib in draw_ib_list:
-            # print("DrawIB:", draw_ib)
-            import_folder_path_dict[draw_ib] = os.path.join(output_folder_path, draw_ib)
-        return import_folder_path_dict
 
     @classmethod
     def get_import_drawib_folder_path_dict_with_first_match_type(cls,workspace_folder_path:str)->list:
@@ -159,49 +147,3 @@ class DBMTUtils:
                     return line.split(':')[1].strip()  
         return ""  
 
-    @classmethod
-    def dbmt_run_command(cls,command_str:str):
-        dbmt_path = bpy.context.scene.dbmt.path
-
-        run_input_json_path = os.path.join(dbmt_path,"Configs\\RunInput.json")
-        run_input_dict = {"RunCommand":command_str,"WorkSpaceName":MainConfig.workspacename}
-        run_input_json = json.dumps(run_input_dict)
-        with open(run_input_json_path, 'w') as run_input_json_file:
-            run_input_json_file.write(run_input_json)
-
-        run_result_json_path = os.path.join(dbmt_path,"Configs\\RunResult.json")
-        run_result_dict = {"result":"Unknown Error!"}
-        run_result_json = json.dumps(run_result_dict)
-        with open(run_result_json_path, 'w') as run_result_json_file:
-            run_result_json_file.write(run_result_json)
-
-        dbmt_plugin_path = os.path.join(dbmt_path,"Plugins\\")
-        dbmt_core_path = os.path.join(dbmt_plugin_path,"DBMT.exe")
-        # 运行一个外部的 .exe 文件
-        result = subprocess.run([dbmt_core_path],cwd=dbmt_plugin_path)
-
-        
-    @classmethod
-    def dbmt_get_run_result(cls) -> str:
-        dbmt_path = bpy.context.scene.dbmt.path
-        run_result_json_path = os.path.join(dbmt_path,"Configs\\RunResult.json")
-        with open(run_result_json_path, 'r', encoding='utf-8') as file:
-            run_result_json = json.load(file)
-        if "result" in run_result_json:
-            result = run_result_json["result"]
-            return result
-        else:
-            return "Unknown error lead to bad json format!"
-
-    @classmethod
-    def dbmt_run_generate_mod(cls) -> str:
-        DBMTUtils.dbmt_run_command("split")
-        run_result = DBMTUtils.dbmt_get_run_result()
-        if run_result == "success":
-            subprocess.run(['explorer',MainConfig.path_generate_mod_folder()])
-        return run_result
-
-    
-
-
-    

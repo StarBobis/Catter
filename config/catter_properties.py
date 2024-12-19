@@ -73,11 +73,6 @@ class CatterProperties(bpy.types.PropertyGroup):
     ) # type: ignore
 
     # ------------------------------------------------------------------------------------------------------------
-    generate_mod_after_export: bpy.props.BoolProperty(
-        name="",
-        description="在一键导出当前选中集合后，调用DBMT的生成二创模型方法，可以节省打开DBMT-GUI再点一下生成二创模型的时间",
-        default=False
-    ) # type: ignore
 
     export_same_number: bpy.props.BoolProperty(
         name="",
