@@ -134,6 +134,8 @@ class DrawIBModel:
                 for obj_name in model_list:
                     print("processing: " + obj_name)
                     ib = self.obj_name_ib_dict.get(obj_name,None)
+                    unique_vertex_number = ib.get_unique_vertex_number()
+
                     if ib is None:
                         print("Can't find ib object for " + obj_name +",skip this obj process.")
                         continue
@@ -144,12 +146,11 @@ class DrawIBModel:
                     draw_number = len(obj_ib_buf) * 3
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(offset)
-                    drawindexed_obj.AliasName = obj_name
+                    drawindexed_obj.AliasName = obj_name + "  (" + str(unique_vertex_number) + ")"
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     offset = offset + draw_number
 
                     # TODO 这里要加上UniqueVertexNumber
-                    unique_vertex_number = ib.get_unique_vertex_number()
                     print(unique_vertex_number)
                     number_sum = number_sum + unique_vertex_number
                     
@@ -646,7 +647,7 @@ class UnityVSModModel:
                             toggle_model_collection = toggle_model_collection_list[toggle_count]
                             for obj_name in toggle_model_collection.obj_name_list:
                                 m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + obj_name)
+                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
                                 texture_override_ib_section.append(vlr_filterindex_indent  + m_drawindexed.get_draw_str())
 
                         texture_override_ib_section.append("endif")
@@ -657,7 +658,7 @@ class UnityVSModModel:
                         for toggle_model_collection in toggle_model_collection_list:
                             for obj_name in toggle_model_collection.obj_name_list:
                                 m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + obj_name)
+                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
                                 texture_override_ib_section.append(vlr_filterindex_indent + m_drawindexed.get_draw_str())
                                 texture_override_ib_section.new_line()
 
@@ -666,7 +667,7 @@ class UnityVSModModel:
                         texture_override_ib_section.append(vlr_filterindex_indent + "if $swapkey" + str(global_key_index_logic) + "  == 1")
                         for obj_name in switch_model_collection.obj_name_list:
                             m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                            texture_override_ib_section.append(vlr_filterindex_indent + "; " + obj_name)
+                            texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
                             texture_override_ib_section.append(vlr_filterindex_indent  + m_drawindexed.get_draw_str())
                             texture_override_ib_section.new_line()
                         texture_override_ib_section.append(vlr_filterindex_indent + "endif")
