@@ -565,120 +565,120 @@ class UnityVSModModel:
 
 
             
-                texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
-                for count_i in range(len(draw_ib_model.part_name_list)):
-                    match_first_index = draw_ib_model.match_first_index_list[count_i]
-                    part_name = draw_ib_model.part_name_list[count_i]
+            texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
+            for count_i in range(len(draw_ib_model.part_name_list)):
+                match_first_index = draw_ib_model.match_first_index_list[count_i]
+                part_name = draw_ib_model.part_name_list[count_i]
 
-                    style_part_name = cls.get_style_alias(part_name)
-                    ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
+                style_part_name = cls.get_style_alias(part_name)
+                ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
 
-                    texture_override_ib_section.append("[TextureOverride_IB_" + draw_ib + "_" + style_part_name + "]")
-                    texture_override_ib_section.append("hash = " + draw_ib)
-                    texture_override_ib_section.append("match_first_index = " + match_first_index)
+                texture_override_ib_section.append("[TextureOverride_IB_" + draw_ib + "_" + style_part_name + "]")
+                texture_override_ib_section.append("hash = " + draw_ib)
+                texture_override_ib_section.append("match_first_index = " + match_first_index)
 
-                    vlr_filterindex_indent = ""
-                    if vertex_limit_raise_filter_index:
-                        vlr_filterindex_indent = "  "
-                    
-                    if vertex_limit_raise_filter_index:
-                        texture_override_ib_section.append("if vb0 == " + str(3000 + generate_mod_number))
+                vlr_filterindex_indent = ""
+                if vertex_limit_raise_filter_index:
+                    vlr_filterindex_indent = "  "
+                
+                if vertex_limit_raise_filter_index:
+                    texture_override_ib_section.append("if vb0 == " + str(3000 + generate_mod_number))
 
-                    texture_override_ib_section.append(vlr_filterindex_indent + "handling = skip")
+                texture_override_ib_section.append(vlr_filterindex_indent + "handling = skip")
 
-                    # Add texture slot check, hash style texture also need this.
-                    if not GenerateModConfig.forbid_auto_texture_ini():
-                        texture_override_ib_section.append(vlr_filterindex_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-                        slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                # Add texture slot check, hash style texture also need this.
+                if not GenerateModConfig.forbid_auto_texture_ini():
+                    texture_override_ib_section.append(vlr_filterindex_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
+                    slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
 
-                        # It may not have auto texture
-                        if slot_replace_dict is not None:
-                            for slot,resource_name in slot_replace_dict.items():
-                                texture_override_ib_section.append(vlr_filterindex_indent  + "checktextureoverride = " + slot)
+                    # It may not have auto texture
+                    if slot_replace_dict is not None:
+                        for slot,resource_name in slot_replace_dict.items():
+                            texture_override_ib_section.append(vlr_filterindex_indent  + "checktextureoverride = " + slot)
 
-                    # Add ib replace
-                    texture_override_ib_section.append(vlr_filterindex_indent + "ib = " + ib_resource_name)
+                # Add ib replace
+                texture_override_ib_section.append(vlr_filterindex_indent + "ib = " + ib_resource_name)
 
-                    # Add slot style texture slot replace.
-                    if not GenerateModConfig.forbid_auto_texture_ini() and not GenerateModConfig.hash_style_auto_texture():
-                        slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
-                        # It may not have auto texture
-                        if slot_replace_dict is not None:
-                            for slot,resource_name in slot_replace_dict.items():
-                                texture_override_ib_section.append(vlr_filterindex_indent + slot + " = " + resource_name)
+                # Add slot style texture slot replace.
+                if not GenerateModConfig.forbid_auto_texture_ini() and not GenerateModConfig.hash_style_auto_texture():
+                    slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                    # It may not have auto texture
+                    if slot_replace_dict is not None:
+                        for slot,resource_name in slot_replace_dict.items():
+                            texture_override_ib_section.append(vlr_filterindex_indent + slot + " = " + resource_name)
 
-                    # 如果不使用GPU-Skinning即为Object类型，此时需要在ib下面替换对应槽位
-                    if not d3d11GameType.GPU_PreSkinning:
-                        for category_name in d3d11GameType.OrderedCategoryNameList:
-                            category_hash = draw_ib_model.category_hash_dict[category_name]
-                            category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
+                # 如果不使用GPU-Skinning即为Object类型，此时需要在ib下面替换对应槽位
+                if not d3d11GameType.GPU_PreSkinning:
+                    for category_name in d3d11GameType.OrderedCategoryNameList:
+                        category_hash = draw_ib_model.category_hash_dict[category_name]
+                        category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
 
-                            for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
-                                if original_category_name == draw_category_name:
-                                    category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
-                                    texture_override_ib_section.append(vlr_filterindex_indent + category_original_slot + " = Resource" + draw_ib + original_category_name)
+                        for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
+                            if original_category_name == draw_category_name:
+                                category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
+                                texture_override_ib_section.append(vlr_filterindex_indent + category_original_slot + " = Resource" + draw_ib + original_category_name)
 
-                    # Component DrawIndexed输出
-                    component_name = "Component " + part_name 
-                    model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
+                # Component DrawIndexed输出
+                component_name = "Component " + part_name 
+                model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
-                    toggle_type_number = 0
-                    switch_type_number = 0
+                toggle_type_number = 0
+                switch_type_number = 0
 
-                    toggle_model_collection_list:list[ModelCollection] = []
-                    switch_model_collection_list:list[ModelCollection] = []
+                toggle_model_collection_list:list[ModelCollection] = []
+                switch_model_collection_list:list[ModelCollection] = []
 
-                    for toggle_model_collection in model_collection_list:
-                        if toggle_model_collection.type == "toggle":
-                            toggle_type_number = toggle_type_number + 1
-                            toggle_model_collection_list.append(toggle_model_collection)
-                        elif toggle_model_collection.type == "switch":
-                            switch_type_number = switch_type_number + 1
-                            switch_model_collection_list.append(toggle_model_collection)
+                for toggle_model_collection in model_collection_list:
+                    if toggle_model_collection.type == "toggle":
+                        toggle_type_number = toggle_type_number + 1
+                        toggle_model_collection_list.append(toggle_model_collection)
+                    elif toggle_model_collection.type == "switch":
+                        switch_type_number = switch_type_number + 1
+                        switch_model_collection_list.append(toggle_model_collection)
 
-                    # 输出按键切换的DrawIndexed
-                    if toggle_type_number >= 2:
-                        for toggle_count in range(toggle_type_number):
-                            if toggle_count == 0:
-                                texture_override_ib_section.append(vlr_filterindex_indent + "if $swapkey" + str(global_key_index_logic) + " == " + toggle_count)
-                            else:
-                                texture_override_ib_section.append(vlr_filterindex_indent + "else if $swapkey" + str(global_key_index_logic) + " == " + toggle_count)
+                # 输出按键切换的DrawIndexed
+                if toggle_type_number >= 2:
+                    for toggle_count in range(toggle_type_number):
+                        if toggle_count == 0:
+                            texture_override_ib_section.append(vlr_filterindex_indent + "if $swapkey" + str(global_key_index_logic) + " == " + toggle_count)
+                        else:
+                            texture_override_ib_section.append(vlr_filterindex_indent + "else if $swapkey" + str(global_key_index_logic) + " == " + toggle_count)
 
-                            toggle_model_collection = toggle_model_collection_list[toggle_count]
-                            for obj_name in toggle_model_collection.obj_name_list:
-                                m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
-                                texture_override_ib_section.append(vlr_filterindex_indent  + m_drawindexed.get_draw_str())
-
-                        texture_override_ib_section.append("endif")
-                        texture_override_ib_section.new_line()
-
-                        global_key_index_logic = global_key_index_logic + 1
-                    elif toggle_type_number != 0:
-                        for toggle_model_collection in toggle_model_collection_list:
-                            for obj_name in toggle_model_collection.obj_name_list:
-                                m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                                texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
-                                texture_override_ib_section.append(vlr_filterindex_indent + m_drawindexed.get_draw_str())
-                                texture_override_ib_section.new_line()
-
-                    # 输出按键开关的DrawIndexed
-                    for switch_model_collection in switch_model_collection_list:
-                        texture_override_ib_section.append(vlr_filterindex_indent + "if $swapkey" + str(global_key_index_logic) + "  == 1")
-                        for obj_name in switch_model_collection.obj_name_list:
+                        toggle_model_collection = toggle_model_collection_list[toggle_count]
+                        for obj_name in toggle_model_collection.obj_name_list:
                             m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
                             texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
                             texture_override_ib_section.append(vlr_filterindex_indent  + m_drawindexed.get_draw_str())
-                            texture_override_ib_section.new_line()
-                        texture_override_ib_section.append(vlr_filterindex_indent + "endif")
-                        texture_override_ib_section.new_line()
-                        global_key_index_logic = global_key_index_logic + 1
-                    
-                    if vlr_filterindex_indent:
-                        texture_override_ib_section.append("endif")
-                        texture_override_ib_section.new_line()
 
-                ini_builder.append_section(texture_override_ib_section)
+                    texture_override_ib_section.append("endif")
+                    texture_override_ib_section.new_line()
+
+                    global_key_index_logic = global_key_index_logic + 1
+                elif toggle_type_number != 0:
+                    for toggle_model_collection in toggle_model_collection_list:
+                        for obj_name in toggle_model_collection.obj_name_list:
+                            m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
+                            texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
+                            texture_override_ib_section.append(vlr_filterindex_indent + m_drawindexed.get_draw_str())
+                            texture_override_ib_section.new_line()
+
+                # 输出按键开关的DrawIndexed
+                for switch_model_collection in switch_model_collection_list:
+                    texture_override_ib_section.append(vlr_filterindex_indent + "if $swapkey" + str(global_key_index_logic) + "  == 1")
+                    for obj_name in switch_model_collection.obj_name_list:
+                        m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
+                        texture_override_ib_section.append(vlr_filterindex_indent + "; " + m_drawindexed.AliasName)
+                        texture_override_ib_section.append(vlr_filterindex_indent  + m_drawindexed.get_draw_str())
+                        texture_override_ib_section.new_line()
+                    texture_override_ib_section.append(vlr_filterindex_indent + "endif")
+                    texture_override_ib_section.new_line()
+                    global_key_index_logic = global_key_index_logic + 1
+                
+                if vlr_filterindex_indent:
+                    texture_override_ib_section.append("endif")
+                    texture_override_ib_section.new_line()
+
+            ini_builder.append_section(texture_override_ib_section)
 
             cls.add_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
