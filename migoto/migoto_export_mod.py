@@ -795,6 +795,9 @@ class UnityVSModModel:
         if GenerateModConfig.forbid_auto_texture_ini():
             return
         
+        if not GenerateModConfig.hash_style_auto_texture():
+            return 
+        
         texture_ini_builder = SingleIniBuilder()
         hash_texture_filename_dict:dict[str,str] = {}
 
