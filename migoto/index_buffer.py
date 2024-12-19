@@ -83,12 +83,24 @@ class IndexBuffer(object):
             print(msg)
     
     # 转换为Index Buffer后返回
-    def get_index_buffer(self)->list:
+    def get_index_buffer(self,offset:int)->list:
         ib_byte_array = []
         for face in self.faces:
+            new_face = []
+            for face_num in face:
+                new_face_num = face_num + offset
+                new_face.append(new_face_num)
+            # print(new_face)
             # 注意！这里不能用extend，否则会导致数据类型从bytes变为int
-            ib_byte_array.append(self.encoder(face))
+            ib_byte_array.append(self.encoder(new_face ))
         return ib_byte_array
+    
+    def get_unique_vertex_number(self) ->int:
+        objset = set()
+        for face in self.faces:
+            for face_num in face:
+                objset.add(face_num)
+        return len(objset)
 
     def __len__(self):
         return len(self.faces) * 3
