@@ -6,7 +6,7 @@ from ..generate_mod.m_mod_model import *
 
 class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace"
-    bl_label = "Export mod in workspace collection to current WorkSpace"
+    bl_label = "生成二创模型"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):

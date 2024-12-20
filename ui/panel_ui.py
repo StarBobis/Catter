@@ -95,7 +95,7 @@ class CatterConfigUI(bpy.types.Panel):
 
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
-    bl_label = "Model IO" 
+    bl_label = "导入模型" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -111,9 +111,6 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
 
         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
-        # 手动导出同理，点这个之后默认路径为OutputFolder，这样直接就能去导出不用翻很久文件夹找路径了
-        operator_export_ibvb = layout.operator("export_mesh.migoto_mmt", text="手动导出 .ib & .vb 模型文件")
-        operator_export_ibvb.filepath = MainConfig.path_workspace_folder() + "1.vb"
 
         draw_seperator(self)
 
@@ -121,7 +118,7 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
 
 
 class PanelGenerateMod(bpy.types.Panel):
-    bl_label = "Generate Mod" 
+    bl_label = "生成二创模型" 
     bl_idname = "VIEW3D_PT_CATTER_GenerateMod_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -139,7 +136,7 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
-            layout.operator("dbmt.export_unity_vs_mod_to_workspace",text="Generate Mod")
+            layout.operator("dbmt.export_unity_vs_mod_to_workspace")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
 

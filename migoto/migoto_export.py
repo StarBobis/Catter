@@ -297,36 +297,36 @@ def export_3dmigoto_to_ibvbfmt(operator, context, vb_path:str, ib_path:str, fmt_
 
 
 
-class Export3DMigoto(bpy.types.Operator, ExportHelper):
-    """Export a mesh for re-injection into a game with 3DMigoto"""
-    bl_idname = "export_mesh.migoto_mmt"
-    bl_label = "Export 3DMigoto Vertex & Index Buffers (DBMT)"
-    bl_description = "导出当前选中的模型，要求模型必须有3Dmigoto相关属性"
+# class Export3DMigoto(bpy.types.Operator, ExportHelper):
+#     """Export a mesh for re-injection into a game with 3DMigoto"""
+#     bl_idname = "export_mesh.migoto_mmt"
+#     bl_label = "Export 3DMigoto Vertex & Index Buffers (DBMT)"
+#     bl_description = "导出当前选中的模型，要求模型必须有3Dmigoto相关属性"
 
-    # file extension
-    filename_ext = '.vb'
+#     # file extension
+#     filename_ext = '.vb'
 
-    # file type filter
-    filter_glob: StringProperty(
-        default='*.vb',
-        options={'HIDDEN'},
-    ) # type: ignore
+#     # file type filter
+#     filter_glob: StringProperty(
+#         default='*.vb',
+#         options={'HIDDEN'},
+#     ) # type: ignore
 
-    # 默认选择文件路径
-    filepath: bpy.props.StringProperty(
-        name="File Path",
-        description="Filepath used for exporting",
-        subtype='FILE_PATH',
-        default="",
-    ) # type: ignore
+#     # 默认选择文件路径
+#     filepath: bpy.props.StringProperty(
+#         name="File Path",
+#         description="Filepath used for exporting",
+#         subtype='FILE_PATH',
+#         default="",
+#     ) # type: ignore
 
-    def execute(self, context):
-        try:
-            vb_path = self.filepath
-            ib_path = os.path.splitext(vb_path)[0] + '.ib'
-            fmt_path = os.path.splitext(vb_path)[0] + '.fmt'
-            export_3dmigoto_to_ibvbfmt(self, context, vb_path, ib_path, fmt_path)
-        except Fatal as e:
-            self.report({'ERROR'}, str(e))
-        return {'FINISHED'}
+#     def execute(self, context):
+#         try:
+#             vb_path = self.filepath
+#             ib_path = os.path.splitext(vb_path)[0] + '.ib'
+#             fmt_path = os.path.splitext(vb_path)[0] + '.fmt'
+#             export_3dmigoto_to_ibvbfmt(self, context, vb_path, ib_path, fmt_path)
+#         except Fatal as e:
+#             self.report({'ERROR'}, str(e))
+#         return {'FINISHED'}
 

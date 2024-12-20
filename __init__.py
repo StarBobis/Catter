@@ -29,7 +29,6 @@ register_classes = (
 
     # 3Dmigoto ib和vb格式导入导出
     Import3DMigotoRaw,
-    Export3DMigoto,
 
     DBMTExportUnityVSModToWorkSpace,
     DBMTImportAllFromCurrentWorkSpace,
