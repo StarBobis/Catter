@@ -3,7 +3,6 @@ from mathutils import Vector
 
 from bpy.props import BoolProperty,  CollectionProperty
 
-
 class RemoveAllVertexGroupOperator(bpy.types.Operator):
     bl_idname = "object.remove_all_vertex_group"
     bl_label = "移除所有顶点组"
