@@ -8,7 +8,7 @@ from ..migoto.input_layout import InputLayout
 
 from ..utils.global_config import * 
 
-from ..generate.migoto_export_mod import *
+from ..generate_mod.migoto_export_mod import *
 
 
 # 用于选择DBMT所在文件夹，主要是这里能自定义逻辑从而实现保存DBMT路径，这样下次打开就还能读取到。
