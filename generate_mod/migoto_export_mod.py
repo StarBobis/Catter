@@ -25,32 +25,10 @@ class ModModel:
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
     shapekeys = {}
 
-
     @classmethod
     def initialzie(cls):
         cls.drawib_drawibmodel_dict = {}
         cls.shapekeys = {}
-
-    @classmethod
-    def path_generatemod_buffer_folder(cls,draw_ib:str):
-        if GenerateModConfig.generate_to_seperate_folder():
-            buffer_path = os.path.join(MainConfig.path_generate_mod_folder(),draw_ib + "\\Buffer\\")
-        else:
-            buffer_path = os.path.join(MainConfig.path_generate_mod_folder(),"Buffer\\")
-        if not os.path.exists(buffer_path):
-            os.makedirs(buffer_path)
-        return buffer_path
-    
-    @classmethod
-    def path_generatemod_texture_folder(cls,draw_ib:str):
-        if GenerateModConfig.generate_to_seperate_folder():
-            texture_path = os.path.join(MainConfig.path_generate_mod_folder(),draw_ib + "\\Texture\\")
-        else:
-            texture_path = os.path.join(MainConfig.path_generate_mod_folder(),"Texture\\")
-        if not os.path.exists(texture_path):
-            os.makedirs(texture_path)
-        return texture_path
-
 
     @classmethod
     def get_style_alias(cls,partname:str):
@@ -62,7 +40,6 @@ class ModModel:
             "1":"Head","2":"Body","3":"Dress","4":"Extra"
             ,"5":"Extra1","6":"Extra2","7":"Extra3","8":"Extra4","9":"Extra5"
             ,"10":"Extra6","11":"Extra7","12":"Extra8"}
-        
         return partname_gimi_alias_dict.get(partname,partname)
 
     @classmethod
@@ -76,13 +53,14 @@ class ModModel:
                 if ib_buf is None:
                     print("Export Failed, Can't get ib buf for partname: " + partname)
                 else:
-                    ib_path = cls.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + cls.get_style_alias(partname) + ".buf"
+                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + cls.get_style_alias(partname) + ".buf"
                     with open(ib_path, 'wb') as ibf:
                         for ib_byte_number in ib_buf:
                             ibf.write(ib_byte_number) 
+
             # 输出各个Category的Buffer到文件
             for category_name, category_buf in draw_ib_model.categoryname_bytelist_dict.items():
-                buf_path = cls.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + category_name + ".buf"
+                buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + category_name + ".buf"
                 buf_bytearray = bytearray(category_buf)
                 with open(buf_path, 'wb') as ibf:
                     ibf.write(buf_bytearray)
@@ -464,7 +442,7 @@ class ModModel:
             return
         
         for texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-                target_path = cls.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
+                target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
                 source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
                 
                 # only overwrite when there is no texture file exists.
@@ -502,7 +480,7 @@ class ModModel:
                     continue
 
                 new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
-                target_texture_file_path = cls.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
+                target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
                 
                 resource_texture_section = M_IniSection(M_SectionType.ResourceTexture)
                 resource_texture_section.append("[Resource_Texture_" + texture_hash + "]")

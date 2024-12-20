@@ -147,6 +147,26 @@ class MainConfig:
     def path_extract_gametype_folder(cls,draw_ib:str,gametype_name:str):
         return os.path.join(MainConfig.path_workspace_folder(), draw_ib + "\\TYPE_" + gametype_name + "\\")
     
+    @classmethod
+    def path_generatemod_buffer_folder(cls,draw_ib:str):
+        if GenerateModConfig.generate_to_seperate_folder():
+            buffer_path = os.path.join(MainConfig.path_generate_mod_folder(),draw_ib + "\\Buffer\\")
+        else:
+            buffer_path = os.path.join(MainConfig.path_generate_mod_folder(),"Buffer\\")
+        if not os.path.exists(buffer_path):
+            os.makedirs(buffer_path)
+        return buffer_path
+    
+    @classmethod
+    def path_generatemod_texture_folder(cls,draw_ib:str):
+        if GenerateModConfig.generate_to_seperate_folder():
+            texture_path = os.path.join(MainConfig.path_generate_mod_folder(),draw_ib + "\\Texture\\")
+        else:
+            texture_path = os.path.join(MainConfig.path_generate_mod_folder(),"Texture\\")
+        if not os.path.exists(texture_path):
+            os.makedirs(texture_path)
+        return texture_path
+    
     # 定义Json文件路径---------------------------------------------------------------------------------
     @classmethod
     def path_main_json(cls):
