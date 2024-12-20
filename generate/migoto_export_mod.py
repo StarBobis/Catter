@@ -1,29 +1,22 @@
 from ..utils.dbmt_utils import *
 from ..utils.collection_utils import *
-from .migoto_export import get_export_ib_vb
-from .index_buffer import *
-from .vertex_buffer import *
-from .input_layout import *
+from ..migoto.migoto_export import get_export_ib_vb
+from ..migoto.index_buffer import *
+from ..migoto.vertex_buffer import *
+from ..migoto.input_layout import *
 from ..utils.json_utils import *
 
 from dataclasses import dataclass, field
 from ..core.common.d3d11_game_type import D3D11Element,D3D11GameType
+from ..utils.command_helper import *
 
 # from enum import StrEnum
 
 import bpy
 import shutil
 
-class M_DrawIndexed:
-
-    def __init__(self) -> None:
-        self.DrawNumber = ""
-        self.DrawOffsetIndex = ""
-        self.DrawStartIndex = "0"
-        self.AliasName = "" # 代表一个obj具体的draw_indexed
-    
-    def get_draw_str(self) ->str:
-        return "drawindexed = " + self.DrawNumber + "," + self.DrawOffsetIndex +  "," + self.DrawStartIndex
+from .m_draw_type import *
+from .m_ini_builder import *
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
@@ -193,7 +186,8 @@ class DrawIBModel:
 
                     tmp_categoryname_bytelist_dict:dict[str,list] = {}
                     for element_name in d3d11gametype.OrderedFullElementList:
-
+                        
+                        # process PatchBLENDWEIGHTS
                         if d3d11gametype.PatchBLENDWEIGHTS and element_name == blendweights_name:
                             continue
 
@@ -201,7 +195,6 @@ class DrawIBModel:
                         category_name = d3d11Element.Category
                         element_stride = d3d11Element.ByteWidth
 
-                        # TODO KeyError: 'BLENDWEIGHTS'
                         add_byte_list = vb_elementname_bytelist_dict[element_name]
                         vertex_number = int(len(add_byte_list) / element_stride)
                         # print(vertex_number)
@@ -278,77 +271,10 @@ class DrawIBModel:
             self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
 
 
-class M_SectionType:
-    Present = "Present"
-    Constants = "Constants"
-    Key = "Key"
-    TextureOverrideIB = "TextureOverrideIB"
-    TextureOverrideVB = "TextureOverrideVB"
-    TextureOverrideTexture = "TextureOverrideTexture"
-    IBSkip = "IBSkip"
-    ResourceVB = "ResourceVB"
-    ResourceIB = "ResourceIB"
-    ResourceTexture = "ResourceTexture"
-    CreditInfo = "CreditInfo"
-    VSHashCheck = "VSHashCheck"
-
-class M_IniSection:
-    def __init__(self,section_type:M_SectionType) -> None:
-        self.SectionType = section_type
-        self.SectionName = ""
-        self.SectionLineList = []
-
-    def append(self,line:str):
-        self.SectionLineList.append(line)
-
-    def new_line(self):
-        self.SectionLineList.append("")
-
-
-class SingleIniBuilder:
-    def __init__(self):
-        self.line_list = []
-        self.ini_section_list:list[M_IniSection] = []
-
-    def append_section_line(self,ini_section_type:M_SectionType):
-        '''
-        此方法只允许类内部调用
-        '''
-        for ini_section in self.ini_section_list:
-            if ini_section.SectionType == ini_section_type:
-                for line in ini_section.SectionLineList:
-                    self.line_list.append(line + "\n")
-                self.line_list.append(";-------------------------------------------------------------------------\n")
-
-    def append_section(self,m_inisection:M_IniSection):
-        self.ini_section_list.append(m_inisection)
-
-    def save_to_file(self,config_ini_path:str):
-        self.append_section_line(M_SectionType.Constants)
-        self.append_section_line(M_SectionType.Present)
-        self.append_section_line(M_SectionType.Key)
-
-        self.append_section_line(M_SectionType.IBSkip)
-
-        self.append_section_line(M_SectionType.TextureOverrideVB)
-        self.append_section_line(M_SectionType.TextureOverrideIB)
-
-        self.append_section_line(M_SectionType.ResourceIB)
-        self.append_section_line(M_SectionType.ResourceVB)
-        self.append_section_line(M_SectionType.ResourceTexture)
-
-        self.append_section_line(M_SectionType.TextureOverrideTexture)
-        self.append_section_line(M_SectionType.VSHashCheck)
-
-        self.append_section_line(M_SectionType.CreditInfo)
-
-        with open(config_ini_path,"w") as f:
-            f.writelines(self.line_list)
-                    
 
 
 # 这个代表了整个Mod的导出模型，数据来源为一个命名空间,形态键数据要放到这里才行
-class UnityVSModModel:
+class ModModel:
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
     shapekeys = {}
 
@@ -436,7 +362,7 @@ class UnityVSModModel:
 
     @classmethod
     def generate_unity_vs_config_ini(cls):
-        ini_builder = SingleIniBuilder()     
+        ini_builder = M_IniBuilder()     
 
         global_key_index_constants = 0
         global_key_index_logic = 0
@@ -820,7 +746,7 @@ class UnityVSModModel:
         if not GenerateModConfig.hash_style_auto_texture():
             return 
         
-        texture_ini_builder = SingleIniBuilder()
+        texture_ini_builder = M_IniBuilder()
         hash_texture_filename_dict:dict[str,str] = {}
 
         for draw_ib_model in cls.drawib_drawibmodel_dict.values():
@@ -874,13 +800,10 @@ class DBMTExportModToWorkSpace(bpy.types.Operator):
 
     def execute(self, context):
         # GlobalTimer.Start("GenerateMod")
-        # TODO 后面添加一个选项，在面板里控制是否读取缓存，读取缓存就是增量导出，不读取就是全量导出。
-        UnityVSModModel.initialzie()
+        ModModel.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
-            # TODO 因为是导出Mod所以这里不能简单的就Skip，会导致缺失这个DrawIB的数据
-            # TODO 要研究怎么样进行增量导出。但是这个Skip还是留着吧，因为还是用得到的，等真正用不到的时候再移除
             # Skip hide collection.
             if not CollectionUtils.is_collection_visible(draw_ib_collection.name):
                 continue
@@ -899,15 +822,16 @@ class DBMTExportModToWorkSpace(bpy.types.Operator):
             draw_ib_model = DrawIBModel()
             draw_ib_model.parse_drawib_collection(context,draw_ib_collection)
 
-            UnityVSModModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            ModModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        UnityVSModModel.parse_buffer()
-        UnityVSModModel.export_buffer_files()
-        UnityVSModModel.generate_unity_vs_config_ini()
+        ModModel.parse_buffer()
+        ModModel.export_buffer_files()
+        ModModel.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
+        CommandHelper.OpenGeneratedModFolder()
         # 输出Mod完毕后，打开输出的Mod文件生成的文件夹，方便用户修改和查看
         if GenerateModConfig.open_generated_mod_folder_after_run():
             subprocess.run(['explorer',MainConfig.path_generate_mod_folder()])
