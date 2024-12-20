@@ -77,7 +77,7 @@ class M_ModModel:
             ini_builder.append_section(present_section)
 
             # 声明按键切换和按键开关的变量
-            for component_name, model_collection_list in draw_ib_model.componentname_modelcollection_list_dict:
+            for component_name, model_collection_list in draw_ib_model.componentname_modelcollection_list_dict.items():
                 toggle_type_number = 0
                 switch_type_number = 0
                 
