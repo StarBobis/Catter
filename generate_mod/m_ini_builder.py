@@ -32,6 +32,10 @@ class M_IniBuilder:
     def __init__(self):
         self.line_list = []
         self.ini_section_list:list[M_IniSection] = []
+    
+    def clear(self):
+        self.line_list.clear()
+        self.ini_section_list.clear()
 
     def __append_section_line(self,ini_section_type:M_SectionType):
         '''
