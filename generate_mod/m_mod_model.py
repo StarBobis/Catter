@@ -520,3 +520,38 @@ class M_ModModel:
             ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
 
 
+    @classmethod
+    def generate_unity_cs_config_ini(cls):
+        '''
+        test
+        '''
+        ini_builder = M_IniBuilder()     
+
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
+
+            cls.global_generate_mod_number = cls.global_generate_mod_number + 1
+
+            if GenerateModConfig.generate_to_seperate_folder():
+                draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
+                if not os.path.exists(draw_ib_output_folder):
+                    os.makedirs(draw_ib_output_folder)
+                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                ini_builder.clear()
+
+        cls.generate_hash_style_texture_ini()
+
+        if not GenerateModConfig.generate_to_seperate_folder():
+            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+
+
