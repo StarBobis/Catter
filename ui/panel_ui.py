@@ -53,7 +53,7 @@ class CatterConfigUI(bpy.types.Panel):
         
         # Path button to choose DBMT-GUI.exe location folder.
         row = layout.row()
-        row.operator("object.select_dbmt_folder",text="选择DBMT所在路径")
+        row.operator("object.select_dbmt_folder")
 
         # 获取DBMT.exe的路径
         dbmt_gui_exe_path = os.path.join(context.scene.dbmt.path, "DBMT.exe")
