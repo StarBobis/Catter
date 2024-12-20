@@ -85,7 +85,7 @@ class CatterConfigUI(bpy.types.Panel):
         row.prop(context.scene.dbmt, "flip_tangent_w", text="W")
 
         draw_seperator(self)
-        layout.prop(context.scene.dbmt, "export_same_number", text="导出不改变顶点数")
+        
       
         layout.prop(context.scene.dbmt,"import_merged_vgmap",text="使用重映射的全局顶点组")
         layout.prop(context.scene.dbmt,"model_scale")
@@ -149,6 +149,7 @@ class PanelGenerateMod(bpy.types.Panel):
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_name")
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_social_link")
         layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
+        layout.prop(context.scene.dbmt_generatemod, "export_same_number")
         layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
         layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")

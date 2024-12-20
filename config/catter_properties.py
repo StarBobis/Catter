@@ -6,26 +6,32 @@ from bpy.props import FloatProperty
 
 class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
-        name="Open GeneratedMod Folder",
-        description="Open GeneratedMod folder after run GenerateMod.",
+        name="打开生成的Mod文件夹",
+        description="生成Mod后打开生成的Mod文件夹",
         default=False
     ) # type: ignore
 
     hash_style_auto_texture: bpy.props.BoolProperty(
-        name="Use Hash Style AutoTexture",
-        description="Use hash replace style instead of default slot replace style in auto texture ini generate.",
+        name="使用Hash风格自动贴图",
+        description="在生成Mod时使用Hash风格的自动贴图而不是槽位风格的",
         default=False
     ) # type: ignore
 
     forbid_auto_texture_ini: bpy.props.BoolProperty(
-        name="Forbid Generate Texture Ini",
-        description="Forbid to add auto texture ini at generate mod",
+        name="禁止生成自动贴图ini",
+        description="生成Mod时禁止生成贴图相关ini部分",
         default=False
     ) # type: ignore
 
     generate_to_seperate_folder: bpy.props.BoolProperty(
-        name="Generate To Seperate Folder",
-        description="Generate mod to seperated DrawIB folder instaed of put together.",
+        name="生成到分开的DrawIB文件夹",
+        description="生成Mod时按DrawIB为文件夹名称分开生成而不是全生成到一起，方便进阶制作。",
+        default=False
+    ) # type: ignore
+
+    export_same_number: bpy.props.BoolProperty(
+        name="使用共享TANGENT避免增加顶点数",
+        description="使用共享的TANGENT值从而避免hashable计算导致的顶点数增加 (在Unity-CPU-PreSkinning技术中常用，避免顶点数变多导致无法和原本模型顶点数对应)",
         default=False
     ) # type: ignore
 
@@ -34,14 +40,14 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     # Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
     # So default add is not a good idea, not goods enough to let every author happy.
     credit_info_author_name: bpy.props.StringProperty(
-        name="Author ",
-        description="Author's name.",
+        name="作者昵称",
+        description="作者的昵称",
         default=""
     ) # type: ignore
 
     credit_info_author_social_link: bpy.props.StringProperty(
-        name="Web Link ",
-        description="Author's social link.",
+        name="赞助链接",
+        description="用于赞助该作者的赞助链接",
         default=""
     ) # type: ignore
 
@@ -74,11 +80,7 @@ class CatterProperties(bpy.types.PropertyGroup):
 
     # ------------------------------------------------------------------------------------------------------------
 
-    export_same_number: bpy.props.BoolProperty(
-        name="",
-        description="导出时不改变顶点数 (在Unity-CPU-PreSkinning技术中常用，避免导出后顶点数变多导致无法和原本模型顶点数对应)",
-        default=False
-    ) # type: ignore
+
 
     export_normalize_all: bpy.props.BoolProperty(
         name="",

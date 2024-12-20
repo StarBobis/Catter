@@ -82,7 +82,14 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
         '''
         return bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
-
+    
+    @classmethod
+    def export_same_number(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.export_same_number
+        '''
+        return bpy.context.scene.dbmt_generatemod.export_same_number
+    
 
 class GameCategory:
     UnityVS = "UnityVS"
