@@ -15,7 +15,7 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 0, 4, 5),
+    "version": (1, 0, 4, 6),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
@@ -30,16 +30,9 @@ register_classes = (
     # 3Dmigoto ib和vb格式导入导出
     Import3DMigotoRaw,
     Export3DMigoto,
-    # MMT的一键快速导入导出
-    # MMTImportAllVbModel,
-    # MMTExportAllIBVBModel,
-    # 多合一的一键快速导入导出
-    # DBMTImportAllVbModelMerged,
-    # DBMTExportMergedModVBModel,
-    DBMTExportUnityVSModToWorkSpace,
 
+    DBMTExportUnityVSModToWorkSpace,
     DBMTImportAllFromCurrentWorkSpace,
-    DBMTExportAllToWorkSpace,
 
     # 右键菜单栏
     RemoveAllVertexGroupOperator,
@@ -63,9 +56,6 @@ register_classes = (
 
     # UI
     CatterConfigUI,
-    # PanelModelExtract,
-    # PanelModelSingleIO,
-    # PanelModelFastIO,
     PanelModelWorkSpaceIO,
     PanelGenerateMod,
     MigotoAttributePanel,

@@ -90,6 +90,7 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.export_same_number
     
+    
 
 class GameCategory:
     UnityVS = "UnityVS"
