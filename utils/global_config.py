@@ -84,6 +84,13 @@ class GenerateModConfig:
         return bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
 
 
+class GameCategory:
+    UnityVS = "UnityVS"
+    UnityCS = "UnityCS"
+    UnrealCS = "UnrealCS"
+    UnrealVS = "UnrealVS"
+    Unknown = "Unknown"
+
 
 # 全局配置类，使用字段默认为全局可访问的唯一静态变量的特性，来实现全局变量
 # 可减少从Main.json中读取的IO消耗
@@ -91,6 +98,23 @@ class MainConfig:
     # 全局静态变量,任何地方访问到的值都是唯一的
     gamename = ""
     workspacename = ""
+
+    @classmethod
+    def get_game_category(cls) -> str:
+        if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","Unity-CPU-PreSkinning"]:
+            return GameCategory.UnityVS
+        
+        elif cls.gamename in ["Game001","LiarsBar","Mecha"]:
+            return GameCategory.UnityCS
+        
+        elif cls.gamename in ["WWMI","SnowBreak"]:
+            return GameCategory.UnrealVS
+        
+        elif cls.gamename in ["TowerOfFantacy"]:
+            return GameCategory.UnrealCS
+        else:
+            return GameCategory.Unknown
+        
 
     # Read Main.json from DBMT folder and then get current workspace name.
     @classmethod

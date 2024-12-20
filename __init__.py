@@ -6,7 +6,7 @@ from .ui.rightclick_ui import *
 
 from .migoto.migoto_import import *
 from .migoto.migoto_export import *
-from .generate_mod.migoto_export_mod import *
+from .migoto.migoto_export_mod import *
 
 from .config.catter_properties import *
 
@@ -36,7 +36,7 @@ register_classes = (
     # 多合一的一键快速导入导出
     # DBMTImportAllVbModelMerged,
     # DBMTExportMergedModVBModel,
-    DBMTExportModToWorkSpace,
+    DBMTExportUnityVSModToWorkSpace,
 
     DBMTImportAllFromCurrentWorkSpace,
     DBMTExportAllToWorkSpace,

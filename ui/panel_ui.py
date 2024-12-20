@@ -8,7 +8,7 @@ from ..migoto.input_layout import InputLayout
 
 from ..utils.global_config import * 
 
-from ..generate_mod.migoto_export_mod import *
+from ..migoto.migoto_export_mod import *
 
 
 # 用于选择DBMT所在文件夹，主要是这里能自定义逻辑从而实现保存DBMT路径，这样下次打开就还能读取到。
@@ -152,8 +152,11 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
         layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
-
-        layout.operator("dbmt.export_mod_to_workspace",text="Generate Mod")
+        
+        if MainConfig.get_game_category() == GameCategory.UnityVS:
+            layout.operator("dbmt.export_unity_vs_mod_to_workspace",text="Generate Mod")
+        else:
+            layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
 
 
 class MigotoAttributePanel(bpy.types.Panel):
