@@ -51,74 +51,7 @@ class M_ModModel:
                     "x","c","v","b","n","m","j","k","l","o","p","[","]"]
         return key_list[key_index]
 
-    @classmethod
-    def export_buffer_files(cls):
-        '''
-        Export to buffer files from ib and vb.
-        '''
-        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            # Export IndexBuffer files.
-            for partname in draw_ib_model.part_name_list:
-                component_name = "Component " + partname
-                ib_buf = draw_ib_model.componentname_ibbuf_dict.get(component_name,None)
-                if ib_buf is None:
-                    print("Export Failed, Can't get ib buf for partname: " + partname)
-                else:
-                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + cls.get_style_alias(partname) + ".buf"
-                    with open(ib_path, 'wb') as ibf:
-                        for ib_byte_number in ib_buf:
-                            ibf.write(ib_byte_number) 
 
-            # Export category buffer files.
-            for category_name, category_buf in draw_ib_model.categoryname_bytelist_dict.items():
-                buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + category_name + ".buf"
-                buf_bytearray = bytearray(category_buf)
-                with open(buf_path, 'wb') as ibf:
-                    ibf.write(buf_bytearray)
-        
-        # TODO WWMI need to output shapekey buffers.
-        if len(cls.shapekeys) != 0:
-            pass
-
-    @classmethod
-    def generate_unity_vs_config_ini(cls):
-        '''
-        Support Games:
-        - Genshin Impact
-        - Honkai Impact 3rd
-        - Honkai StarRail
-        - Zenless Zone Zero
-        - Bloody Spell
-        - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
-        '''
-        ini_builder = M_IniBuilder()     
-
-        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
-
-            cls.global_generate_mod_number = cls.global_generate_mod_number + 1
-
-            if GenerateModConfig.generate_to_seperate_folder():
-                draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
-                if not os.path.exists(draw_ib_output_folder):
-                    os.makedirs(draw_ib_output_folder)
-                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
-                ini_builder.clear()
-
-        cls.generate_hash_style_texture_ini()
-
-        if not GenerateModConfig.generate_to_seperate_folder():
-            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
 
 
     @classmethod
@@ -516,4 +449,74 @@ class M_ModModel:
                     shutil.copy2(original_texture_file_path,target_texture_file_path)
 
         texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "TextureReplace.ini")
+
+    @classmethod
+    def export_buffer_files(cls):
+        '''
+        Export to buffer files from ib and vb.
+        '''
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            # Export IndexBuffer files.
+            for partname in draw_ib_model.part_name_list:
+                component_name = "Component " + partname
+                ib_buf = draw_ib_model.componentname_ibbuf_dict.get(component_name,None)
+                if ib_buf is None:
+                    print("Export Failed, Can't get ib buf for partname: " + partname)
+                else:
+                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + cls.get_style_alias(partname) + ".buf"
+                    with open(ib_path, 'wb') as ibf:
+                        for ib_byte_number in ib_buf:
+                            ibf.write(ib_byte_number) 
+
+            # Export category buffer files.
+            for category_name, category_buf in draw_ib_model.categoryname_bytelist_dict.items():
+                buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + category_name + ".buf"
+                buf_bytearray = bytearray(category_buf)
+                with open(buf_path, 'wb') as ibf:
+                    ibf.write(buf_bytearray)
+        
+        # TODO WWMI need to output shapekey buffers.
+        if len(cls.shapekeys) != 0:
+            pass
+
+    @classmethod
+    def generate_unity_vs_config_ini(cls):
+        '''
+        Supported Games:
+        - Genshin Impact
+        - Honkai Impact 3rd
+        - Honkai StarRail
+        - Zenless Zone Zero
+        - Bloody Spell
+        - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
+        '''
+        ini_builder = M_IniBuilder()     
+
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
+
+            cls.global_generate_mod_number = cls.global_generate_mod_number + 1
+
+            if GenerateModConfig.generate_to_seperate_folder():
+                draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
+                if not os.path.exists(draw_ib_output_folder):
+                    os.makedirs(draw_ib_output_folder)
+                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                ini_builder.clear()
+
+        cls.generate_hash_style_texture_ini()
+
+        if not GenerateModConfig.generate_to_seperate_folder():
+            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+
 

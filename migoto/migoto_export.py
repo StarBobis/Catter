@@ -87,19 +87,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
                 if uv_name in texcoords:
                     uvs += list(texcoords[uv_name][blender_loop_vertex.index])
             vertex[elem.name] = uvs
-        elif elem.name.startswith('SHAPEKEY'):
-            
-
-
-            # 如果在这里处理ShapeKey，效率太低了，有几个ShapeKey就得遍历几遍去拿对应的数据，而且还要拼接好
-            # 直接输出Buffer文件更好一点。
-            # TODO 整个基于.ib .vb的架构都应该舍弃，更换为基于Buffer + Json文件描述的架构。 
-            # 但是暂时舍弃不掉，只能先凑合用着了。
-            # - 在导入Blender之前进行预处理，提高导入到Blender中的速度。
-            # - 在从Blender导出时，不进行任何处理直接导出，从而提高导出速度。
-            # TODO 编写专门的测试导出为Buffer的按钮进行导出测试。   
-            pass
-        
         # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
         # elif elem.name.startswith('BINORMAL'):
             # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
@@ -117,7 +104,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             # pass
 
         else:
-            # TODO
             # 如果属性不在已知范围内，不做任何处理。
             pass
 
@@ -127,15 +113,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
         #    print('%s: %s' % (elem.name, repr(vertex[elem.name])))
 
     return vertex
-
-
-def write_fmt_file(f, vb, ib):
-    f.write('stride: %i\n' % vb.layout.stride)
-    f.write('topology: %s\n' % vb.topology)
-    if ib is not None:
-        f.write('format: %s\n' % ib.format)
-        f.write('gametypename: ' +  ib.gametypename + '\n')
-    f.write(vb.layout.to_string())
 
 
 class HashableVertex(dict):
@@ -281,52 +258,4 @@ def get_export_ib_vb(context):
     # GlobalTimer.End()
     return ib, vb
 
-
-def export_3dmigoto_to_ibvbfmt(operator, context, vb_path:str, ib_path:str, fmt_path:str):
-    ib,vb = get_export_ib_vb(context)
-    
-    # Nico: 写出.fmt .vb .ib文件
-    vb.write(open(vb_path, 'wb'), operator=operator)
-    ib.write(open(ib_path, 'wb'), operator=operator)
-    write_fmt_file(open(fmt_path, 'w'), vb, ib)
-
-    # Force flush make better user experience.
-    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-
-
-
-
-
-# class Export3DMigoto(bpy.types.Operator, ExportHelper):
-#     """Export a mesh for re-injection into a game with 3DMigoto"""
-#     bl_idname = "export_mesh.migoto_mmt"
-#     bl_label = "Export 3DMigoto Vertex & Index Buffers (DBMT)"
-#     bl_description = "导出当前选中的模型，要求模型必须有3Dmigoto相关属性"
-
-#     # file extension
-#     filename_ext = '.vb'
-
-#     # file type filter
-#     filter_glob: StringProperty(
-#         default='*.vb',
-#         options={'HIDDEN'},
-#     ) # type: ignore
-
-#     # 默认选择文件路径
-#     filepath: bpy.props.StringProperty(
-#         name="File Path",
-#         description="Filepath used for exporting",
-#         subtype='FILE_PATH',
-#         default="",
-#     ) # type: ignore
-
-#     def execute(self, context):
-#         try:
-#             vb_path = self.filepath
-#             ib_path = os.path.splitext(vb_path)[0] + '.ib'
-#             fmt_path = os.path.splitext(vb_path)[0] + '.fmt'
-#             export_3dmigoto_to_ibvbfmt(self, context, vb_path, ib_path, fmt_path)
-#         except Fatal as e:
-#             self.report({'ERROR'}, str(e))
-#         return {'FINISHED'}
 
