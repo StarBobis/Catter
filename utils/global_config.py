@@ -90,7 +90,7 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.export_same_number
     
-    
+
 
 class GameCategory:
     UnityVS = "UnityVS"
@@ -112,13 +112,13 @@ class MainConfig:
         if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","Unity-CPU-PreSkinning"]:
             return GameCategory.UnityVS
         
-        elif cls.gamename in ["Game001","LiarsBar","Mecha"]:
+        elif cls.gamename in ["Game001","Game002","Game003"]:
             return GameCategory.UnityCS
         
-        elif cls.gamename in ["WWMI","SnowBreak"]:
+        elif cls.gamename in ["WWMI","Game101"]:
             return GameCategory.UnrealVS
         
-        elif cls.gamename in ["TowerOfFantacy"]:
+        elif cls.gamename in ["Game201"]:
             return GameCategory.UnrealCS
         else:
             return GameCategory.Unknown
