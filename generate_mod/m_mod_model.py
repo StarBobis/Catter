@@ -708,7 +708,7 @@ class M_ModModel:
                         resource_vb_section.append("type = Buffer")
                 else:
                     resource_vb_section.append("type = Buffer")
-                    
+
                 if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
                     blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
                     resource_vb_section.append("stride = " + str(blend_stride))
@@ -719,7 +719,7 @@ class M_ModModel:
                 resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
             
             ini_builder.append_section(resource_vb_section)
-
+    
     @classmethod
     def generate_unity_cs_config_ini(cls):
         '''
