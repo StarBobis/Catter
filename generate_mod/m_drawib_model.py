@@ -111,11 +111,10 @@ class DrawIBModel:
 
 
     def __read_component_ib_buf_dict(self):
+        vertex_number_ib_offset = 0
         for component_name, component_value in self.export_json_dict.items():
             ib_buf = []
             offset = 0
-
-            number_sum = 0
             for model_name, model_value in component_value.items():
                 model_list = model_value["model"]
                 for obj_name in model_list:
@@ -126,7 +125,10 @@ class DrawIBModel:
                     if ib is None:
                         print("Can't find ib object for " + obj_name +",skip this obj process.")
                         continue
-                    obj_ib_buf = ib.get_index_buffer(number_sum)
+                    
+                    print("component name: " + component_name)
+                    print("vertex_number_ib_offset: " + str(vertex_number_ib_offset))
+                    obj_ib_buf = ib.get_index_buffer(vertex_number_ib_offset)
                     ib_buf.extend(obj_ib_buf)
 
                     drawindexed_obj = M_DrawIndexed()
@@ -139,7 +141,7 @@ class DrawIBModel:
 
                     # Add UniqueVertexNumber to show vertex count in mod ini.
                     print(unique_vertex_number)
-                    number_sum = number_sum + unique_vertex_number
+                    vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
 
             self.componentname_ibbuf_dict[component_name] = ib_buf
     
