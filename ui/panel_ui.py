@@ -59,7 +59,7 @@ class CatterConfigUI(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        
+        dbmt_config = context.scene.dbmt
         # Path button to choose DBMT-GUI.exe location folder.
         row = layout.row()
         row.operator("object.select_dbmt_folder")
@@ -78,26 +78,26 @@ class CatterConfigUI(bpy.types.Panel):
         layout.label(text="翻转NORMAL分量")
         row = layout.row()
        
-        row.prop(context.scene.dbmt, "flip_normal_x", text="X")
-        row.prop(context.scene.dbmt, "flip_normal_y", text="Y")
-        row.prop(context.scene.dbmt, "flip_normal_z", text="Z")
-        row.prop(context.scene.dbmt, "flip_normal_w", text="W")
+        row.prop(dbmt_config, "flip_normal_x", text="X")
+        row.prop(dbmt_config, "flip_normal_y", text="Y")
+        row.prop(dbmt_config, "flip_normal_z", text="Z")
+        row.prop(dbmt_config, "flip_normal_w", text="W")
 
         draw_seperator(self)
 
         layout.label(text="翻转TANGENT分量")
         row = layout.row()
        
-        row.prop(context.scene.dbmt, "flip_tangent_x", text="X")
-        row.prop(context.scene.dbmt, "flip_tangent_y", text="Y")
-        row.prop(context.scene.dbmt, "flip_tangent_z", text="Z")
-        row.prop(context.scene.dbmt, "flip_tangent_w", text="W")
+        row.prop(dbmt_config, "flip_tangent_x", text="X")
+        row.prop(dbmt_config, "flip_tangent_y", text="Y")
+        row.prop(dbmt_config, "flip_tangent_z", text="Z")
+        row.prop(dbmt_config, "flip_tangent_w", text="W")
 
         draw_seperator(self)
         
       
-        layout.prop(context.scene.dbmt,"import_merged_vgmap",text="使用重映射的全局顶点组")
-        layout.prop(context.scene.dbmt,"model_scale")
+        layout.prop(dbmt_config,"import_merged_vgmap",text="使用重映射的全局顶点组")
+        layout.prop(dbmt_config,"model_scale")
         
 
 
@@ -135,14 +135,15 @@ class PanelGenerateMod(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        generatemod_config = context.scene.dbmt_generatemod
         # Don't add credit info unless mod author think it must be add.
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_name")
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_social_link")
-        layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
-        layout.prop(context.scene.dbmt_generatemod, "export_same_number")
-        layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
-        layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
-        layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
+        layout.prop(generatemod_config, "open_generate_mod_folder_after_run")
+        layout.prop(generatemod_config, "export_same_number")
+        layout.prop(generatemod_config, "hash_style_auto_texture")
+        layout.prop(generatemod_config, "forbid_auto_texture_ini")
+        layout.prop(generatemod_config, "generate_to_seperate_folder")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace")

@@ -6,6 +6,8 @@ import time
 
 
 def apply_modifiers_for_object_with_shape_keys(context, selectedModifiers, disable_armatures):
+    # Github: https://github.com/przemir/ApplyModifierForObjectWithShapeKeys
+
     # ------------------------------------------------------------------------------
     # The MIT License (MIT)
     #

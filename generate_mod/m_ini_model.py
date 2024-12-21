@@ -228,9 +228,9 @@ class M_IniModel:
             if toggle_type_number >= 2:
                 for toggle_count in range(toggle_type_number):
                     if toggle_count == 0:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + toggle_count)
+                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
                     else:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + toggle_count)
+                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
 
                     toggle_model_collection = toggle_model_collection_list[toggle_count]
                     for obj_name in toggle_model_collection.obj_name_list:
@@ -609,9 +609,9 @@ class M_IniModel:
             if toggle_type_number >= 2:
                 for toggle_count in range(toggle_type_number):
                     if toggle_count == 0:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + toggle_count)
+                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
                     else:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + toggle_count)
+                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
 
                     toggle_model_collection = toggle_model_collection_list[toggle_count]
                     for obj_name in toggle_model_collection.obj_name_list:

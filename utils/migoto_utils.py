@@ -9,17 +9,6 @@ import subprocess
 
 from glob import glob
 
-def matmul(a, b):
-    return operator.matmul(a, b)  # the same as writing a @ b
-
-
-def keys_to_ints(d):
-    return {k.isdecimal() and int(k) or k: v for k, v in d.items()}
-
-
-def keys_to_strings(d):
-    return {str(k): v for k, v in d.items()}
-
 
 # This used to catch any exception in run time and raise it to blender output console.
 class Fatal(Exception):
