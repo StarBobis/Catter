@@ -6,7 +6,7 @@ from ..utils.migoto_utils import *
 from ..utils.dbmt_utils import *
 from ..migoto.input_layout import InputLayout
 
-from ..utils.global_config import * 
+from ..config.global_config import * 
 
 from ..migoto.migoto_export_mod import *
 

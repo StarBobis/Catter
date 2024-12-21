@@ -7,7 +7,7 @@ from ..core.common.global_config import *
 from .m_draw_type import *
 
 from ..utils.collection_utils import *
-from ..utils.global_config import *
+from ..config.global_config import *
 from ..utils.json_utils import *
 
 from .m_ini_helper import *

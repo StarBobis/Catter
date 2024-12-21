@@ -2,7 +2,7 @@ import os
 import bpy
 import json
 import subprocess
-from .global_config import *
+from ..config.global_config import *
 
 
 class DBMTUtils:
