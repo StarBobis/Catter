@@ -5,7 +5,6 @@ import bpy
 import time
 
 class ShapeKeyUtils:
-    pass
 
     @classmethod
     def apply_modifiers_for_object_with_shape_keys(cls,context, selectedModifiers, disable_armatures):

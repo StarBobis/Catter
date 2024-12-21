@@ -6,8 +6,6 @@ from ..config.main_config import *
 
 
 class DBMTUtils:
-
-
     # Get drawib list from Game's Config.json.
     @classmethod
     def get_extract_drawib_list_from_workspace_config_json(cls)->list:
