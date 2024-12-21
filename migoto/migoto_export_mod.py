@@ -1,7 +1,7 @@
 import bpy
 
 from ..utils.command_helper import *
-from ..generate_mod.m_mod_model import *
+from ..generate_mod.m_ini_model import *
         
 
 class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
@@ -11,7 +11,7 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
 
     def execute(self, context):
         # GlobalTimer.Start("GenerateMod")
-        M_ModModel.initialzie()
+        M_IniModel.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
@@ -31,11 +31,11 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
             
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_ModModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_ModModel.export_buffer_files()
-        M_ModModel.generate_unity_vs_config_ini()
+        M_IniModel.export_buffer_files()
+        M_IniModel.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
@@ -51,7 +51,7 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
 
     def execute(self, context):
         # GlobalTimer.Start("GenerateMod")
-        M_ModModel.initialzie()
+        M_IniModel.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
@@ -71,11 +71,11 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
             
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_ModModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_ModModel.export_buffer_files()
-        M_ModModel.generate_unity_cs_config_ini()
+        M_IniModel.export_buffer_files()
+        M_IniModel.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 

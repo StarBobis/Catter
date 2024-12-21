@@ -12,4 +12,12 @@ class M_IniHelper:
             ,"10":"Extra6","11":"Extra7","12":"Extra8"}
         return partname_gimi_alias_dict.get(partname,partname)
     
-    
+    @classmethod
+    def get_mod_switch_key(cls,key_index:int):
+        '''
+        Default mod switch/toggle key.
+        '''
+        key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
+                    "x","c","v","b","n","m","j","k","l","o","p","[","]",
+                    "x","c","v","b","n","m","j","k","l","o","p","[","]"]
+        return key_list[key_index]

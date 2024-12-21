@@ -6,7 +6,7 @@ from .m_drawib_model import *
 
 
 # 这个代表了整个Mod的导出模型，数据来源为一个命名空间,形态键数据要放到这里才行
-class M_ModModel:
+class M_IniModel:
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
     shapekeys = {}
 
@@ -29,21 +29,6 @@ class M_ModModel:
         cls.global_generate_mod_number = 0
 
         cls.vlr_filter_index_indent = ""
-
-
-    
-    @classmethod
-    def get_mod_switch_key(cls,key_index:int):
-        '''
-        Default mod switch/toggle key.
-        '''
-        key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]"]
-        return key_list[key_index]
-
-
-
 
     @classmethod
     def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
@@ -82,7 +67,7 @@ class M_ModModel:
                     key_section = M_IniSection(M_SectionType.Key)
                     key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
                     key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
-                    key_section.append("key = " + cls.get_mod_switch_key(cls.global_key_index_constants))
+                    key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
                     key_section.append("type = cycle")
                     
                     key_cycle_str = ""
@@ -103,7 +88,7 @@ class M_ModModel:
                         key_section = M_IniSection(M_SectionType.Key)
                         key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
                         key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
-                        key_section.append("key = " + cls.get_mod_switch_key(cls.global_key_index_constants))
+                        key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
                         key_section.append("type = cycle")
                         key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = 1,0")
                         key_section.new_line()
@@ -493,8 +478,6 @@ class M_ModModel:
 
         if not GenerateModConfig.generate_to_seperate_folder():
             ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
-
-
 
 
     @classmethod
