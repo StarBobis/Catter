@@ -10,7 +10,7 @@ class InputLayoutElement(object):
     SemanticName = ""
     SemanticIndex = ""
     Format = ""
-    # ByteWidth # 这里没有ByteWidth是因为靠EncoderDecoder来控制的
+    # ByteWidth # 这里没有ByteWidth是因为靠MigotoUtils.EncoderDecoder来控制的
     AlignedByteOffset = ""
     InputSlotClass = ""
     ElementName = ""
@@ -30,7 +30,7 @@ class InputLayoutElement(object):
         else:
             self.from_dict(arg)
 
-        self.encoder, self.decoder = EncoderDecoder(self.Format)
+        self.encoder, self.decoder = MigotoUtils.EncoderDecoder(self.Format)
     
     def read_attribute_line(self, f) -> bool:
         line = next(f).strip()
@@ -61,7 +61,7 @@ class InputLayoutElement(object):
     def from_file(self, f):
         while(self.read_attribute_line(f)):
             pass
-        self.format_len = format_components(self.Format)
+        self.format_len = MigotoUtils.format_components(self.Format)
         if self.SemanticIndex != 0:
             self.ElementName = self.SemanticName + str(self.SemanticIndex)
         else:
@@ -98,7 +98,7 @@ class InputLayoutElement(object):
         self.AlignedByteOffset = d['AlignedByteOffset']
         self.InputSlotClass = d['InputSlotClass']
         self.ElementName = d['ElementName']
-        self.format_len = format_components(self.Format)
+        self.format_len = MigotoUtils.format_components(self.Format)
 
     @property
     def name(self):
@@ -113,16 +113,16 @@ class InputLayoutElement(object):
         return data 
 
     def clip(self, data):
-        return data[:format_components(self.Format)]
+        return data[:MigotoUtils.format_components(self.Format)]
 
     def size(self):
-        return format_size(self.Format)
+        return MigotoUtils.format_size(self.Format)
 
     def is_float(self):
-        return misc_float_pattern.match(self.Format)
+        return MigotoUtils.misc_float_pattern.match(self.Format)
 
     def is_int(self):
-        return misc_int_pattern.match(self.Format)
+        return MigotoUtils.misc_int_pattern.match(self.Format)
 
     # 这个就是elem.encode 返回的是list类型的
     def encode(self, data):

@@ -19,7 +19,7 @@ class IndexBuffer(object):
         else:
             self.format, = args
 
-        self.encoder, self.decoder = EncoderDecoder(self.format)
+        self.encoder, self.decoder = MigotoUtils.EncoderDecoder(self.format)
 
     def append(self, face):
         self.faces.append(face)
@@ -47,7 +47,7 @@ class IndexBuffer(object):
 
     def parse_ib_bin(self, f):
         f.seek(self.offset)
-        stride = format_size(self.format)
+        stride = MigotoUtils.format_size(self.format)
         # XXX: Should we respect the first index?
         # f.seek(self.first * stride, whence=1)
         self.first = 0

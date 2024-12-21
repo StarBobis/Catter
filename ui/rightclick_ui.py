@@ -453,7 +453,7 @@ class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
             self.report({'ERROR'}, 'No modifier selected!')
             return {'FINISHED'}
         
-        success, errorInfo = apply_modifiers_for_object_with_shape_keys(context, selectedModifiers, self.disable_armatures)
+        success, errorInfo = ShapeKeyUtils.apply_modifiers_for_object_with_shape_keys(context, selectedModifiers, self.disable_armatures)
         
         if not success:
             self.report({'ERROR'}, errorInfo)
