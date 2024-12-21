@@ -4,7 +4,7 @@ import subprocess
 from .global_config import *
 
 
-class CommandHelper:
+class CommandUtils:
 
     @classmethod
     def OpenGeneratedModFolder(cls):

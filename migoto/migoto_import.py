@@ -386,7 +386,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
         obj.rotation_euler[2] = 0.0  # Z轴
 
     # Set scale by user setting when import model.
-    scalefactor = get_import_model_scale()
+    scalefactor = bpy.context.scene.dbmt.model_scale
     obj.scale = scalefactor,scalefactor,scalefactor
 
     # Flush every time export

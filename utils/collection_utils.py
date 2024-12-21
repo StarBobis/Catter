@@ -83,7 +83,6 @@ class CollectionUtils:
     
     @classmethod
     # 解析DrawIB为名称的集合，解析为export.json的dict字典形式
-    # TODO 因为目前我们每个DrawIB对应的ExportModel文件夹都要有一个export.json
     def parse_drawib_collection_to_export_json(cls,draw_ib_collection) -> dict:
         export_json_dict = {}
         for component_collection in draw_ib_collection.children:

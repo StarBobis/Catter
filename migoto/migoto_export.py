@@ -135,7 +135,6 @@ class HashableVertex(dict):
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 def get_export_ib_vb(context):
-    # GlobalTimer.Start("get_export_ib_vb")
     print("导出是否保持相同顶点数：" + str(GenerateModConfig.export_same_number()))
     # 获取当前场景中的obj对象
     obj = context.object
@@ -255,7 +254,6 @@ def get_export_ib_vb(context):
         # operator.report({'INFO'},"导出时重新计算COLOR")
         print("导出时重新计算COLOR")
         vb.arithmetic_average_normal_to_color()
-    # GlobalTimer.End()
     return ib, vb
 
 

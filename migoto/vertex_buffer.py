@@ -1,7 +1,6 @@
 
 from ..utils.migoto_utils import *
 from .input_layout import *
-from ..utils.global_config import GlobalTimer
 
 class VertexBuffer(object):
     vb_elem_pattern = re.compile(r'''vb\d+\[\d*\]\+\d+ (?P<semantic>[^:]+): (?P<data>.*)$''')
@@ -71,7 +70,6 @@ class VertexBuffer(object):
         '''
         要特别注意，返回的是ElementName, List[Int]类型的bytelist，写出的时候需要转换为bytearray
         '''
-        # GlobalTimer.Start("convert_to_elementname_buf_file_dict")
         model_elementname_buf_dict = {}
 
         # 根据数据类型的CategoryStrideDict，截取后追加到每个Category的Buf里
@@ -83,7 +81,6 @@ class VertexBuffer(object):
                 model_elementname_buf_dict[elementname].extend(bytelist)
 
         # print(type(model_elementname_buf_dict["POSITION"]))
-        # GlobalTimer.End()
         return model_elementname_buf_dict
 
         

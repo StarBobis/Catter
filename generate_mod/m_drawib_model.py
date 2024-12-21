@@ -60,7 +60,6 @@ class DrawIBModel:
 
 
     def __parse_drawib_collection(self,draw_ib_collection):
-        # GlobalTimer.Start("parse_drawib_collection: " + draw_ib_collection.name)
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
         # 构建一个export.json，记录当前集合所有object层级关系
         self.export_json_dict = CollectionUtils.parse_drawib_collection_to_export_json(draw_ib_collection)
@@ -109,7 +108,6 @@ class DrawIBModel:
 
                         self.obj_name_ib_dict[obj.name] = ib
                         self.obj_name_vb_dict[obj.name] = vb
-        # GlobalTimer.End() # TODO 这里一个1w左右顶点的导出了10秒，运行速度太慢
 
 
     def __read_component_ib_buf_dict(self):
@@ -147,7 +145,6 @@ class DrawIBModel:
     
     
     def __read_categoryname_bytelist_dict(self):
-        # GlobalTimer.Start("read_categoryname_finalbuf_dict")
         for component_name, component_value in self.export_json_dict.items():
             for model_name, model_value in component_value.items():
                 model_list = model_value["model"]
@@ -232,7 +229,6 @@ class DrawIBModel:
         position_stride = d3d11gametype.CategoryStrideDict["Position"]
         position_bytelength = len(self.categoryname_bytelist_dict["Position"])
         self.draw_number = int(position_bytelength/position_stride)
-        # GlobalTimer.End()
 
         
 

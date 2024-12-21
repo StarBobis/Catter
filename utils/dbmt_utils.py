@@ -2,7 +2,6 @@ import os
 import bpy
 import json
 import subprocess
-from .property_utils import *
 from .global_config import *
 
 
@@ -108,7 +107,6 @@ class DBMTUtils:
 
 
     # Read import model name list from tmp.json.
-    # TODO Deprecated 
     @classmethod
     def get_prefix_list_from_tmp_json(cls,import_folder_path:str) ->list:
         

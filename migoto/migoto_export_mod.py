@@ -1,6 +1,6 @@
 import bpy
 
-from ..utils.command_helper import *
+from ..utils.command_utils import *
 from ..generate_mod.m_ini_model import *
         
 
@@ -10,7 +10,6 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
-        # GlobalTimer.Start("GenerateMod")
         M_IniModel.initialzie()
 
         workspace_collection = bpy.context.collection
@@ -39,8 +38,7 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
 
         self.report({'INFO'},"Generate Mod Success!")
 
-        CommandHelper.OpenGeneratedModFolder()
-        # GlobalTimer.End()  经过测试，效率和直接一键导出工作空间集合中的模型基本一样，相差400ms
+        CommandUtils.OpenGeneratedModFolder()
         return {'FINISHED'}
     
 
@@ -50,7 +48,6 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
-        # GlobalTimer.Start("GenerateMod")
         M_IniModel.initialzie()
 
         workspace_collection = bpy.context.collection
@@ -79,7 +76,6 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
 
         self.report({'INFO'},"Generate Mod Success!")
 
-        CommandHelper.OpenGeneratedModFolder()
-        # GlobalTimer.End()  经过测试，效率和直接一键导出工作空间集合中的模型基本一样，相差400ms
+        CommandUtils.OpenGeneratedModFolder()
         return {'FINISHED'}
 

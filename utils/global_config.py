@@ -1,96 +1,6 @@
 import bpy
 import os
 import json
-from datetime import datetime
-
-class GlobalTimer:
-    run_start = None
-    run_end = None
-    current_execute_methodname = ""
-
-    @classmethod
-    def Start(cls,func_name:str):
-        # 清空run_start和run_end，并将run_start设为当前时间
-        cls.run_start = datetime.now()
-        cls.run_end = None
-        cls.current_execute_methodname = func_name
-        print("\n" +cls.current_execute_methodname + f" started at: {cls.run_start} ")
-
-    @classmethod
-    def End(cls):
-        if cls.run_start is None:
-            print("Timer has not been started. Call Start() first.")
-            return
-        
-        # 将run_end设为当前时间
-        cls.run_end = datetime.now()
-        
-        # 计算时间差
-        time_diff = cls.run_end - cls.run_start
-        
-        # 打印时间差
-        print(cls.current_execute_methodname + f" time elapsed: {time_diff} \n")
-        
-        # 将run_start更新为当前时间
-        cls.run_start = cls.run_end
-        # print(f"Timer updated start to: {cls.run_start}")
-
-
-# 生成Mod时的配置类，通过易懂的方法名获取一大长串难记的Blender属性值
-# 这样开发的时候方便了反正
-class GenerateModConfig:
-
-    @classmethod
-    def open_generated_mod_folder_after_run(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
-        '''
-        return bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
-    
-    @classmethod
-    def hash_style_auto_texture(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-        '''
-        return bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-    
-    
-    @classmethod
-    def forbid_auto_texture_ini(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
-        '''
-        return bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
-    
-    @classmethod
-    def generate_to_seperate_folder(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
-        '''
-        return bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
-    
-    @classmethod
-    def author_name(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.credit_info_author_name
-        '''
-        return bpy.context.scene.dbmt_generatemod.credit_info_author_name
-    
-    @classmethod
-    def author_link(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
-        '''
-        return bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
-    
-    @classmethod
-    def export_same_number(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.export_same_number
-        '''
-        return bpy.context.scene.dbmt_generatemod.export_same_number
-    
-
 
 class GameCategory:
     UnityVS = "UnityVS"
@@ -98,7 +8,6 @@ class GameCategory:
     UnrealCS = "UnrealCS"
     UnrealVS = "UnrealVS"
     Unknown = "Unknown"
-
 
 # 全局配置类，使用字段默认为全局可访问的唯一静态变量的特性，来实现全局变量
 # 可减少从Main.json中读取的IO消耗
@@ -204,7 +113,59 @@ class MainConfig:
     def path_main_json(cls):
         return os.path.join(MainConfig.path_configs_folder(), "Main.json")
     
+
+
+# 生成Mod时的配置类，通过易懂的方法名获取一大长串难记的Blender属性值
+# 这样开发的时候方便了反正
+class GenerateModConfig:
+
+    @classmethod
+    def open_generated_mod_folder_after_run(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
+        '''
+        return bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
     
-
-
+    @classmethod
+    def hash_style_auto_texture(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
+        '''
+        return bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
+    
+    
+    @classmethod
+    def forbid_auto_texture_ini(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
+        '''
+        return bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
+    
+    @classmethod
+    def generate_to_seperate_folder(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
+        '''
+        return bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
+    
+    @classmethod
+    def author_name(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.credit_info_author_name
+        '''
+        return bpy.context.scene.dbmt_generatemod.credit_info_author_name
+    
+    @classmethod
+    def author_link(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
+        '''
+        return bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
+    
+    @classmethod
+    def export_same_number(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.export_same_number
+        '''
+        return bpy.context.scene.dbmt_generatemod.export_same_number
     

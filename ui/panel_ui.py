@@ -10,6 +10,15 @@ from ..utils.global_config import *
 
 from ..migoto.migoto_export_mod import *
 
+# 用于绘制分割线，由于3.6和4.2行为不一样所以做了包装方法
+def draw_seperator(self):
+    layout = self.layout
+
+    if bpy.app.version < (4,2,0):
+        layout.separator()
+    else:
+        layout.separator(type="LINE")
+
 
 # 用于选择DBMT所在文件夹，主要是这里能自定义逻辑从而实现保存DBMT路径，这样下次打开就还能读取到。
 class OBJECT_OT_select_dbmt_folder(bpy.types.Operator):
