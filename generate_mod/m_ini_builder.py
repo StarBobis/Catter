@@ -72,20 +72,21 @@ class M_IniBuilder:
 
         sha256 = self.calculate_sha256_for_list(self.line_list)
         # print("sha256: " + sha256)
-        self.line_list.append("\n;sha256=" + sha256 + "\n\n")
+
+        # Add after sha256 calculation.
+        self.line_list.append("\n;sha256=" + sha256 + "\n\n") 
 
         # Read ini and find sha256, if not same then write ini, if same do nothing.
         ini_sha256 = self.get_sha256_from_ini(config_ini_path)
-
-        print("old ini sha256: " + ini_sha256)
-        print("new ini sha256: " + sha256)
-
+        # print("old ini sha256: " + ini_sha256)
+        # print("new ini sha256: " + sha256)
         if ini_sha256 != sha256:
             print("Write new mod ini because sha256 is not same.")
             with open(config_ini_path,"w") as f:
                 f.writelines(self.line_list)
         else:
             print("Skip write mod ini becuase sha256 is same, ini file content not changed so we are safe to skip.")
+
 
     def calculate_sha256_for_list(self,string_list):
         # 创建一个新的sha256哈希对象
@@ -105,12 +106,7 @@ class M_IniBuilder:
         """
         读取指定路径的INI文件，找到以;sha256=开头的行，
         并返回该行中;sha256=后面的内容（去除前后空白字符）。
-        
-        参数:
-            ini_file_path (str): INI 文件的路径
-            
-        返回:
-            str 或 None: 如果找到了匹配的行，则返回其内容；否则返回None。
+        找不到或者出错则返回空字符串
         """
         sha256_value = ""
         

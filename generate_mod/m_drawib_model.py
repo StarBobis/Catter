@@ -10,6 +10,8 @@ from ..utils.collection_utils import *
 from ..utils.global_config import *
 from ..utils.json_utils import *
 
+from .m_ini_helper import *
+
 
 # TODO remove this later.
 class ModelCollection:
@@ -259,3 +261,23 @@ class DrawIBModel:
 
                 self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
             self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
+    
+    def write_buffer_files(self):
+        # Export IndexBuffer files.
+        for partname in self.part_name_list:
+            component_name = "Component " + partname
+            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
+            if ib_buf is None:
+                print("Export Failed, Can't get ib buf for partname: " + partname)
+            else:
+                ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
+                with open(ib_path, 'wb') as ibf:
+                    for ib_byte_number in ib_buf:
+                        ibf.write(ib_byte_number) 
+
+        # Export category buffer files.
+        for category_name, category_buf in self.categoryname_bytelist_dict.items():
+            buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + category_name + ".buf"
+            buf_bytearray = bytearray(category_buf)
+            with open(buf_path, 'wb') as ibf:
+                ibf.write(buf_bytearray)

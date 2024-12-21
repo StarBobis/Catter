@@ -30,16 +30,7 @@ class M_ModModel:
 
         cls.vlr_filter_index_indent = ""
 
-    @classmethod
-    def get_style_alias(cls,partname:str):
-        '''
-        Convert to GIMI name style because it's widely used by Mod author.
-        '''
-        partname_gimi_alias_dict = {
-            "1":"Head","2":"Body","3":"Dress","4":"Extra"
-            ,"5":"Extra1","6":"Extra2","7":"Extra3","8":"Extra4","9":"Extra5"
-            ,"10":"Extra6","11":"Extra7","12":"Extra8"}
-        return partname_gimi_alias_dict.get(partname,partname)
+
     
     @classmethod
     def get_mod_switch_key(cls,key_index:int):
@@ -186,7 +177,7 @@ class M_ModModel:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = cls.get_style_alias(part_name)
+            style_part_name = M_IniHelper.get_style_alias(part_name)
             ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
 
             texture_override_ib_section.append("[TextureOverride_IB_" + draw_ib + "_" + style_part_name + "]")
@@ -345,7 +336,7 @@ class M_ModModel:
         '''
         for count_i in range(len(draw_ib_model.part_name_list)):
             partname = draw_ib_model.part_name_list[count_i]
-            style_partname = cls.get_style_alias(partname)
+            style_partname = M_IniHelper.get_style_alias(partname)
             ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
             resource_ib_section = M_IniSection(M_SectionType.ResourceIB)
@@ -456,25 +447,8 @@ class M_ModModel:
         '''
         Export to buffer files from ib and vb.
         '''
-        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            # Export IndexBuffer files.
-            for partname in draw_ib_model.part_name_list:
-                component_name = "Component " + partname
-                ib_buf = draw_ib_model.componentname_ibbuf_dict.get(component_name,None)
-                if ib_buf is None:
-                    print("Export Failed, Can't get ib buf for partname: " + partname)
-                else:
-                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + cls.get_style_alias(partname) + ".buf"
-                    with open(ib_path, 'wb') as ibf:
-                        for ib_byte_number in ib_buf:
-                            ibf.write(ib_byte_number) 
-
-            # Export category buffer files.
-            for category_name, category_buf in draw_ib_model.categoryname_bytelist_dict.items():
-                buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=draw_ib) + draw_ib + "-" + category_name + ".buf"
-                buf_bytearray = bytearray(category_buf)
-                with open(buf_path, 'wb') as ibf:
-                    ibf.write(buf_bytearray)
+        for draw_ib_model in cls.drawib_drawibmodel_dict.values():
+            draw_ib_model.write_buffer_files()
         
         # TODO WWMI need to output shapekey buffers.
         if len(cls.shapekeys) != 0:
@@ -585,7 +559,7 @@ class M_ModModel:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = cls.get_style_alias(part_name)
+            style_part_name = M_IniHelper.get_style_alias(part_name)
             ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
 
             texture_override_ib_section.append("[TextureOverride_IB_" + draw_ib + "_" + style_part_name + "]")
