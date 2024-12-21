@@ -58,7 +58,7 @@ class CatterProperties(bpy.types.PropertyGroup):
     path: bpy.props.StringProperty(
         name="DBMT-GUI.exe所在路径",
         description="插件需要先选择DBMT-GUI.exe的所在路径才能正常工作",
-        default=DBMTUtils.load_dbmt_path(),
+        default=MainConfig.load_dbmt_path(),
         subtype='DIR_PATH'
     ) # type: ignore
 

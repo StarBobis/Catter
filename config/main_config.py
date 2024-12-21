@@ -2,6 +2,8 @@ import bpy
 import os
 import json
 
+from .generate_mod_config import *
+
 class GameCategory:
     UnityVS = "UnityVS"
     UnityCS = "UnityCS"
@@ -15,6 +17,48 @@ class MainConfig:
     # 全局静态变量,任何地方访问到的值都是唯一的
     gamename = ""
     workspacename = ""
+
+    @classmethod
+    def save_dbmt_path(cls):
+        # 获取当前脚本文件的路径
+        script_path = os.path.abspath(__file__)
+
+        # 获取当前插件的工作目录
+        plugin_directory = os.path.dirname(script_path)
+
+        # 构建保存文件的路径
+        config_path = os.path.join(plugin_directory, 'Config.json')
+
+        # 创建字典对象
+        config = {'dbmt_path': bpy.context.scene.dbmt.path}
+
+        # 将字典对象转换为 JSON 格式的字符串
+        json_data = json.dumps(config)
+
+        # 保存到文件
+        with open(config_path, 'w') as file:
+            file.write(json_data)
+
+    @classmethod
+    def load_dbmt_path(cls):
+        # 获取当前脚本文件的路径
+        script_path = os.path.abspath(__file__)
+
+        # 获取当前插件的工作目录
+        plugin_directory = os.path.dirname(script_path)
+
+        # 构建配置文件的路径
+        config_path = os.path.join(plugin_directory, 'Config.json')
+
+        # 读取文件
+        with open(config_path, 'r') as file:
+            json_data = file.read()
+
+        # 将 JSON 格式的字符串解析为字典对象
+        config = json.loads(json_data)
+
+        # 读取保存的路径
+        return config['dbmt_path']
 
     @classmethod
     def get_game_category(cls) -> str:
@@ -114,58 +158,3 @@ class MainConfig:
         return os.path.join(MainConfig.path_configs_folder(), "Main.json")
     
 
-
-# 生成Mod时的配置类，通过易懂的方法名获取一大长串难记的Blender属性值
-# 这样开发的时候方便了反正
-class GenerateModConfig:
-
-    @classmethod
-    def open_generated_mod_folder_after_run(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
-        '''
-        return bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
-    
-    @classmethod
-    def hash_style_auto_texture(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-        '''
-        return bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-    
-    
-    @classmethod
-    def forbid_auto_texture_ini(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
-        '''
-        return bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
-    
-    @classmethod
-    def generate_to_seperate_folder(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
-        '''
-        return bpy.context.scene.dbmt_generatemod.generate_to_seperate_folder
-    
-    @classmethod
-    def author_name(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.credit_info_author_name
-        '''
-        return bpy.context.scene.dbmt_generatemod.credit_info_author_name
-    
-    @classmethod
-    def author_link(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
-        '''
-        return bpy.context.scene.dbmt_generatemod.credit_info_author_social_link
-    
-    @classmethod
-    def export_same_number(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.export_same_number
-        '''
-        return bpy.context.scene.dbmt_generatemod.export_same_number
-    

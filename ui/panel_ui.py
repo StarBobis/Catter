@@ -6,7 +6,7 @@ from ..utils.migoto_utils import *
 from ..utils.dbmt_utils import *
 from ..migoto.input_layout import InputLayout
 
-from ..config.global_config import * 
+from ..config.main_config import * 
 
 from ..migoto.migoto_export_mod import *
 
@@ -37,7 +37,7 @@ class OBJECT_OT_select_dbmt_folder(bpy.types.Operator):
             print(f"Selected folder: {self.directory}")
             # 在这里放置你想要执行的逻辑
             # 比如验证路径是否有效、初始化某些资源等
-            DBMTUtils.save_dbmt_path()
+            MainConfig.save_dbmt_path()
             
             self.report({'INFO'}, f"Folder selected: {self.directory}")
         else:
