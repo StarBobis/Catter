@@ -133,7 +133,7 @@ class DrawIBModel:
                     draw_number = len(obj_ib_buf) * 3
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(offset)
-                    drawindexed_obj.AliasName = "obj name: " + obj_name + "  (VertexCount:" + str(unique_vertex_number) + ")"
+                    drawindexed_obj.AliasName = "collection name: [" + model_name + "] obj name: [" + obj_name + "]  (VertexCount:" + str(unique_vertex_number) + ")"
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     offset = offset + draw_number
 
