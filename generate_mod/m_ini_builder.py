@@ -8,8 +8,7 @@ class M_SectionType:
     TextureOverrideVB = "TextureOverrideVB"
     TextureOverrideTexture = "TextureOverrideTexture"
     IBSkip = "IBSkip"
-    ResourceVB = "ResourceVB"
-    ResourceIB = "ResourceIB"
+    ResourceBuffer = "ResourceBuffer"
     ResourceTexture = "ResourceTexture"
     CreditInfo = "CreditInfo"
     VSHashCheck = "VSHashCheck"
@@ -61,8 +60,7 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideVB)
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
-        self.__append_section_line(M_SectionType.ResourceIB)
-        self.__append_section_line(M_SectionType.ResourceVB)
+        self.__append_section_line(M_SectionType.ResourceBuffer)
         self.__append_section_line(M_SectionType.ResourceTexture)
 
         self.__append_section_line(M_SectionType.TextureOverrideTexture)

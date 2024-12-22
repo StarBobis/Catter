@@ -293,24 +293,42 @@ class M_IniModel:
 
     @classmethod
     def add_unity_vs_resource_vb_sections(cls,ini_builder,draw_ib_model):
-            '''
-            Add Resource VB Section
-            '''
-            resource_vb_section = M_IniSection(M_SectionType.ResourceVB)
-            for category_name in draw_ib_model.d3d11GameType.OrderedCategoryNameList:
-                resource_vb_section.append("[Resource" + draw_ib_model.draw_ib + category_name + "]")
-                resource_vb_section.append("type = Buffer")
+        '''
+        Add Resource VB Section
+        '''
+        resource_vb_section = M_IniSection(M_SectionType.ResourceBuffer)
+        for category_name in draw_ib_model.d3d11GameType.OrderedCategoryNameList:
+            resource_vb_section.append("[Resource" + draw_ib_model.draw_ib + category_name + "]")
+            resource_vb_section.append("type = Buffer")
 
-                if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
-                    blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
-                    resource_vb_section.append("stride = " + str(blend_stride))
-                else:
-                    resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
-                
-                resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
-                resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
+            if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
+                blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
+                resource_vb_section.append("stride = " + str(blend_stride))
+            else:
+                resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
             
-            ini_builder.append_section(resource_vb_section)
+            resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
+            resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
+            resource_vb_section.new_line()
+        
+        '''
+        Add Resource IB Section
+
+        We default use R32_UINT because R16_UINT have a very small number limit.
+        '''
+        for count_i in range(len(draw_ib_model.part_name_list)):
+            partname = draw_ib_model.part_name_list[count_i]
+            style_partname = M_IniHelper.get_style_alias(partname)
+            ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
+
+            
+            resource_vb_section.append("[" + ib_resource_name + "]")
+            resource_vb_section.append("type = Buffer")
+            resource_vb_section.append("format = DXGI_FORMAT_R32_UINT")
+            resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + style_partname + ".buf")
+            resource_vb_section.new_line()
+
+        ini_builder.append_section(resource_vb_section)
 
     @classmethod
     def add_resource_ib_sections(cls,ini_builder,draw_ib_model):
@@ -324,7 +342,7 @@ class M_IniModel:
             style_partname = M_IniHelper.get_style_alias(partname)
             ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
-            resource_ib_section = M_IniSection(M_SectionType.ResourceIB)
+            resource_ib_section = M_IniSection(M_SectionType.ResourceBuffer)
             resource_ib_section.append("[" + ib_resource_name + "]")
             resource_ib_section.append("type = Buffer")
             resource_ib_section.append("format = DXGI_FORMAT_R32_UINT")
@@ -460,7 +478,6 @@ class M_IniModel:
             cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
 
             cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
@@ -651,31 +668,49 @@ class M_IniModel:
 
     @classmethod
     def add_unity_cs_resource_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
-            '''
-            Add Resource VB Section
-            '''
-            resource_vb_section = M_IniSection(M_SectionType.ResourceVB)
-            for category_name in draw_ib_model.d3d11GameType.OrderedCategoryNameList:
-                resource_vb_section.append("[Resource" + draw_ib_model.draw_ib + category_name + "]")
+        '''
+        Add Resource VB Section
+        '''
+        resource_vb_section = M_IniSection(M_SectionType.ResourceBuffer)
+        for category_name in draw_ib_model.d3d11GameType.OrderedCategoryNameList:
+            resource_vb_section.append("[Resource" + draw_ib_model.draw_ib + category_name + "]")
 
-                if draw_ib_model.d3d11GameType.GPU_PreSkinning:
-                    if category_name == "Position" or category_name == "Blend":
-                        resource_vb_section.append("type = ByteAddressBuffer")
-                    else:
-                        resource_vb_section.append("type = Buffer")
+            if draw_ib_model.d3d11GameType.GPU_PreSkinning:
+                if category_name == "Position" or category_name == "Blend":
+                    resource_vb_section.append("type = ByteAddressBuffer")
                 else:
                     resource_vb_section.append("type = Buffer")
+            else:
+                resource_vb_section.append("type = Buffer")
 
-                if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
-                    blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
-                    resource_vb_section.append("stride = " + str(blend_stride))
-                else:
-                    resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
-                
-                resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
-                resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
+            if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
+                blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
+                resource_vb_section.append("stride = " + str(blend_stride))
+            else:
+                resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
             
-            ini_builder.append_section(resource_vb_section)
+            resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
+            resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
+            resource_vb_section.new_line()
+        
+        '''
+        Add Resource IB Section
+
+        We default use R32_UINT because R16_UINT have a very small number limit.
+        '''
+        for count_i in range(len(draw_ib_model.part_name_list)):
+            partname = draw_ib_model.part_name_list[count_i]
+            style_partname = M_IniHelper.get_style_alias(partname)
+            ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
+
+            
+            resource_vb_section.append("[" + ib_resource_name + "]")
+            resource_vb_section.append("type = Buffer")
+            resource_vb_section.append("format = DXGI_FORMAT_R32_UINT")
+            resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + style_partname + ".buf")
+            resource_vb_section.new_line()
+        
+        ini_builder.append_section(resource_vb_section)
     
     @classmethod
     def generate_unity_cs_config_ini(cls):
@@ -692,7 +727,6 @@ class M_IniModel:
             cls.add_unity_cs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model) 
 
             cls.add_unity_cs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model) 
             cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
 
             cls.move_slot_style_textures(draw_ib_model=draw_ib_model)

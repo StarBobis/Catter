@@ -1,6 +1,7 @@
 
 from ..utils.migoto_utils import *
 from .input_layout import *
+from ..config.generate_mod_config import *
 
 class VertexBuffer(object):
     vb_elem_pattern = re.compile(r'''vb\d+\[\d*\]\+\d+ (?P<semantic>[^:]+): (?P<data>.*)$''')
@@ -191,7 +192,10 @@ class VertexBuffer(object):
                 vertex["TANGENT"][0] = normalized_normal[0]
                 vertex["TANGENT"][1] = normalized_normal[1]
                 vertex["TANGENT"][2] = normalized_normal[2]
-                if bpy.context.scene.dbmt.flip_tangent_w:
+
+                # 注意：这里的flip_tangent_w单独调用，并不会和顶点计算时冲突
+                # 因为这里的w分量是现场计算得来的而不是顶点中获取的
+                if GenerateModConfig.flip_tangent_w():
                     vertex["TANGENT"][3] = -1 * w
                 else:
                     vertex["TANGENT"][3] = w
