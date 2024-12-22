@@ -59,6 +59,7 @@ register_classes = (
     PanelModelWorkSpaceIO,
     PanelGenerateMod,
     MigotoAttributePanel,
+    DeveloperPanel,
 
     # Select DBMT Path op
     OBJECT_OT_select_dbmt_folder

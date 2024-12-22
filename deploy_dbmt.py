@@ -13,6 +13,7 @@ class FileUpdate:
     @classmethod
     def safe_copy2(cls,filename:str,source_folder_path:str,target_folder_path:str):
         if os.path.exists(source_folder_path) and os.path.exists(target_folder_path):
+            print("copy " + filename + " to " + target_folder_path)
             shutil.copyfile(source_folder_path + filename, target_folder_path + filename)
         else:
             print("Source file doesn't exisits.")

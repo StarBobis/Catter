@@ -89,7 +89,7 @@ class CatterProperties(bpy.types.PropertyGroup):
     ) # type: ignore
     # ------------------------------------------------------------------------------------------------------------
     flip_tangent_w:bpy.props.BoolProperty(
-        name="",
+        name="翻转TANGENT的W分量",
         description="翻转TANGENT.xyzw的w分量, 目前只有Unity游戏需要翻转这个w分量",
         default=False
     ) # type: ignore

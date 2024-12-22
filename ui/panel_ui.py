@@ -75,29 +75,11 @@ class CatterConfigUI(bpy.types.Panel):
 
         draw_seperator(self)
 
-        layout.label(text="翻转NORMAL分量")
-        row = layout.row()
-       
-        row.prop(dbmt_config, "flip_normal_x", text="X")
-        row.prop(dbmt_config, "flip_normal_y", text="Y")
-        row.prop(dbmt_config, "flip_normal_z", text="Z")
-        row.prop(dbmt_config, "flip_normal_w", text="W")
 
-        draw_seperator(self)
-
-        layout.label(text="翻转TANGENT分量")
-        row = layout.row()
-       
-        row.prop(dbmt_config, "flip_tangent_x", text="X")
-        row.prop(dbmt_config, "flip_tangent_y", text="Y")
-        row.prop(dbmt_config, "flip_tangent_z", text="Z")
-        row.prop(dbmt_config, "flip_tangent_w", text="W")
-
-        draw_seperator(self)
         
       
         layout.prop(dbmt_config,"import_merged_vgmap",text="使用重映射的全局顶点组")
-        layout.prop(dbmt_config,"model_scale")
+        
         
 
 
@@ -112,16 +94,13 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
-        row = layout.row()
-
+        dbmt_config = context.scene.dbmt
         MainConfig.read_from_main_json()
-        row.label(text="当前工作空间: " + MainConfig.workspacename)
-
+        layout.label(text="当前工作空间: " + MainConfig.workspacename)
+        layout.prop(dbmt_config,"model_scale")
+        draw_seperator(self)
         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
-
-        draw_seperator(self)
 
         layout.operator("dbmt.import_all_from_workspace", text="一键导入当前工作空间内容")
 
@@ -136,6 +115,7 @@ class PanelGenerateMod(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         generatemod_config = context.scene.dbmt_generatemod
+        dbmt_config = context.scene.dbmt
         # Don't add credit info unless mod author think it must be add.
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_name")
         # layout.prop(context.scene.dbmt_generatemod, "credit_info_author_social_link")
@@ -144,6 +124,7 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(generatemod_config, "hash_style_auto_texture")
         layout.prop(generatemod_config, "forbid_auto_texture_ini")
         layout.prop(generatemod_config, "generate_to_seperate_folder")
+        layout.prop(dbmt_config, "flip_tangent_w")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace")
@@ -224,4 +205,37 @@ class MigotoAttributePanel(bpy.types.Panel):
             # 如果没有选中的对象，则显示提示信息
             row = layout.row()
             row.label(text="未选中mesh对象")
+
+
+class DeveloperPanel(bpy.types.Panel):
+    '''
+    仅用于开发新游戏支持时会用到，比如测试由于坐标系不同导致的NORMAL、TANGENT各个分量属性需要翻转等功能。
+    '''
+    bl_label = "开发者面板" 
+    bl_idname = "VIEW3D_PT_CATTER_Developer_panel"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Catter'
+
+    def draw(self, context):
+        layout = self.layout
+        dbmt_config = context.scene.dbmt
+
+        layout.label(text="翻转NORMAL分量")
+        row = layout.row()
+       
+        row.prop(dbmt_config, "flip_normal_x", text="X")
+        row.prop(dbmt_config, "flip_normal_y", text="Y")
+        row.prop(dbmt_config, "flip_normal_z", text="Z")
+        row.prop(dbmt_config, "flip_normal_w", text="W")
+
+        draw_seperator(self)
+
+        layout.label(text="翻转TANGENT分量")
+        row = layout.row()
+       
+        row.prop(dbmt_config, "flip_tangent_x", text="X")
+        row.prop(dbmt_config, "flip_tangent_y", text="Y")
+        row.prop(dbmt_config, "flip_tangent_z", text="Z")
+        row.prop(dbmt_config, "flip_tangent_w", text="W")
 
