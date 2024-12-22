@@ -44,26 +44,26 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
 
-            if bpy.context.scene.dbmt.flip_normal_x:
+            if GenerateModConfig.flip_normal_x():
                 vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            if bpy.context.scene.dbmt.flip_normal_y:
+            if GenerateModConfig.flip_normal_y():
                 vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            if bpy.context.scene.dbmt.flip_normal_z:
+            if GenerateModConfig.flip_normal_z():
                 vertex[elem.name][2] = -1 * vertex[elem.name][2]
-            if bpy.context.scene.dbmt.flip_normal_w:
+            if GenerateModConfig.flip_normal_w():
                 if len(vertex[elem.name]) == 4:
                     vertex[elem.name][3] = -1 * vertex[elem.name][3]
 
         elif elem.name.startswith('TANGENT'):
             # Nico: Unity games need to flip TANGENT.w to get perfect shadow.
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), blender_loop_vertex.bitangent_sign)
-            if bpy.context.scene.dbmt.flip_tangent_x:
+            if GenerateModConfig.flip_tangent_x():
                 vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            if bpy.context.scene.dbmt.flip_tangent_y:
+            if GenerateModConfig.flip_tangent_y():
                 vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            if bpy.context.scene.dbmt.flip_tangent_z:
+            if GenerateModConfig.flip_tangent_z():
                 vertex[elem.name][2] = -1 * vertex[elem.name][2]
-            if bpy.context.scene.dbmt.flip_tangent_w:
+            if GenerateModConfig.flip_tangent_w():
                 vertex[elem.name][3] = -1 * vertex[elem.name][3]
 
         elif elem.name.startswith('COLOR'):

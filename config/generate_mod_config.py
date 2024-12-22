@@ -1,7 +1,7 @@
 import bpy
 
-# 生成Mod时的配置类，通过易懂的方法名获取一大长串难记的Blender属性值
-# 这样开发的时候方便了反正
+# Simple Class to get attributes.
+# easy to use, safe to modifiy.
 class GenerateModConfig:
 
     @classmethod
@@ -53,4 +53,60 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.export_same_number
         '''
         return bpy.context.scene.dbmt_generatemod.export_same_number
+    
+    @classmethod
+    def flip_normal_x(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_normal_x
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_normal_x
+
+    @classmethod
+    def flip_normal_y(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_normal_y
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_normal_y
+    
+    @classmethod
+    def flip_normal_z(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_normal_z
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_normal_z
+    
+    @classmethod
+    def flip_normal_w(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_normal_w
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_normal_w
+    
+    @classmethod
+    def flip_tangent_x(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_tangent_x
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_tangent_x\
+    
+    @classmethod
+    def flip_tangent_y(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_tangent_y
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_tangent_y
+    
+    @classmethod
+    def flip_tangent_z(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_tangent_z
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_tangent_z
+    
+    @classmethod
+    def flip_tangent_w(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.flip_tangent_w
+        '''
+        return bpy.context.scene.dbmt_generatemod.flip_tangent_w
     

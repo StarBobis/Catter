@@ -35,58 +35,13 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
-    # ------------------------------------------------------------------------------------------------------------
-    # I don't think write author name and author link and other information on blender panel is a good idea.
-    # Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
-    # So default add is not a good idea, not goods enough to let every author happy.
-    credit_info_author_name: bpy.props.StringProperty(
-        name="作者昵称",
-        description="作者的昵称",
-        default=""
-    ) # type: ignore
-
-    credit_info_author_social_link: bpy.props.StringProperty(
-        name="赞助链接",
-        description="用于赞助该作者的赞助链接",
-        default=""
-    ) # type: ignore
-
-
-
-class CatterProperties(bpy.types.PropertyGroup):
-    # ------------------------------------------------------------------------------------------------------------
-    path: bpy.props.StringProperty(
-        name="DBMT-GUI.exe所在路径",
-        description="插件需要先选择DBMT-GUI.exe的所在路径才能正常工作",
-        default=MainConfig.load_dbmt_path(),
-        subtype='DIR_PATH'
-    ) # type: ignore
-
-    # ------------------------------------------------------------------------------------------------------------
-    model_extract_output_path: bpy.props.StringProperty(
-        name="",
-        description="FrameAnalysis提取出的模型文件默认存放路径",
-        default="",
-        subtype='DIR_PATH'
-    ) # type: ignore
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    model_scale: FloatProperty(
-        name="导入模型整体缩放比例",
-        description="默认为1.0",
-        default=1.0,
-    ) # type: ignore
-
-    # ------------------------------------------------------------------------------------------------------------
-
-
-
     export_normalize_all: bpy.props.BoolProperty(
-        name="",
+        name="导出时权重自动规格化",
         description="导出时把模型自动规格化权重，防止忘记手动规格化导致模型塌陷问题。",
         default=False
     ) # type: ignore
+
+
     # ------------------------------------------------------------------------------------------------------------
     flip_tangent_w:bpy.props.BoolProperty(
         name="翻转TANGENT的W分量",
@@ -136,15 +91,48 @@ class CatterProperties(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+
+
+class CatterPropertiesCreditInfo(bpy.types.PropertyGroup):
+    # ------------------------------------------------------------------------------------------------------------
+    # I don't think write author name and author link and other information on blender panel is a good idea.
+    # Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
+    # So default add is not a good idea, not goods enough to let every author happy.
+    credit_info_author_name: bpy.props.StringProperty(
+        name="作者昵称",
+        description="作者的昵称",
+        default=""
+    ) # type: ignore
+
+    credit_info_author_social_link: bpy.props.StringProperty(
+        name="赞助链接",
+        description="用于赞助该作者的赞助链接",
+        default=""
+    ) # type: ignore
+
+
+
+class CatterProperties(bpy.types.PropertyGroup):
+    # ------------------------------------------------------------------------------------------------------------
+    path: bpy.props.StringProperty(
+        name="DBMT-GUI.exe所在路径",
+        description="插件需要先选择DBMT-GUI.exe的所在路径才能正常工作",
+        default=MainConfig.load_dbmt_path(),
+        subtype='DIR_PATH'
+    ) # type: ignore
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    model_scale: FloatProperty(
+        name="导入模型整体缩放比例",
+        description="默认为1.0",
+        default=1.0,
+    ) # type: ignore
+
     import_merged_vgmap:bpy.props.BoolProperty(
         name="",
         description="导入时是否导入融合后的顶点组 (WWMI的合并顶点组技术会用到)",
         default=False
     ) # type: ignore
 
-   
 
-    # ------------------------------------------------------------------------------------------------------------
-    def __init__(self) -> None:
-        super().__init__()
-        # self.subtype = 'DIR_PATH'
