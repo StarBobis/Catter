@@ -1,8 +1,8 @@
 import bpy.props
 
 from .ui.panel_ui import * 
-
-from .ui.rightclick_ui import *
+from .ui.collection_rightclick_ui import *
+from .ui.obj_rightclick_ui import *
 
 from .migoto.migoto_import import *
 from .migoto.migoto_export import *

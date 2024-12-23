@@ -28,7 +28,7 @@ class DrawIBModel:
     def __init__(self,draw_ib_collection):
         self.draw_ib = ""
 
-        self.export_json_dict = {} 
+        self.__export_json_dict = {} 
         self.obj_name_ib_dict:dict[str,IndexBuffer] = {} 
         self.obj_name_vb_dict:dict[str,VertexBuffer] =  {} 
         self.d3d11GameType:D3D11GameType = None 
@@ -55,19 +55,46 @@ class DrawIBModel:
         self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
         self.extract_gametype_folder_path = ""
 
-        self.__parse_drawib_collection(draw_ib_collection=draw_ib_collection)
+        # 按顺序执行
+        self.__1_read_tmp_json()
+        self.__2_parse_drawib_collection(draw_ib_collection=draw_ib_collection)
         self.__read_component_ib_buf_dict()
         self.__read_categoryname_bytelist_dict()
-        self.__read_tmp_json()
+
+    def __1_read_tmp_json(self):
+        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
+        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
+        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
+
+        self.category_hash_dict = tmp_json_dict["CategoryHash"]
+        self.import_model_list = tmp_json_dict["ImportModelList"]
+        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
+        self.part_name_list = tmp_json_dict["PartNameList"]
+        # print(self.partname_textureresourcereplace_dict)
+        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
+        self.work_game_type = tmp_json_dict["WorkGameType"]
+
+        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
+        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
+            slot_replace_dict = {}
+            for texture_resource_replace in texture_resource_replace_list:
+                splits = texture_resource_replace.split("=")
+                slot_name = splits[0].strip()
+                texture_filename = splits[1].strip()
+                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
+                slot_replace_dict[slot_name] = resource_name
+
+                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
+            self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
 
 
-    def __parse_drawib_collection(self,draw_ib_collection):
+    def __2_parse_drawib_collection(self,draw_ib_collection):
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
         # 构建一个export.json，记录当前集合所有object层级关系
-        self.export_json_dict = CollectionUtils.parse_drawib_collection_to_export_json(draw_ib_collection)
+        self.__export_json_dict = CollectionUtils.parse_drawib_collection_to_export_json(draw_ib_collection)
 
         # 转换为更加好读的形式：
-        for component_name, model_collection_dict in self.export_json_dict.items():
+        for component_name, model_collection_dict in self.__export_json_dict.items():
             model_collection_list = []
             for model_collection_name,model_dict in model_collection_dict.items():
                 model_collection = ModelCollection()
@@ -80,7 +107,7 @@ class DrawIBModel:
 
         # 分析并提取key结构,首先统计一共有几个key
         tmp_number = 0
-        for component_name, model_collection_dict in self.export_json_dict.items():
+        for component_name, model_collection_dict in self.__export_json_dict.items():
             toggle_number = 0 # 切换
             switch_number = 0 # 开关
             for model_collection_name,model_dict in model_collection_dict.items():
@@ -114,7 +141,7 @@ class DrawIBModel:
 
     def __read_component_ib_buf_dict(self):
         vertex_number_ib_offset = 0
-        for component_name, component_value in self.export_json_dict.items():
+        for component_name, component_value in self.__export_json_dict.items():
             ib_buf = []
             offset = 0
             for model_name, model_value in component_value.items():
@@ -150,7 +177,7 @@ class DrawIBModel:
     
     
     def __read_categoryname_bytelist_dict(self):
-        for component_name, component_value in self.export_json_dict.items():
+        for component_name, component_value in self.__export_json_dict.items():
             for model_name, model_value in component_value.items():
                 model_list = model_value["model"]
                 for obj_name in model_list:
@@ -236,40 +263,35 @@ class DrawIBModel:
         self.draw_number = int(position_bytelength/position_stride)
 
     def __read_shapekey_data(self):
-        for component_name, component_value in self.export_json_dict.items():
-            for model_name, model_value in component_value.items():
-                model_list = model_value["model"]
-                for obj_name in model_list:
-                    obj = bpy.data.objects[obj_name]
-                    # TODO 收集形态键数据
+        # 这里不用担心循环obj_name时顺序是否正确，因为python3.7版本之后dict会保留插入时的顺序。
+        for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
+            obj = bpy.data.objects[obj_name]
+
+            # TODO 先完成WWMI一键导入，再完成这里的ShapeKey读取部分
+            base_data = obj.data.shape_keys.key_blocks['Basis'].data
+            shapekey_pattern = re.compile(r'.*(?:deform|custom)[_ -]*(\d+).*')
+
+            shapekeys = []
+            for shapekey in obj.data.shape_keys.key_blocks:
+                match = shapekey_pattern.findall(shapekey.name.lower())
+                if len(match) == 0:
+                    continue
+                shapekey_id = int(match[0])
+                shapekeys.append((shapekey_id, shapekey))
+
+            shapekey_data = {}
+            for vertex_id in range(len(obj.data.vertices)):
+                base_vertex_coords = base_data[vertex_id].co
+                shapekey_data[vertex_id] = {}
+                for (shapekey_id, shapekey) in shapekeys:
+                    shapekey_vertex_coords = shapekey.data[vertex_id].co
+                    vertex_offset = shapekey_vertex_coords - base_vertex_coords
+                    if vertex_offset.length < 0.00000001:
+                        continue
+                    shapekey_data[vertex_id][shapekey_id] = list(vertex_offset)
 
 
-
-    def __read_tmp_json(self):
-        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
-        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
-        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
-
-        self.category_hash_dict = tmp_json_dict["CategoryHash"]
-        self.import_model_list = tmp_json_dict["ImportModelList"]
-        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
-        self.part_name_list = tmp_json_dict["PartNameList"]
-        # print(self.partname_textureresourcereplace_dict)
-        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
-        self.work_game_type = tmp_json_dict["WorkGameType"]
-
-        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
-        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
-            slot_replace_dict = {}
-            for texture_resource_replace in texture_resource_replace_list:
-                splits = texture_resource_replace.split("=")
-                slot_name = splits[0].strip()
-                texture_filename = splits[1].strip()
-                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
-                slot_replace_dict[slot_name] = resource_name
-
-                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
-            self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
+    
     
 
     def write_buffer_files(self):

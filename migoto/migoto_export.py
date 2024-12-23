@@ -2,6 +2,7 @@ from .input_layout import *
 from ..utils.dbmt_utils import *
 from ..utils.collection_utils import *
 from ..utils.json_utils import *
+from ..utils.obj_utils import ObjUtils
 
 import json
 import os.path
@@ -136,20 +137,18 @@ class HashableVertex(dict):
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 def get_export_ib_vb(context):
     print("导出是否保持相同顶点数：" + str(GenerateModConfig.export_same_number()))
-    # 获取当前场景中的obj对象
-    obj = context.object
-
-    # 为空时不导出
-    if obj is None:
-        raise Fatal('No object selected')
+    
+    obj = ObjUtils.get_bpy_context_object()
 
     stride = obj['3DMigoto:VBStride']
     layout = InputLayout(obj['3DMigoto:VBLayout'], stride=stride)
 
     # 获取Mesh
     if hasattr(context, "evaluated_depsgraph_get"):  # 2.80
+        print("TO MESH 2.80")
         mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
     else:  # 2.79
+        print("TO MESH 2.79")
         mesh = obj.to_mesh(context.scene, True, 'PREVIEW', calc_tessface=False)
 
     # 使用bmesh复制出一个新mesh并三角化
