@@ -1,14 +1,11 @@
-import bpy.props
-
 from .ui.panel_ui import * 
 from .ui.collection_rightclick_ui import *
 from .ui.obj_rightclick_ui import *
 
+from .config.catter_properties import *
 from .import_model.migoto_import import *
-from .generate_mod.m_export import *
 from .generate_mod.m_export_mod import *
 
-from .config.catter_properties import *
 
 # Compatible with all version start from Blender 3.6 LTS To 4.2LTS To Latest version.
 bl_info = {

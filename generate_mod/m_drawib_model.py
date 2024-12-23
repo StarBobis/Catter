@@ -2,7 +2,7 @@ from ..import_model.vertex_buffer import *
 from ..import_model.index_buffer import *
 from .m_export import get_export_ib_vb
 
-from ..migoto.common.global_config import *
+from ..migoto.global_config import *
 
 from .m_draw_type import *
 
