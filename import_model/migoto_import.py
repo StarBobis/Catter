@@ -299,7 +299,7 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
         print(texture_path)
 
 
-def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str, flip_texcoord_v=True, **kwargs):
+def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str, flip_texcoord_v=True):
     # get import prefix
     mesh_name = os.path.basename(fmt_path)
     if mesh_name.endswith(".fmt"):
@@ -335,9 +335,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # Nico: 设置默认不重计算TANGNET和COLOR
     obj["3DMigoto:RecalculateTANGENT"] = False
     obj["3DMigoto:RecalculateCOLOR"] = False
-
-    # get current gamename
-    
 
     # Nico: GI,HSR,ZZZ必须重计算TANGENT, 直接在导入时设置。
     # 不重计算时薄的双面模型会直接露出里面黑色的部分，以及轮廓线也会有问题。
@@ -459,9 +456,6 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
 
 
     def execute(self, context):
-        
-        migoto_raw_import_options = self.as_keywords(ignore=('filepath', 'files', 'filter_glob'))
-
         # 我们需要添加到一个新建的集合里，方便后续操作
         # 这里集合的名称需要为当前文件夹的名称
         dirname = os.path.dirname(self.filepath)
@@ -496,7 +490,7 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
 
                 if fmt_path is not None:
                     # 导入的调用链就从这里开始
-                    obj_result = import_3dmigoto_raw_buffers(self, context, fmt_path=fmt_path, vb_path=vb_path, ib_path=ib_path, **migoto_raw_import_options)
+                    obj_result = import_3dmigoto_raw_buffers(self, context, fmt_path=fmt_path, vb_path=vb_path, ib_path=ib_path)
                     collection.objects.link(obj_result)
                         
                 else:
@@ -508,59 +502,37 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
 
 
 def ImprotFromWorkSpace(self, context):
-    output_folder_path = MainConfig.path_workspace_folder()
-    workspace_name = MainConfig.workspacename
-    import_drawib_folder_path_dict = {}
-    import_drawib_folder_path_dict = ImportUtils.get_import_drawib_folder_path_dict_with_first_match_type(output_folder_path)
-    # self.report({'INFO'}, "读取到的drawIB文件夹总数量：" + str(len(import_folder_path_list)))
-
-    workspace_collection = bpy.data.collections.new(workspace_name)
-    workspace_collection.color_tag = "COLOR_01"
-
+    import_drawib_folder_path_dict = ImportUtils.get_import_drawib_folder_path_dict_with_first_match_type()
     print(import_drawib_folder_path_dict)
+
+    workspace_collection = CollectionUtils.new_workspace_collection()
 
     for draw_ib,import_folder_path in import_drawib_folder_path_dict.items():
         import_prefix_list = ImportUtils.get_prefix_list_from_tmp_json(import_folder_path)
-
-        # get drawib from folder name.
-
         if len(import_prefix_list) == 0:
             self.report({'ERROR'},"当前output文件夹"+draw_ib+"中的内容暂不支持一键导入分支模型")
             continue
 
-        # create a new collection.
-        draw_ib_collection = bpy.data.collections.new(draw_ib)
-        draw_ib_collection.color_tag = "COLOR_07" #粉色
-
+        draw_ib_collection = CollectionUtils.new_draw_ib_collection(draw_ib=draw_ib)
         workspace_collection.children.link(draw_ib_collection)
-        # link to scene.collection.
-        # bpy.context.scene.collection.children.link(draw_ib_collection)
 
         part_count = 1
         for prefix in import_prefix_list:
             component_name = "Component " + str(part_count)
-            # Create a child collection for every part in a single drawib.
-            child_collection = bpy.data.collections.new(component_name)
-            child_collection.color_tag = "COLOR_05" #蓝色
-            child_collection.tag = True
-
-
-            defualt_collection = bpy.data.collections.new("default")
-            defualt_collection.color_tag = "COLOR_04" #绿色
-            defualt_collection.tag = False
+            component_collection = CollectionUtils.new_component_collection(component_name=component_name)
+            defualt_switch_collection = CollectionUtils.new_switch_collection(collection_name="default")
 
             # combine and verify if path exists.
             vb_bin_path = import_folder_path + "\\" + prefix + '.vb'
             ib_bin_path = import_folder_path + "\\" + prefix + '.ib'
             fmt_path = import_folder_path + "\\" + prefix + '.fmt'
+
             if not os.path.exists(vb_bin_path):
                 raise Fatal('Unable to find matching .vb file for %s' % import_folder_path + "\\" + prefix)
             if not os.path.exists(ib_bin_path):
                 raise Fatal('Unable to find matching .ib file for %s' % import_folder_path + "\\" + prefix)
             if not os.path.exists(fmt_path):
                 fmt_path = None
-
-            migoto_raw_import_options = {}
 
             done = set()
             try:
@@ -569,18 +541,14 @@ def ImprotFromWorkSpace(self, context):
                 done.add(os.path.normcase(vb_bin_path))
                 if fmt_path is not None:
                     obj_result = import_3dmigoto_raw_buffers(self, context, fmt_path=fmt_path, vb_path=vb_bin_path,
-                                                                ib_path=ib_bin_path, **migoto_raw_import_options)
-                    defualt_collection.objects.link(obj_result)
+                                                                ib_path=ib_bin_path)
+                    defualt_switch_collection.objects.link(obj_result)
                         
                 else:
                     self.report({'ERROR'}, "Can't find .fmt file!")
                 
-                child_collection.children.link(defualt_collection)
-                
-                # bind to parent collection
-                draw_ib_collection.children.link(child_collection)
-                
-                
+                component_collection.children.link(defualt_switch_collection)
+                draw_ib_collection.children.link(component_collection)
             except Fatal as e:
                 self.report({'ERROR'}, str(e))
 
@@ -588,7 +556,7 @@ def ImprotFromWorkSpace(self, context):
 
     bpy.context.scene.collection.children.link(workspace_collection)
 
-    # Select all objects under collection.
+    # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
     CollectionUtils.select_collection_objects(workspace_collection)
 
 

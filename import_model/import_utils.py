@@ -26,8 +26,8 @@ class ImportUtils:
 
 
     @classmethod
-    def get_import_drawib_folder_path_dict_with_first_match_type(cls,workspace_folder_path:str)->list:
-        output_folder_path = workspace_folder_path
+    def get_import_drawib_folder_path_dict_with_first_match_type(cls)->list:
+        output_folder_path = MainConfig.path_workspace_folder()
         draw_ib_list = ImportUtils.get_extract_drawib_list_from_workspace_config_json()
         
         final_import_folder_path_dict = {}

@@ -1,5 +1,7 @@
 import bpy
 
+from ..config.main_config import MainConfig
+
 class CollectionUtils:
 
     # Recursive select every object in a collection and it's sub collections.
@@ -120,3 +122,35 @@ class CollectionUtils:
             export_json_dict[component_name] = component_collection_json
 
         return export_json_dict
+
+    @classmethod
+    def new_workspace_collection(cls):
+        '''
+        创建一个WorkSpace名称为名称的集合并返回此集合，WorkSpace集合的颜色是COLOR_01        
+        '''
+        workspace_collection = bpy.data.collections.new(MainConfig.workspacename)
+        workspace_collection.color_tag = "COLOR_01"
+        return workspace_collection
+    
+    @classmethod
+    def new_draw_ib_collection(cls,draw_ib:str):
+        draw_ib_collection = bpy.data.collections.new(draw_ib)
+        draw_ib_collection.color_tag = "COLOR_07" #粉色
+        return draw_ib_collection
+    
+    @classmethod
+    def new_component_collection(cls,component_name:str):
+        component_collection = bpy.data.collections.new(component_name)
+        component_collection.color_tag = "COLOR_05" #蓝色
+        return component_collection
+    
+    @classmethod
+    def new_switch_collection(cls,collection_name:str):
+        '''
+        创建一个按键切换集合，是绿色的，COLOR_04
+        '''
+        switch_collection = bpy.data.collections.new(collection_name)
+        switch_collection.color_tag = "COLOR_04" #绿色
+        return switch_collection
+
+
