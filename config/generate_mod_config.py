@@ -109,4 +109,52 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.flip_tangent_w
         '''
         return bpy.context.scene.dbmt_generatemod.flip_tangent_w
+
+    @classmethod
+    def recalculate_tangent(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.recalculate_tangent
+        '''
+        return bpy.context.scene.dbmt_generatemod.recalculate_tangent
     
+    @classmethod
+    def recalculate_color(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.recalculate_color
+        '''
+        return bpy.context.scene.dbmt_generatemod.recalculate_color
+
+    # @classmethod
+    # def fast_color_rgb_r(cls):
+    #     '''
+    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_r
+    #     '''
+    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_r
+    
+    # @classmethod
+    # def fast_color_rgb_g(cls):
+    #     '''
+    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_g
+    #     '''
+    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_g
+    
+    # @classmethod
+    # def fast_color_rgb_b(cls):
+    #     '''
+    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_b
+    #     '''
+    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_b
+    
+    # @classmethod
+    # def fast_color_rgb_a(cls):
+    #     '''
+    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_a
+    #     '''
+    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_a
+    
+    # @classmethod
+    # def use_fast_color_rgba(cls):
+    #     '''
+    #     bpy.context.scene.dbmt_generatemod.use_fast_color_rgba
+    #     '''
+    #     return bpy.context.scene.dbmt_generatemod.use_fast_color_rgba

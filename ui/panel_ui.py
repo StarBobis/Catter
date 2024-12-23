@@ -120,6 +120,15 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
         layout.prop(context.scene.dbmt_generatemod, "flip_tangent_w")
+        layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
+        layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
+        layout.prop(context.scene.dbmt_generatemod, "use_fast_color_rgba")
+
+        # if GenerateModConfig.use_fast_color_rgba():
+        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_r")
+        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_g")
+        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_b")
+        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_a")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace")

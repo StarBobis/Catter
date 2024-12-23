@@ -2,7 +2,7 @@ import bpy
 
 from ..utils.dbmt_utils import * 
 
-from bpy.props import FloatProperty
+from bpy.props import FloatProperty, IntProperty
 
 class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
@@ -35,12 +35,24 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+    # TODO 完成这个
     export_normalize_all: bpy.props.BoolProperty(
         name="导出时权重自动规格化",
         description="导出时把模型自动规格化权重，防止忘记手动规格化导致模型塌陷问题。",
         default=False
     ) # type: ignore
 
+    recalculate_tangent: bpy.props.BoolProperty(
+        name="向量相加归一化重计算TANGENT值(全局)",
+        description="使用向量相加归一化重计算所有模型的TANGENT值，勾选此项后无法精细控制具体某个模型是否计算，是偷懒选项,在不勾选时默认使用右键菜单中标记的选项",
+        default=False
+    ) # type: ignore
+
+    recalculate_color: bpy.props.BoolProperty(
+        name="算术平均归一化重计算COLOR值(全局)",
+        description="使用算术平均归一化重计算所有模型的COLOR值，勾选此项后无法精细控制具体某个模型是否计算，是偷懒选项,在不勾选时默认使用右键菜单中标记的选项",
+        default=False
+    ) # type: ignore
 
     # ------------------------------------------------------------------------------------------------------------
     flip_tangent_w:bpy.props.BoolProperty(
@@ -90,6 +102,50 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         description="翻转NORMAL.xyzw的x分量 (仅用于测试)",
         default=False
     ) # type: ignore
+
+
+# Deprecated 这么设置不太优雅，应该使用Blender原生方法。
+class CatterPropertiesFastColorSettings(bpy.types.PropertyGroup):
+
+    # ---------------COLOR分量快速设置
+    fast_color_rgba_r: bpy.props.IntProperty(
+        name="RGBA_R",
+        description="COLOR的RGBA分量中的R分量",
+        default=-1,
+        min=-1,  # 最小值
+        max=255  # 最大值
+    )  # type: ignore
+
+    fast_color_rgba_g: bpy.props.IntProperty(
+        name="RGBA_G",
+        description="COLOR的RGBA分量中的G分量",
+        default=-1,
+        min=-1,  # 最小值
+        max=255  # 最大值
+    )  # type: ignore
+
+    fast_color_rgba_b: bpy.props.IntProperty(
+        name="RGBA_B",
+        description="COLOR的RGBA分量中的B分量",
+        default=-1,
+        min=-1,  # 最小值
+        max=255  # 最大值
+    )  # type: ignore
+
+    fast_color_rgba_a: bpy.props.IntProperty(
+        name="RGBA_A",
+        description="COLOR的RGBA分量中的A分量",
+        default=-1,
+        min=-1,  # 最小值
+        max=255  # 最大值
+    )  # type: ignore
+
+    use_fast_color_rgba:bpy.props.BoolProperty(
+        name="快速批量设置COLOR的分量",
+        description="注意要有COLOR这个属性才能使用这个，勾选后会将所有COLOR的分量都设为指定值，默认值-1为不设置，只需要修改要设置的值为0到255之间的值即可",
+        default=False
+    ) # type: ignore
+
 
 
 
