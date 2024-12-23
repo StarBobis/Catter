@@ -98,6 +98,8 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
         MainConfig.read_from_main_json()
         layout.label(text="当前工作空间: " + MainConfig.workspacename)
         layout.prop(dbmt_config,"model_scale")
+        #import_flip_coordinate_x 
+        layout.prop(dbmt_config,"import_flip_scale_x")
         draw_seperator(self)
         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()

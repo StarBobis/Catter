@@ -168,7 +168,7 @@ class CatterPropertiesCreditInfo(bpy.types.PropertyGroup):
 
 
 
-class CatterProperties(bpy.types.PropertyGroup):
+class CatterPropertiesImportModel(bpy.types.PropertyGroup):
     # ------------------------------------------------------------------------------------------------------------
     path: bpy.props.StringProperty(
         name="DBMT-GUI.exe所在路径",
@@ -191,4 +191,9 @@ class CatterProperties(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+    import_flip_scale_x :bpy.props.BoolProperty(
+        name="导入模型时Scale X设为-1避免镜像模型",
+        description="勾选后在导入模型时把缩放的X分量乘以-1，实现镜像效果，还原游戏中原本的样子，解决导入后镜像对调的问题,与WWMI中mirror mesh选项相同，同样也会导致和部分插件不兼容问题",
+        default=False
+    ) # type: ignore
 

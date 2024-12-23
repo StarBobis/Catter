@@ -24,7 +24,7 @@ bl_info = {
 
 register_classes = (
     # 全局属性
-    CatterProperties,
+    CatterPropertiesImportModel,
     CatterPropertiesGenerateMod,
 
     # 3Dmigoto ib和vb格式导入导出
@@ -70,7 +70,7 @@ def register():
     for cls in register_classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.dbmt = bpy.props.PointerProperty(type=CatterProperties)
+    bpy.types.Scene.dbmt = bpy.props.PointerProperty(type=CatterPropertiesImportModel)
     bpy.types.Scene.dbmt_generatemod = bpy.props.PointerProperty(type=CatterPropertiesGenerateMod)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(menu_func_migoto_right_click)

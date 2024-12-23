@@ -4,6 +4,7 @@ from ..config.metadata_format import *
 from ..utils.collection_utils import *
 from .vertex_buffer import *
 from .index_buffer import *
+from ..config.import_model_config import *
 
 from array import array
 
@@ -388,6 +389,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # Set scale by user setting when import model.
     scalefactor = bpy.context.scene.dbmt.model_scale
     obj.scale = scalefactor,scalefactor,scalefactor
+
+    if ImportModelConfig.import_flip_scale_x():
+        obj.scale.x = obj.scale.x * -1
 
     # Flush every time export
     bpy.context.view_layer.update()
