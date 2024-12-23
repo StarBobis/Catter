@@ -34,10 +34,12 @@ class DrawIBModel:
         self.d3d11GameType:D3D11GameType = None 
 
         # 输出Mod时用的
-        self.componentname_ibbuf_dict = {}
-        self.categoryname_bytelist_dict = {}
-        self.draw_number = 0
-        self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {}
+        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件。
+        self.categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
+        self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
+        self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
+
+        # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
 
         # tmp.json的内容
         self.category_hash_dict = {}
@@ -135,6 +137,7 @@ class DrawIBModel:
                     draw_number = len(obj_ib_buf) * 3
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(offset)
+                    drawindexed_obj.UniqueVertexCount = unique_vertex_number
                     drawindexed_obj.AliasName = "collection name: [" + model_name + "] obj name: [" + obj_name + "]  (VertexCount:" + str(unique_vertex_number) + ")"
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     offset = offset + draw_number
@@ -232,7 +235,15 @@ class DrawIBModel:
         position_bytelength = len(self.categoryname_bytelist_dict["Position"])
         self.draw_number = int(position_bytelength/position_stride)
 
-        
+    def __read_shapekey_data(self):
+        for component_name, component_value in self.export_json_dict.items():
+            for model_name, model_value in component_value.items():
+                model_list = model_value["model"]
+                for obj_name in model_list:
+                    obj = bpy.data.objects[obj_name]
+                    # TODO 收集形态键数据
+
+
 
     def __read_tmp_json(self):
         self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
@@ -260,7 +271,12 @@ class DrawIBModel:
                 self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
             self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
     
+
     def write_buffer_files(self):
+        '''
+        用于导出IndexBuffer文件和CategoryBuffer文件
+        TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
+        '''
         # Export IndexBuffer files.
         for partname in self.part_name_list:
             component_name = "Component " + partname
