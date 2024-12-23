@@ -5,7 +5,7 @@ import subprocess
 from ..config.main_config import *
 
 
-class DBMTUtils:
+class ImportUtils:
     # Get drawib list from Game's Config.json.
     @classmethod
     def get_extract_drawib_list_from_workspace_config_json(cls)->list:
@@ -28,7 +28,7 @@ class DBMTUtils:
     @classmethod
     def get_import_drawib_folder_path_dict_with_first_match_type(cls,workspace_folder_path:str)->list:
         output_folder_path = workspace_folder_path
-        draw_ib_list = DBMTUtils.get_extract_drawib_list_from_workspace_config_json()
+        draw_ib_list = ImportUtils.get_extract_drawib_list_from_workspace_config_json()
         
         final_import_folder_path_dict = {}
 

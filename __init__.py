@@ -4,9 +4,9 @@ from .ui.panel_ui import *
 from .ui.collection_rightclick_ui import *
 from .ui.obj_rightclick_ui import *
 
-from .migoto.migoto_import import *
+from .import_model.migoto_import import *
 from .generate_mod.m_export import *
-from .generate_mod.migoto_export_mod import *
+from .generate_mod.m_export_mod import *
 
 from .config.catter_properties import *
 

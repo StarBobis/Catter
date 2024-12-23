@@ -1,5 +1,5 @@
 from .input_layout import *
-from ..utils.dbmt_utils import *
+from .import_utils import *
 from ..config.metadata_format import *
 from ..utils.collection_utils import *
 from .vertex_buffer import *
@@ -431,7 +431,7 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
     ) # type: ignore
 
     def get_vb_ib_paths_from_fmt_prefix(self, filename):
-        model_prefix = DBMTUtils.get_model_prefix_from_fmt_file(filename).strip()
+        model_prefix = ImportUtils.get_model_prefix_from_fmt_file(filename).strip()
         # print("model_prefix:" + model_prefix)
 
         fmt_dir_name = os.path.dirname(filename)
@@ -507,9 +507,11 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 
-def ImprotFromWorkSpace(self, context,workspace_name:str,output_folder_path:str):
+def ImprotFromWorkSpace(self, context):
+    output_folder_path = MainConfig.path_workspace_folder()
+    workspace_name = MainConfig.workspacename
     import_drawib_folder_path_dict = {}
-    import_drawib_folder_path_dict = DBMTUtils.get_import_drawib_folder_path_dict_with_first_match_type(output_folder_path)
+    import_drawib_folder_path_dict = ImportUtils.get_import_drawib_folder_path_dict_with_first_match_type(output_folder_path)
     # self.report({'INFO'}, "读取到的drawIB文件夹总数量：" + str(len(import_folder_path_list)))
 
     workspace_collection = bpy.data.collections.new(workspace_name)
@@ -518,7 +520,7 @@ def ImprotFromWorkSpace(self, context,workspace_name:str,output_folder_path:str)
     print(import_drawib_folder_path_dict)
 
     for draw_ib,import_folder_path in import_drawib_folder_path_dict.items():
-        import_prefix_list = DBMTUtils.get_prefix_list_from_tmp_json(import_folder_path)
+        import_prefix_list = ImportUtils.get_prefix_list_from_tmp_json(import_folder_path)
 
         # get drawib from folder name.
 
@@ -596,6 +598,5 @@ class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
     bl_description = "一键导入当前工作空间文件夹下所有的DrawIB对应的模型为分支集合架构"
 
     def execute(self, context):
-        output_folder_path = MainConfig.path_workspace_folder()
-        ImprotFromWorkSpace(self,context,MainConfig.workspacename,output_folder_path)
+        ImprotFromWorkSpace(self,context)
         return {'FINISHED'}

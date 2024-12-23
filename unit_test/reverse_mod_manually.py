@@ -5,9 +5,9 @@
 import os
 import shutil
 
-from core.common.buffer_file import IndexBufferBufFile,FmtFile
-from core.common.global_config import GlobalConfig
-from core.utils.dbmt_log_utils import log_newline
+from migoto.common.buffer_file import IndexBufferBufFile,FmtFile
+from migoto.common.global_config import GlobalConfig
+from migoto.utils.dbmt_log_utils import log_newline
 
 
 # Manually reverse mod to 3D model file, only support unity vertex shader preskinning mod reverse.

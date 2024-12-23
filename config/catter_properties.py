@@ -1,6 +1,6 @@
 import bpy
 
-from ..utils.dbmt_utils import * 
+from ..config.main_config import MainConfig
 
 from bpy.props import FloatProperty, IntProperty
 

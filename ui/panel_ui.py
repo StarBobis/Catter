@@ -3,12 +3,11 @@ import os
 import json
 
 from ..utils.migoto_utils import *
-from ..utils.dbmt_utils import *
-from ..migoto.input_layout import InputLayout
+from ..import_model.input_layout import InputLayout
 
 from ..config.main_config import * 
 
-from ..generate_mod.migoto_export_mod import *
+from ..generate_mod.m_export_mod import *
 
 # 用于绘制分割线，由于3.6和4.2行为不一样所以做了包装方法
 def draw_seperator(self):
