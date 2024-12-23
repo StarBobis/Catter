@@ -1,6 +1,6 @@
 import io
 
-from ..utils.migoto_utils import *
+from ..migoto.migoto_utils import *
 
 
 class IndexBuffer(object):

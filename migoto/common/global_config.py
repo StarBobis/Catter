@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 from typing import List,Dict
 from enum import Enum
 
-from ..utils.dbmt_file_utils import dbmt_fileutil__list_files
+from ...utils.dbmt_file_utils import dbmt_fileutil__list_files
 from ..common.d3d11_game_type import D3D11GameType,D3D11Element,D3D11GameTypeLv2
-from ..utils.dbmt_log_utils import log_warning_str
+from ...utils.log_utils import log_warning_str
 
 # Nico: Thanks for SpectrumQT's WWMI project, I learned how to use @dataclass to save my time 
 # and lots of other python features so use python can works as good as C++ and better and faster.

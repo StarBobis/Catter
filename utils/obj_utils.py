@@ -1,6 +1,6 @@
 import bpy
 
-from .migoto_utils import Fatal
+from ..migoto.migoto_utils import Fatal
 
 class ObjUtils:
 

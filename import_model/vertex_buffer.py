@@ -1,5 +1,5 @@
 
-from ..utils.migoto_utils import *
+from ..migoto.migoto_utils import *
 from .input_layout import *
 from ..config.generate_mod_config import *
 

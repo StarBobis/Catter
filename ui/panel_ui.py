@@ -2,7 +2,7 @@ import bpy
 import os
 import json
 
-from ..utils.migoto_utils import *
+from ..migoto.migoto_utils import *
 from ..import_model.input_layout import InputLayout
 
 from ..config.main_config import * 
