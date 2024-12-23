@@ -56,40 +56,20 @@ class DrawIBModel:
         self.extract_gametype_folder_path = ""
 
         # 按顺序执行
-        self.__1_read_tmp_json()
-        self.__2_parse_drawib_collection(draw_ib_collection=draw_ib_collection)
+        self.__0_get_draw_ib_from_collection_name(draw_ib_collection=draw_ib_collection)
+        self.__1_parse_drawib_collection(draw_ib_collection=draw_ib_collection)
         self.__read_component_ib_buf_dict()
         self.__read_categoryname_bytelist_dict()
-
-    def __1_read_tmp_json(self):
-        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
-        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
-        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
-
-        self.category_hash_dict = tmp_json_dict["CategoryHash"]
-        self.import_model_list = tmp_json_dict["ImportModelList"]
-        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
-        self.part_name_list = tmp_json_dict["PartNameList"]
-        # print(self.partname_textureresourcereplace_dict)
-        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
-        self.work_game_type = tmp_json_dict["WorkGameType"]
-
-        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
-        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
-            slot_replace_dict = {}
-            for texture_resource_replace in texture_resource_replace_list:
-                splits = texture_resource_replace.split("=")
-                slot_name = splits[0].strip()
-                texture_filename = splits[1].strip()
-                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
-                slot_replace_dict[slot_name] = resource_name
-
-                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
-            self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
+        self.__4_read_tmp_json()
 
 
-    def __2_parse_drawib_collection(self,draw_ib_collection):
+    def __0_get_draw_ib_from_collection_name(self,draw_ib_collection):
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
+
+    def __1_parse_drawib_collection(self,draw_ib_collection):
+        '''
+        解析当前选中的工作空间集合，统计可能的Key数量，所有模型转为ib vb格式放入集合备用
+        '''
         # 构建一个export.json，记录当前集合所有object层级关系
         self.__export_json_dict = CollectionUtils.parse_drawib_collection_to_export_json(draw_ib_collection)
 
@@ -291,6 +271,31 @@ class DrawIBModel:
                     shapekey_data[vertex_id][shapekey_id] = list(vertex_offset)
 
 
+    def __4_read_tmp_json(self):
+        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
+        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
+        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
+
+        self.category_hash_dict = tmp_json_dict["CategoryHash"]
+        self.import_model_list = tmp_json_dict["ImportModelList"]
+        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
+        self.part_name_list = tmp_json_dict["PartNameList"]
+        # print(self.partname_textureresourcereplace_dict)
+        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
+        self.work_game_type = tmp_json_dict["WorkGameType"]
+
+        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
+        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
+            slot_replace_dict = {}
+            for texture_resource_replace in texture_resource_replace_list:
+                splits = texture_resource_replace.split("=")
+                slot_name = splits[0].strip()
+                texture_filename = splits[1].strip()
+                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
+                slot_replace_dict[slot_name] = resource_name
+
+                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
+            self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
     
     
 
