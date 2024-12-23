@@ -1,4 +1,4 @@
-from .input_layout import *
+from ..migoto.input_layout import *
 from ..utils.dbmt_utils import *
 from ..utils.collection_utils import *
 from ..utils.json_utils import *
@@ -11,8 +11,8 @@ import bpy
 from bpy_extras.io_utils import ExportHelper
 from bpy.props import BoolProperty, StringProperty
 
-from .vertex_buffer import *
-from .index_buffer import *
+from ..migoto.vertex_buffer import *
+from ..migoto.index_buffer import *
 
 
 # from export_obj:

@@ -5,8 +5,8 @@ from .ui.collection_rightclick_ui import *
 from .ui.obj_rightclick_ui import *
 
 from .migoto.migoto_import import *
-from .migoto.migoto_export import *
-from .migoto.migoto_export_mod import *
+from .generate_mod.m_export import *
+from .generate_mod.migoto_export_mod import *
 
 from .config.catter_properties import *
 
@@ -15,7 +15,7 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 0, 5, 2),
+    "version": (1, 0, 5, 3),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"

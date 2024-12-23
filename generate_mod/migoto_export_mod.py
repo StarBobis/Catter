@@ -1,7 +1,7 @@
 import bpy
 
 from ..utils.command_utils import *
-from ..generate_mod.m_ini_model import *
+from .m_ini_model import *
         
 
 class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
