@@ -5,7 +5,7 @@ import json
 from typing import List,Dict
 from dataclasses import dataclass, field
 
-from ..utils.dbmt_file_utils import dbmt_fileutil__list_files
+from ..utils.file_utils import FileUtils
 
 
 @dataclass
@@ -179,7 +179,7 @@ class D3D11GameTypeLv2:
         self.GameTypeName_D3D11GameType_Dict = {}
         self.Ordered_GPU_CPU_D3D11GameTypeList = []
 
-        filelist = dbmt_fileutil__list_files(self.GameTypeConfigFolderPath)
+        filelist = FileUtils.list_files(self.GameTypeConfigFolderPath)
         for json_file_name in filelist:
             if not json_file_name.endswith(".json"):
                 continue

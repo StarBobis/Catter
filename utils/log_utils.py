@@ -20,20 +20,24 @@ print(BACKGROUND_YELLOW + BLACK + BOLD + "Warning: This is a warningg message" +
 
 # Nico: notice, all print() and output should call these method, so we can make them log to file easily when switch to GUI.
 
-def log_info(input):
-    if type(input) == list:
-        for something in input:
-            print(something)
-    else:
-        print(input)
+class LOG:
+    @classmethod
+    def log_info(cls,input):
+        if type(input) == list:
+            for something in input:
+                print(something)
+        
+        else:
+            print(input)
 
 
+    @classmethod
+    def log_warning_str(cls,input:str):
+        print("\033[33m" + "Warning: " + input + "\033[0m")
+        cls.log_newline()
 
-def log_warning_str(input:str):
-    print("\033[33m" + "Warning: " + input + "\033[0m")
-    log_newline()
-
-def log_newline():
-    print("\033[32m" +"------------------------------------------------------------------------------------------------------------------------------" + "\033[0m")
+    @classmethod
+    def log_newline(cls):
+        print("\033[32m" +"------------------------------------------------------------------------------------------------------------------------------" + "\033[0m")
 
     

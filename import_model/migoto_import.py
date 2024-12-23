@@ -1,6 +1,6 @@
 from .input_layout import *
 from .import_utils import *
-from ..config.metadata_format import *
+from .metadata_format import *
 from ..utils.collection_utils import *
 from .vertex_buffer import *
 from .index_buffer import *

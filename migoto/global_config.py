@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 from typing import List,Dict
 from enum import Enum
 
-from ..utils.dbmt_file_utils import dbmt_fileutil__list_files
+from ..utils.file_utils import FileUtils
 from .d3d11_game_type import D3D11GameType,D3D11Element,D3D11GameTypeLv2
-from ..utils.log_utils import log_warning_str
+from ..utils.log_utils import LOG
 
 # Nico: Thanks for SpectrumQT's WWMI project, I learned how to use @dataclass to save my time 
 # and lots of other python features so use python can works as good as C++ and better and faster.
@@ -62,8 +62,8 @@ class FrameAnalysisData:
     DedupedFileNameList:list[str] = field(init=False)
 
     def __post_init__(self):
-        self.FileNameList = dbmt_fileutil__list_files(self.WorkFolder)
-        self.DedupedFileNameList = dbmt_fileutil__list_files(os.path.join(self.WorkFolder,"deduped\\"))
+        self.FileNameList = FileUtils.list_files(self.WorkFolder)
+        self.DedupedFileNameList = FileUtils.list_files(os.path.join(self.WorkFolder,"deduped\\"))
 
     def filter_filename(self,contain:str,suffix:str) -> list[str]:
         new_filename_list = []
@@ -130,18 +130,18 @@ class GlobalConfig:
     def initialize_folder_path(self):
         self.LoaderFolder = os.path.join(self.GameLoaderPath,self.GameName + "\\3Dmigoto\\")
         if not os.path.exists(self.LoaderFolder):
-            log_warning_str("LoaderFolder doesn't exists. " + self.LoaderFolder)
+            LOG.log_warning_str("LoaderFolder doesn't exists. " + self.LoaderFolder)
 
         self.FrameAnalysisFolder = self.find_latest_frameanalysis_folder()
         if self.FrameAnalysisFolder == "":
-            log_warning_str("Latest FrameAnalysis folder not found. WorkFolder will not exists.")
+            LOG.log_warning_str("Latest FrameAnalysis folder not found. WorkFolder will not exists.")
         else:
             self.WorkFolder = os.path.join(self.LoaderFolder, self.FrameAnalysisFolder + "\\") 
-            log_warning_str("Current WorkFolder: " + self.WorkFolder)
+            LOG.log_warning_str("Current WorkFolder: " + self.WorkFolder)
 
             self.DedupedFolder =os.path.join(self.WorkFolder, "deduped\\")
             if not os.path.exists(self.DedupedFolder):
-                log_warning_str("Current DedupedFolder not exists: " + self.DedupedFolder)
+                LOG.log_warning_str("Current DedupedFolder not exists: " + self.DedupedFolder)
             
             self.FAData = FrameAnalysisData(WorkFolder=self.WorkFolder)
             self.FALog = FrameAnalysisLog(WorkFolder=self.WorkFolder)
