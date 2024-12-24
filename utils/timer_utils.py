@@ -15,7 +15,7 @@ class TimerUtils:
         cls.run_end = None
         cls.methodname_runstart_dict[func_name] = cls.run_start
         LOG.newline()
-        print(func_name + f" started at: {cls.run_start} ")
+        print("[" + func_name + f"] started at: {cls.run_start} ")
 
     @classmethod
     def End(cls,func_name:str = ""):
@@ -36,7 +36,7 @@ class TimerUtils:
             time_diff = cls.run_end - cls.methodname_runstart_dict.get(func_name,0)
 
             # 打印时间差
-            print( func_name + f" time elapsed: {time_diff} ")
+            print("[" + func_name + f"] time elapsed: {time_diff} ")
         LOG.newline()
         # 将run_start更新为当前时间
         cls.run_start = cls.run_end
