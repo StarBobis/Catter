@@ -22,7 +22,7 @@ print(BACKGROUND_YELLOW + BLACK + BOLD + "Warning: This is a warningg message" +
 
 class LOG:
     @classmethod
-    def log_info(cls,input):
+    def info(cls,input):
         if type(input) == list:
             for something in input:
                 print(something)
@@ -32,12 +32,12 @@ class LOG:
 
 
     @classmethod
-    def log_warning_str(cls,input:str):
+    def warning(cls,input:str):
         print("\033[33m" + "Warning: " + input + "\033[0m")
-        cls.log_newline()
+        cls.newline()
 
     @classmethod
-    def log_newline(cls):
+    def newline(cls):
         print("\033[32m" +"------------------------------------------------------------------------------------------------------------------------------" + "\033[0m")
 
     

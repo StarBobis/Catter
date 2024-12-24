@@ -9,6 +9,7 @@ from .m_draw_type import *
 from ..utils.collection_utils import *
 from ..config.main_config import *
 from ..utils.json_utils import *
+from ..utils.timer_utils import *
 
 from .m_ini_helper import *
 
@@ -62,6 +63,11 @@ class DrawIBModel:
         self.__read_tmp_json()
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
+        TimerUtils.Start("__parse_drawib_collection_architecture")
+
+        LOG.info("DrawIB: " + self.draw_ib)
+        LOG.info("Visiable: " + str(CollectionUtils.is_collection_visible(draw_ib_collection.name)))
+
         '''
         解析工作空间集合架构，得到方便后续访问使用的抽象数据类型。
         '''
@@ -73,7 +79,10 @@ class DrawIBModel:
             for m_collection in component_collection.children:
                 # 如果模型不可见则跳过。
                 if not CollectionUtils.is_collection_visible(m_collection.name):
+                    LOG.info("Skip " + m_collection.name + " because it's invisiable.")
                     continue
+
+                LOG.info("Current Processing Collection: " + m_collection.name)
 
                 # 声明一个model_collection对象
                 model_collection = ModelCollection()
@@ -96,6 +105,7 @@ class DrawIBModel:
                 model_collection_list.append(model_collection)
 
             self.componentname_modelcollection_list_dict[component_name] = model_collection_list
+        TimerUtils.End("__parse_drawib_collection_architecture")
 
     def __parse_key_number(self):
         '''

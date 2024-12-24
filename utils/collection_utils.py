@@ -68,6 +68,8 @@ class CollectionUtils:
         if collection_property is not None:
             if collection_property["hide_viewport"]:
                 return False
+            if collection_property["exclude"]:
+                return False
             else:
                 return True
         else:

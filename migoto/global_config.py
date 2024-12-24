@@ -130,18 +130,18 @@ class GlobalConfig:
     def initialize_folder_path(self):
         self.LoaderFolder = os.path.join(self.GameLoaderPath,self.GameName + "\\3Dmigoto\\")
         if not os.path.exists(self.LoaderFolder):
-            LOG.log_warning_str("LoaderFolder doesn't exists. " + self.LoaderFolder)
+            LOG.warning("LoaderFolder doesn't exists. " + self.LoaderFolder)
 
         self.FrameAnalysisFolder = self.find_latest_frameanalysis_folder()
         if self.FrameAnalysisFolder == "":
-            LOG.log_warning_str("Latest FrameAnalysis folder not found. WorkFolder will not exists.")
+            LOG.warning("Latest FrameAnalysis folder not found. WorkFolder will not exists.")
         else:
             self.WorkFolder = os.path.join(self.LoaderFolder, self.FrameAnalysisFolder + "\\") 
-            LOG.log_warning_str("Current WorkFolder: " + self.WorkFolder)
+            LOG.warning("Current WorkFolder: " + self.WorkFolder)
 
             self.DedupedFolder =os.path.join(self.WorkFolder, "deduped\\")
             if not os.path.exists(self.DedupedFolder):
-                LOG.log_warning_str("Current DedupedFolder not exists: " + self.DedupedFolder)
+                LOG.warning("Current DedupedFolder not exists: " + self.DedupedFolder)
             
             self.FAData = FrameAnalysisData(WorkFolder=self.WorkFolder)
             self.FALog = FrameAnalysisLog(WorkFolder=self.WorkFolder)
