@@ -124,7 +124,7 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
         layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
         layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
-
+        layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
         # if GenerateModConfig.use_fast_color_rgba():
         #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_r")
         #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_g")

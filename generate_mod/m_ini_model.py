@@ -119,9 +119,11 @@ class M_IniModel:
                 
                 # 如果出现了VertexLimitRaise，Texcoord槽位需要检测filter_index才能替换
                 filterindex_indent_prefix = ""
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
-                    if cls.vlr_filter_index_indent != "":
-                        texture_override_vb_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
+                if GenerateModConfig.vertex_limit_raise_add_filter_index():
+                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
+                        if cls.vlr_filter_index_indent != "":
+                            texture_override_vb_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
+                            filterindex_indent_prefix = "  "
 
                 # 遍历获取所有在当前分类hash下进行替换的分类，并添加对应的资源替换
                 for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
@@ -139,11 +141,11 @@ class M_IniModel:
                     if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
                         texture_override_vb_section.append("endif")
                 
-
-                # 对应if vb0 == 3000的结束
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
-                    if cls.vlr_filter_index_indent != "":
-                        texture_override_vb_section.append("endif")
+                if GenerateModConfig.vertex_limit_raise_add_filter_index():
+                    # 对应if vb0 == 3000的结束
+                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
+                        if cls.vlr_filter_index_indent != "":
+                            texture_override_vb_section.append("endif")
                 
                 # 分支架构，如果是Position则需提供激活变量
                 if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
@@ -287,9 +289,10 @@ class M_IniModel:
             vertexlimit_section.append("[TextureOverride_" + draw_ib + "_VertexLimitRaise]")
             vertexlimit_section.append("hash = " +draw_ib_model.vertex_limit_hash)
             
-            # (为啥是3000？因为和WWMI学的，用户可能已经习惯了3000开头，用户体验的优先级最高)
-            vertexlimit_section.append("filter_index = " + str(3000 + cls.global_generate_mod_number))
-            cls.vlr_filter_index_indent = "  "
+            if GenerateModConfig.vertex_limit_raise_add_filter_index():
+                # (为啥是3000？因为和WWMI学的，用户可能已经习惯了3000开头，用户体验的优先级最高)
+                vertexlimit_section.append("filter_index = " + str(3000 + cls.global_generate_mod_number))
+                cls.vlr_filter_index_indent = "  "
 
             vertexlimit_section.append("override_byte_stride = " + str(d3d11GameType.CategoryStrideDict["Position"]))
             vertexlimit_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))

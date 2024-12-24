@@ -56,7 +56,13 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
 
     position_override_filter_draw_type :bpy.props.BoolProperty(
         name="Position替换过滤DRAW_TYPE = 1",
-        description="在NPC与VAT-PreSKinning的NPC冲突时会用到此技术，例如HSR匹诺康尼NPC",
+        description="在NPC与VAT-PreSKinning的NPC冲突时会用到此技术，例如HSR匹诺康尼NPC\n格式：\nif DRAW_TYPE == 1\n  ........\nendif",
+        default=False
+    ) # type: ignore
+
+    vertex_limit_raise_add_filter_index:bpy.props.BoolProperty(
+        name="VertexLimitRaise添加filter_index标识",
+        description="在NPC与VAT-PreSKinning的NPC冲突时会用到此技术，例如HSR匹诺康尼NPC\n格式:\nfilter_index = 3000\n\n....\n\nif vb0 == 3000\n  ........\nendif",
         default=False
     ) # type: ignore
 

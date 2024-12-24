@@ -131,6 +131,16 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.position_override_filter_draw_type
         '''
         return bpy.context.scene.dbmt_generatemod.position_override_filter_draw_type
+    
+    @classmethod
+    def vertex_limit_raise_add_filter_index(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.vertex_limit_raise_add_filter_index
+        '''
+        return bpy.context.scene.dbmt_generatemod.vertex_limit_raise_add_filter_index
+
+
+    
 
     # @classmethod
     # def fast_color_rgb_r(cls):
