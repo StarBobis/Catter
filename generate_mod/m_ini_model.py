@@ -112,9 +112,10 @@ class M_IniModel:
                 texture_override_vb_section.append("hash = " + category_hash)
                 
                 drawtype_indent_prefix = ""
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                    drawtype_indent_prefix = "  "
-                    texture_override_vb_section.append("if DRAW_TYPE == 1")
+                if GenerateModConfig.position_override_filter_draw_type():
+                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
+                        drawtype_indent_prefix = "  "
+                        texture_override_vb_section.append("if DRAW_TYPE == 1")
                 
                 # 如果出现了VertexLimitRaise，Texcoord槽位需要检测filter_index才能替换
                 filterindex_indent_prefix = ""
@@ -133,9 +134,10 @@ class M_IniModel:
                     texture_override_vb_section.append(drawtype_indent_prefix + "handling = skip")
                     texture_override_vb_section.append(drawtype_indent_prefix + "draw = " + str(draw_ib_model.draw_number) + ", 0")
 
-                # 对应if DRAW_TYPE == 1的结束
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                    texture_override_vb_section.append("endif")
+                if GenerateModConfig.position_override_filter_draw_type():
+                    # 对应if DRAW_TYPE == 1的结束
+                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
+                        texture_override_vb_section.append("endif")
                 
 
                 # 对应if vb0 == 3000的结束

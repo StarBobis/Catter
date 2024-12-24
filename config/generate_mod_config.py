@@ -123,6 +123,14 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.recalculate_color
         '''
         return bpy.context.scene.dbmt_generatemod.recalculate_color
+    
+
+    @classmethod
+    def position_override_filter_draw_type(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.position_override_filter_draw_type
+        '''
+        return bpy.context.scene.dbmt_generatemod.position_override_filter_draw_type
 
     # @classmethod
     # def fast_color_rgb_r(cls):

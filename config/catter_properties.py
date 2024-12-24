@@ -54,6 +54,12 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+    position_override_filter_draw_type :bpy.props.BoolProperty(
+        name="Position替换过滤DRAW_TYPE = 1",
+        description="在NPC与VAT-PreSKinning的NPC冲突时会用到此技术，例如HSR匹诺康尼NPC",
+        default=False
+    ) # type: ignore
+
     # ------------------------------------------------------------------------------------------------------------
     flip_tangent_w:bpy.props.BoolProperty(
         name="翻转TANGENT的W分量",
@@ -104,7 +110,7 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     ) # type: ignore
 
 
-# Deprecated 这么设置不太优雅，应该使用Blender原生方法。
+# TODO Deprecated 这么设置不太优雅，应该使用Blender原生方法。
 class CatterPropertiesFastColorSettings(bpy.types.PropertyGroup):
 
     # ---------------COLOR分量快速设置
