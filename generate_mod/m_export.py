@@ -2,6 +2,7 @@ from ..import_model.input_layout import *
 from ..utils.collection_utils import *
 from ..utils.json_utils import *
 from ..utils.obj_utils import ObjUtils
+from ..utils.timer_utils import *
 
 import json
 import os.path
@@ -135,43 +136,27 @@ class HashableVertex(dict):
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 def get_export_ib_vb(context):
-    print("导出是否保持相同顶点数：" + str(GenerateModConfig.export_same_number()))
-    
     obj = ObjUtils.get_bpy_context_object()
 
     stride = obj['3DMigoto:VBStride']
     layout = InputLayout(obj['3DMigoto:VBLayout'], stride=stride)
 
     # 获取Mesh
-    if hasattr(context, "evaluated_depsgraph_get"):  # 2.80
-        print("TO MESH 2.80")
-        mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
-    else:  # 2.79
-        print("TO MESH 2.79")
-        mesh = obj.to_mesh(context.scene, True, 'PREVIEW', calc_tessface=False)
-
+    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
     # 使用bmesh复制出一个新mesh并三角化
     mesh_triangulate(mesh)
 
-    try:
-        if obj['3DMigoto:IBFormat'] == "DXGI_FORMAT_R16_UINT":
-            ib_format = "DXGI_FORMAT_R32_UINT"
-        else:
-            ib_format = obj['3DMigoto:IBFormat']
-    except KeyError:
-        ib = None
-        raise Fatal('FIXME: Add capability to export without an index buffer')
-    else:
-        ib = IndexBuffer(ib_format)
-    
+    # 构建ib
+    ib = IndexBuffer("DXGI_FORMAT_R32_UINT")
     ib.gametypename = obj['3DMigoto:GameTypeName']
 
-    # Calculates tangents and makes loop normals valid (still with our
-    # custom normal data from import time):
+    # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
     # Nico: 这一步如果存在TANGENT属性则会导致顶点数量增加
     mesh.calc_tangents()
 
+
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
+    # TimerUtils.Start("texcoord_layers")
     texcoord_layers = {}
     for uv_layer in mesh.uv_layers:
         texcoords = {}
@@ -189,6 +174,9 @@ def get_export_ib_vb(context):
             uv = flip_uv(uv_layer.data[l.index].uv)
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
+    # TimerUtils.End("texcoord_layers") # 0:00:00.129772 
+
+
 
     # Blender's vertices have unique positions, but may have multiple
     # normals, tangents, UV coordinates, etc - these are stored in the
@@ -236,30 +224,32 @@ def get_export_ib_vb(context):
         if ib is not None:
             ib.append(face)
 
-    # operator.report({'INFO'}, "Export Vertex Number: " + str(len(indexed_vertices)))
+
+    # TimerUtils.Start("get vb")
     vb = VertexBuffer(layout=layout)
     for vertex in indexed_vertices:
         vb.append(vertex)
-
+    # TimerUtils.End("get vb") #  0:00:00.062375 
+  
     # Nico: 重计算TANGENT
     if obj.get("3DMigoto:RecalculateTANGENT",False):
         # operator.report({'INFO'},"导出时重新计算TANGENT")
-        print("导出时重新计算TANGENT")
+        # print("导出时重新计算TANGENT")
         vb.vector_normalized_normal_to_tangent()
     elif GenerateModConfig.recalculate_tangent():
-        print("导出时重新计算TANGENT(全局设置)")
+        # print("导出时重新计算TANGENT(全局设置)")
         vb.vector_normalized_normal_to_tangent()
 
 
     # Nico: 重计算COLOR
     if obj.get("3DMigoto:RecalculateCOLOR",False):
         # operator.report({'INFO'},"导出时重新计算COLOR")
-        print("导出时重新计算COLOR")
+        # print("导出时重新计算COLOR")
         vb.arithmetic_average_normal_to_color()
     elif GenerateModConfig.recalculate_color():
-        print("导出时重新计算COLOR(全局设置)")
+        # print("导出时重新计算COLOR(全局设置)")
         vb.arithmetic_average_normal_to_color()
-
+    
     return ib, vb
 
 

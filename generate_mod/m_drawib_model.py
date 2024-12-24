@@ -63,7 +63,7 @@ class DrawIBModel:
         self.__read_tmp_json()
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
-        TimerUtils.Start("__parse_drawib_collection_architecture")
+        # TimerUtils.Start("__parse_drawib_collection_architecture")
 
         LOG.info("DrawIB: " + self.draw_ib)
         LOG.info("Visiable: " + str(CollectionUtils.is_collection_visible(draw_ib_collection.name)))
@@ -105,7 +105,7 @@ class DrawIBModel:
                 model_collection_list.append(model_collection)
 
             self.componentname_modelcollection_list_dict[component_name] = model_collection_list
-        TimerUtils.End("__parse_drawib_collection_architecture")
+        # TimerUtils.End("__parse_drawib_collection_architecture")
 
     def __parse_key_number(self):
         '''
@@ -127,6 +127,7 @@ class DrawIBModel:
         self.key_number = tmp_number
 
     def __parse_obj_name_ib_vb_dict(self):
+        # TimerUtils.Start("__parse_obj_name_ib_vb_dict")
         '''
         把之前统计的所有obj都转为ib和vb格式备用
         '''
@@ -139,6 +140,8 @@ class DrawIBModel:
 
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_vb_dict[obj.name] = vb
+        
+        # TimerUtils.End("__parse_obj_name_ib_vb_dict")
 
     def __read_component_ib_buf_dict(self):
         vertex_number_ib_offset = 0

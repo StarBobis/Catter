@@ -2,6 +2,7 @@
 from ..migoto.migoto_utils import *
 from .input_layout import *
 from ..config.generate_mod_config import *
+from ..utils.timer_utils import *
 
 class VertexBuffer(object):
     vb_elem_pattern = re.compile(r'''vb\d+\[\d*\]\+\d+ (?P<semantic>[^:]+): (?P<data>.*)$''')
@@ -118,6 +119,7 @@ class VertexBuffer(object):
     
     # Nico: 向量相加归一化法线 
     def get_position_normalizednormal_dict(self,vertices):
+        # TimerUtils.Start("get_position_normalizednormal_dict")
         position_normal_dict = {}
         for vertex in vertices:
             position = vertex["POSITION"]
@@ -130,7 +132,7 @@ class VertexBuffer(object):
             else:
                 position_normal_dict[position_str] = normal
 
-        
+        # TimerUtils.End("get_position_normalizednormal_dict") 0.1s
         return position_normal_dict
     
     # Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
@@ -168,6 +170,7 @@ class VertexBuffer(object):
     # TODO 尽管这个可以起到相似的效果，但是仍然无法完美获取模型本身的TANGENT数据，只能做到99%近似。
     # 经过测试，头发部分并不是简单的向量归一化，也不是算术平均归一化。
     def vector_normalized_normal_to_tangent(self):
+        # TimerUtils.Start("Recalculate TANGENT")
         position_normal_dict = self.get_position_normalizednormal_dict(self.vertices)
         new_vertices = []
 
@@ -202,6 +205,7 @@ class VertexBuffer(object):
                 new_vertices.append(vertex)
 
         self.vertices = new_vertices
+        # TimerUtils.End("Recalculate TANGENT") # 0.36s
 
     def arithmetic_average_normal_to_attribute(self,attribute):
         position_normal_dict = self.get_position_averagenormal_dict(self.vertices)

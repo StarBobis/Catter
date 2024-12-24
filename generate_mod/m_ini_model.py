@@ -475,6 +475,7 @@ class M_IniModel:
 
     @classmethod
     def export_buffer_files(cls):
+        # TimerUtils.Start("export_buffer_files")
         '''
         Export to buffer files from ib and vb.
         '''
@@ -485,8 +486,12 @@ class M_IniModel:
         if len(cls.shapekeys) != 0:
             pass
 
+        # TimerUtils.End("export_buffer_files") 
+        # [export_buffer_files] time elapsed: 0:00:00.006989 
+
     @classmethod
     def generate_unity_vs_config_ini(cls):
+        # TimerUtils.Start("generate_unity_vs_config_ini")
         '''
         Supported Games:
         - Genshin Impact
@@ -526,6 +531,8 @@ class M_IniModel:
 
         if not GenerateModConfig.generate_to_seperate_folder():
             ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+        
+        # TimerUtils.End("generate_unity_vs_config_ini")
 
 
     @classmethod
