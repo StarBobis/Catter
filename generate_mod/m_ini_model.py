@@ -742,6 +742,17 @@ class M_IniModel:
             resource_vb_section.new_line()
         
         ini_builder.append_section(resource_vb_section)
+    
+    @classmethod
+    def add_unity_cs_resource_vertexlimit(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        resource_vertex_limit_section = M_IniSection(M_SectionType.ResourceBuffer)
+        resource_vertex_limit_section.append("[Resource_" + draw_ib_model.draw_ib + "_VertexLimit]")
+        resource_vertex_limit_section.append("type = Buffer")
+        resource_vertex_limit_section.append("format = R32G32B32A32_UINT")
+        resource_vertex_limit_section.append("data = " + str(draw_ib_model.draw_number) + " 0 0 0")
+        resource_vertex_limit_section.new_line()
+
+        ini_builder.append_section(resource_vertex_limit_section)
 
     @classmethod
     def add_texture_filter_index(cls,ini_builder:M_IniBuilder):
@@ -786,6 +797,7 @@ class M_IniModel:
             cls.add_unity_cs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model) 
             cls.add_unity_cs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model) 
 
+            cls.add_unity_cs_resource_vertexlimit(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
             cls.add_unity_cs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
 
