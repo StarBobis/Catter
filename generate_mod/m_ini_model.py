@@ -16,6 +16,10 @@ class M_IniModel:
 
     vlr_filter_index_indent = ""
 
+    # 贴图filter_index功能
+    texture_hash_filter_index_dict = {}
+
+
     @classmethod
     def initialzie(cls):
         '''
@@ -29,6 +33,13 @@ class M_IniModel:
         cls.global_generate_mod_number = 0
 
         cls.vlr_filter_index_indent = ""
+
+        cls.texture_hash_filter_index_dict = {}
+
+       
+
+
+
 
     @classmethod
     def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
@@ -179,8 +190,8 @@ class M_IniModel:
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "handling = skip")
 
 
-            # if ZZZ 
-            if MainConfig.gamename == "ZZZ" and GenerateModConfig.hash_style_auto_texture():
+            # if ZZZ ,use run = CommandListSkinTexture solve slot check problems.
+            if MainConfig.gamename == "ZZZ" :
                 texture_override_ib_section.append(cls.vlr_filter_index_indent + "run = CommandListSkinTexture")
             # Add texture slot check, hash style texture also need this.
             elif not GenerateModConfig.forbid_auto_texture_ini():
@@ -197,11 +208,19 @@ class M_IniModel:
 
             # Add slot style texture slot replace.
             if not GenerateModConfig.forbid_auto_texture_ini() and not GenerateModConfig.hash_style_auto_texture():
-                slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                slot_texture_replace_dict:dict[str,TextureReplace] = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
                 # It may not have auto texture
-                if slot_replace_dict is not None:
-                    for slot,resource_name in slot_replace_dict.items():
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + slot + " = " + resource_name)
+                if slot_texture_replace_dict is not None:
+                    for slot,texture_replace in slot_texture_replace_dict.items():
+                        texture_filter_index_indent = ""
+                        if GenerateModConfig.slot_style_texture_add_filter_index():
+                            texture_override_ib_section.append("if " + slot + " == " + str(cls.texture_hash_filter_index_dict[texture_replace.hash]))
+                            texture_filter_index_indent = "  "
+
+                        texture_override_ib_section.append(texture_filter_index_indent + cls.vlr_filter_index_indent + slot + " = " + texture_replace.resource_name)
+
+                        if GenerateModConfig.slot_style_texture_add_filter_index():
+                            texture_override_ib_section.append("endif")
 
             # 如果不使用GPU-Skinning即为Object类型，此时需要在ib下面替换对应槽位
             if not d3d11GameType.GPU_PreSkinning:
@@ -361,7 +380,7 @@ class M_IniModel:
             ini_builder.append_section(resource_ib_section)
 
     @classmethod
-    def add_resource_texture_sections(cls,ini_builder,draw_ib_model):
+    def add_resource_texture_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
         '''
         Add texture resource.
         '''
@@ -478,6 +497,9 @@ class M_IniModel:
         - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
         '''
         ini_builder = M_IniBuilder()     
+
+        if GenerateModConfig.slot_style_texture_add_filter_index():
+            cls.add_texture_filter_index(ini_builder= ini_builder)
 
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
             cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
@@ -720,13 +742,42 @@ class M_IniModel:
             resource_vb_section.new_line()
         
         ini_builder.append_section(resource_vb_section)
-    
+
+    @classmethod
+    def add_texture_filter_index(cls,ini_builder:M_IniBuilder):
+        if not GenerateModConfig.slot_style_texture_add_filter_index():
+            return 
+
+        filter_index_count = 0
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            for partname,slot_texture_replace_dict in draw_ib_model.PartName_SlotTextureReplaceDict_Dict.items():
+                for slot, texture_replace in slot_texture_replace_dict.items():
+                    if texture_replace.hash in cls.texture_hash_filter_index_dict:
+                        continue
+                    else:
+                        filter_index = 6000 + filter_index_count
+                        filter_index_count = filter_index_count + 1
+                        cls.texture_hash_filter_index_dict[texture_replace.hash] = filter_index
+        
+
+        texture_filter_index_section = M_IniSection(M_SectionType.TextureOverrideTexture)
+        for hash_value, filter_index in cls.texture_hash_filter_index_dict.items():
+            texture_filter_index_section.append("[TextureOverride_Texture_" + hash_value + "]")
+            texture_filter_index_section.append("hash = " + hash_value)
+            texture_filter_index_section.append("filter_index = " + str(filter_index))
+            texture_filter_index_section.new_line()
+
+        ini_builder.append_section(texture_filter_index_section)
+
     @classmethod
     def generate_unity_cs_config_ini(cls):
         '''
         test
         '''
         ini_builder = M_IniBuilder()     
+
+        if GenerateModConfig.slot_style_texture_add_filter_index():
+            cls.add_texture_filter_index(ini_builder= ini_builder)
 
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
             cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model) 

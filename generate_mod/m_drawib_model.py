@@ -12,6 +12,14 @@ from ..utils.json_utils import *
 
 from .m_ini_helper import *
 
+class TextureReplace:
+
+    def  __init__(self):
+        self.resource_name = ""
+        self.filter_index = 0
+        self.hash = ""
+        
+
 class ModelCollection:
     def __init__(self):
         self.type = ""
@@ -40,7 +48,8 @@ class DrawIBModel:
         self.vertex_limit_hash = ""
         self.key_number = 0
         self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
-        self.PartName_SlotReplaceDict_Dict = {}
+        self.PartName_SlotReplaceDict_Dict = {} # Deprecated TODO 有空把这个移除掉，用下面那个
+        self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
         self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
         self.extract_gametype_folder_path = ""
 
@@ -284,17 +293,35 @@ class DrawIBModel:
         self.work_game_type = tmp_json_dict["WorkGameType"]
 
         partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
+        
+        filter_index_number = 0
         for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
             slot_replace_dict = {}
+            slot_texture_replace_dict = {}
             for texture_resource_replace in texture_resource_replace_list:
                 splits = texture_resource_replace.split("=")
                 slot_name = splits[0].strip()
                 texture_filename = splits[1].strip()
+
                 resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
                 slot_replace_dict[slot_name] = resource_name
 
+                filename_splits = os.path.splitext(texture_filename)[0].split("-")
+                texture_hash = filename_splits[1]
+
+                texture_replace = TextureReplace()
+                texture_replace.hash = texture_hash
+                texture_replace.resource_name = resource_name
+
+                slot_texture_replace_dict[slot_name] = texture_replace
+
                 self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
+
             self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
+            self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
+
+
+
     
     
 

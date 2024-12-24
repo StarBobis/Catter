@@ -140,6 +140,12 @@ class GenerateModConfig:
         return bpy.context.scene.dbmt_generatemod.vertex_limit_raise_add_filter_index
 
 
+    @classmethod
+    def slot_style_texture_add_filter_index(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.slot_style_texture_add_filter_index
+        '''
+        return bpy.context.scene.dbmt_generatemod.slot_style_texture_add_filter_index
     
 
     # @classmethod
