@@ -11,7 +11,8 @@ class M_SectionType:
     ResourceBuffer = "ResourceBuffer"
     ResourceTexture = "ResourceTexture"
     CreditInfo = "CreditInfo"
-    VSHashCheck = "VSHashCheck"
+    ResourceAndTextureOverride_Texture = "ResourceAndTextureOverride_Texture" # 用于Hash风格贴图中方便Resource和TextureOverride放在一起
+
 
 
 class M_IniSection:
@@ -61,12 +62,14 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
         self.__append_section_line(M_SectionType.ResourceBuffer)
-        self.__append_section_line(M_SectionType.ResourceTexture)
 
+        self.__append_section_line(M_SectionType.ResourceTexture)
         self.__append_section_line(M_SectionType.TextureOverrideTexture)
-        self.__append_section_line(M_SectionType.VSHashCheck)
+
+        self.__append_section_line(M_SectionType.ResourceAndTextureOverride_Texture)
 
         self.__append_section_line(M_SectionType.CreditInfo)
+
 
         sha256 = self.calculate_sha256_for_list(self.line_list)
         # print("sha256: " + sha256)

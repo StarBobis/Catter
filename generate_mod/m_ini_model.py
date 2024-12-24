@@ -174,8 +174,12 @@ class M_IniModel:
 
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "handling = skip")
 
+
+            # if ZZZ 
+            if MainConfig.gamename == "ZZZ" and GenerateModConfig.hash_style_auto_texture():
+                texture_override_ib_section.append(cls.vlr_filter_index_indent + "run = CommandListSkinTexture")
             # Add texture slot check, hash style texture also need this.
-            if not GenerateModConfig.forbid_auto_texture_ini():
+            elif not GenerateModConfig.forbid_auto_texture_ini():
                 texture_override_ib_section.append(cls.vlr_filter_index_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
                 slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
 
@@ -354,7 +358,7 @@ class M_IniModel:
     @classmethod
     def add_resource_texture_sections(cls,ini_builder,draw_ib_model):
         '''
-        add texture resource.
+        Add texture resource.
         '''
         if GenerateModConfig.forbid_auto_texture_ini():
             return 
@@ -422,23 +426,22 @@ class M_IniModel:
                 if not os.path.exists(original_texture_file_path):
                     continue
 
-                new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
+                # new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
+                new_texture_file_name = texture_hash + "_" + texture_file_name.split("-")[3]
+                
                 target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
                 
-                resource_texture_section = M_IniSection(M_SectionType.ResourceTexture)
-                resource_texture_section.append("[Resource_Texture_" + texture_hash + "]")
-                resource_texture_section.append("filename = Texture/" + new_texture_file_name)
-                resource_texture_section.new_line()
+                resource_and_textureoverride_texture_section = M_IniSection(M_SectionType.ResourceAndTextureOverride_Texture)
+                resource_and_textureoverride_texture_section.append("[Resource_Texture_" + texture_hash + "]")
+                resource_and_textureoverride_texture_section.append("filename = Texture/" + new_texture_file_name)
+                resource_and_textureoverride_texture_section.new_line()
 
-                texture_ini_builder.append_section(resource_texture_section)
+                resource_and_textureoverride_texture_section.append("[TextureOverride_" + texture_hash + "]")
+                resource_and_textureoverride_texture_section.append("hash = " + texture_hash)
+                resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
+                resource_and_textureoverride_texture_section.new_line()
 
-                texture_override_texture_section = M_IniSection(M_SectionType.TextureOverrideTexture)
-                texture_override_texture_section.append("[TextureOverride_" + texture_hash + "]")
-                texture_override_texture_section.append("hash = " + texture_hash)
-                texture_override_texture_section.append("this = Resource_Texture_" + texture_hash)
-                texture_override_texture_section.new_line()
-
-                texture_ini_builder.append_section(texture_override_texture_section)
+                texture_ini_builder.append_section(resource_and_textureoverride_texture_section)
 
                 # copy only if target not exists avoid overwrite texture manually replaced by mod author.
                 if not os.path.exists(target_texture_file_path):
