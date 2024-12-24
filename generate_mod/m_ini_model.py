@@ -678,7 +678,7 @@ class M_IniModel:
     @classmethod
     def add_unity_cs_resource_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
         '''
-        Add Resource VB Section
+        Add Resource VB Section (UnityCS)
         '''
         resource_vb_section = M_IniSection(M_SectionType.ResourceBuffer)
         for category_name in draw_ib_model.d3d11GameType.OrderedCategoryNameList:
