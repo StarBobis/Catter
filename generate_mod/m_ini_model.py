@@ -281,7 +281,7 @@ class M_IniModel:
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
         if d3d11GameType.GPU_PreSkinning:
-            vertexlimit_section = M_IniSection(M_SectionType.TextureOverrideVB)
+            vertexlimit_section = M_IniSection(M_SectionType.TextureOverrideVertexLimitRaise)
             vertexlimit_section.append("[TextureOverride_" + draw_ib + "_VertexLimitRaise]")
             vertexlimit_section.append("hash = " +draw_ib_model.vertex_limit_hash)
             

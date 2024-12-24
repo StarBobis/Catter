@@ -6,6 +6,7 @@ class M_SectionType:
     Key = "Key"
     TextureOverrideIB = "TextureOverrideIB"
     TextureOverrideVB = "TextureOverrideVB"
+    TextureOverrideVertexLimitRaise = "TextureOverrideVertexLimitRaise"
     TextureOverrideTexture = "TextureOverrideTexture"
     IBSkip = "IBSkip"
     ResourceBuffer = "ResourceBuffer"
@@ -58,6 +59,7 @@ class M_IniBuilder:
 
         self.__append_section_line(M_SectionType.IBSkip)
 
+        self.__append_section_line(M_SectionType.TextureOverrideVertexLimitRaise)
         self.__append_section_line(M_SectionType.TextureOverrideVB)
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
