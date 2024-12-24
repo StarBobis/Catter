@@ -363,13 +363,14 @@ class M_IniModel:
         if GenerateModConfig.hash_style_auto_texture():
             return
         
+        resource_texture_section = M_IniSection(M_SectionType.ResourceTexture)
         for resource_name, texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.items():
-            resource_texture_section = M_IniSection(M_SectionType.ResourceTexture)
+           
             resource_texture_section.append("[" + resource_name + "]")
             resource_texture_section.append("filename = Texture/" + texture_filename)
             resource_texture_section.new_line()
 
-            ini_builder.append_section(resource_texture_section)
+        ini_builder.append_section(resource_texture_section)
 
     @classmethod
     def move_slot_style_textures(cls,draw_ib_model:DrawIBModel):
