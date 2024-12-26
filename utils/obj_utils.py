@@ -21,6 +21,24 @@ class ObjUtils:
             raise Fatal('No object selected')
         
         return obj
+
+    @classmethod
+    def selected_obj_delete_loose(cls):
+        # 获取当前选中的对象
+        selected_objects = bpy.context.selected_objects
+        # 检查是否选中了一个Mesh对象
+        for obj in selected_objects:
+            if obj.type == 'MESH':
+                # 设置当前对象为活动对象 （不设置的话后面没法切换编辑模式，就会报错）
+                bpy.context.view_layer.objects.active = obj
+                # 获取选中的网格对象
+                bpy.ops.object.mode_set(mode='EDIT')
+                # 选择所有的顶点
+                bpy.ops.mesh.select_all(action='SELECT')
+                # 执行删除孤立顶点操作
+                bpy.ops.mesh.delete_loose()
+                # 切换回对象模式
+                bpy.ops.object.mode_set(mode='OBJECT')
     
 
 

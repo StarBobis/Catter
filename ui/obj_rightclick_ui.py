@@ -1,5 +1,5 @@
 from ..utils.shapekey_utils import *
-from ..utils.obj_utils import SmoothNormal
+from ..utils.obj_utils import SmoothNormal,ObjUtils
 
 from mathutils import Vector
 
@@ -309,19 +309,7 @@ class MMTDeleteLoose(bpy.types.Operator):
     bl_description = "把当前选中的obj的所有松散点都删除"
     
     def execute(self, context):
-        # 获取当前选中的对象
-        selected_objects = bpy.context.selected_objects
-        # 检查是否选中了一个Mesh对象
-        for obj in selected_objects:
-            if obj.type == 'MESH':
-                # 获取选中的网格对象
-                bpy.ops.object.mode_set(mode='EDIT')
-                # 选择所有的顶点
-                bpy.ops.mesh.select_all(action='SELECT')
-                # 执行删除孤立顶点操作
-                bpy.ops.mesh.delete_loose()
-                # 切换回对象模式
-                bpy.ops.object.mode_set(mode='OBJECT')
+        ObjUtils.selected_obj_delete_loose()
         return {'FINISHED'}
 
 

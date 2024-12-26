@@ -6,6 +6,8 @@ from .vertex_buffer import *
 from .index_buffer import *
 from ..config.import_model_config import *
 
+from ..utils.obj_utils import ObjUtils
+
 from array import array
 
 import os.path
@@ -390,6 +392,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     if ImportModelConfig.import_flip_scale_x():
         obj.scale.x = obj.scale.x * -1
 
+    
+
+
     # Flush every time export
     bpy.context.view_layer.update()
 
@@ -558,6 +563,9 @@ def ImprotFromWorkSpace(self, context):
 
     # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
     CollectionUtils.select_collection_objects(workspace_collection)
+
+    # 用户希望导入后删除松散点
+    ObjUtils.selected_obj_delete_loose()
 
 
 class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
