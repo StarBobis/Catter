@@ -46,6 +46,7 @@ register_classes = (
     RecalculateTANGENTWithVectorNormalizedNormal,
     RecalculateCOLORWithVectorNormalizedNormal,
     WWMI_ApplyModifierForObjectWithShapeKeysOperator,
+    SmoothNormalSaveToUV,
     
     # Collection's right click menu item.
     Catter_MarkCollection_Switch,

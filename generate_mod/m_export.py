@@ -118,21 +118,21 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
 
 class HashableVertex(dict):
     # 旧的代码注释掉了，不过不删，留着用于参考防止忘记原本的设计
-    # def __hash__(self):
-    #     # Convert keys and values into immutable types that can be hashed
-    #     immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
-    #     return hash(immutable)
-
     def __hash__(self):
-        # 这里将步骤拆分开来，更易于理解
-        immutable_items = []
-        for k, v in self.items():
-            tuple_v = tuple(v)
-            pair = (k, tuple_v)
-            immutable_items.append(pair)
-        sorted_items = sorted(immutable_items)
-        immutable = tuple(sorted_items)
+        # Convert keys and values into immutable types that can be hashed
+        immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
         return hash(immutable)
+
+    # def __hash__(self):
+    #     # 这里将步骤拆分开来，更易于理解
+    #     immutable_items = []
+    #     for k, v in self.items():
+    #         tuple_v = tuple(v)
+    #         pair = (k, tuple_v)
+    #         immutable_items.append(pair)
+    #     sorted_items = sorted(immutable_items)
+    #     immutable = tuple(sorted_items)
+    #     return hash(immutable)
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 def get_export_ib_vb(context):
@@ -154,9 +154,8 @@ def get_export_ib_vb(context):
     # Nico: 这一步如果存在TANGENT属性则会导致顶点数量增加
     mesh.calc_tangents()
 
-
+    print("导出不改变顶点数：" + str(GenerateModConfig.export_same_number()))
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
-    # TimerUtils.Start("texcoord_layers")
     texcoord_layers = {}
     for uv_layer in mesh.uv_layers:
         texcoords = {}
@@ -174,7 +173,6 @@ def get_export_ib_vb(context):
             uv = flip_uv(uv_layer.data[l.index].uv)
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
-    # TimerUtils.End("texcoord_layers") # 0:00:00.129772 
 
 
 
@@ -211,7 +209,7 @@ def get_export_ib_vb(context):
             '''
             if GenerateModConfig.export_same_number():
                 if "POSITION" in vertex and "NORMAL" in vertex and "TANGENT" in vertex :
-                    if tuple(vertex["POSITION"] + vertex["NORMAL"]  ) in unique_position_vertices:
+                    if tuple(vertex["POSITION"] + vertex["NORMAL"] ) in unique_position_vertices:
                         tangent_var = unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])]
                         vertex["TANGENT"] = tangent_var
                     else:
@@ -224,6 +222,9 @@ def get_export_ib_vb(context):
         if ib is not None:
             ib.append(face)
 
+    print("IB UniqueVertexCount: " + str(ib.get_unique_vertex_number()))
+    print("IndexedVertices Number: " + str(len(indexed_vertices)))
+    print("unique_position_vertices Number: " + str(len(unique_position_vertices)))
 
     # TimerUtils.Start("get vb")
     vb = VertexBuffer(layout=layout)

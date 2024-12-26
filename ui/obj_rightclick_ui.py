@@ -1,4 +1,6 @@
 from ..utils.shapekey_utils import *
+from ..utils.obj_utils import SmoothNormal
+
 from mathutils import Vector
 
 from bpy.props import BoolProperty,  CollectionProperty
@@ -483,6 +485,16 @@ class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
             item.name = bpy.context.object.modifiers[i].name
             item.checked = False
         return context.window_manager.invoke_props_dialog(self)
+    
+
+class SmoothNormalSaveToUV(bpy.types.Operator):
+    bl_idname = "object.smooth_normal_save_to_uv"
+    bl_label = "平滑法线存UV(近似)"
+    bl_description = "平滑法线存UV算法，可用于修复ZZZ,WuWa的某些UV(只是近似实现60%的效果)" 
+
+    def execute(self, context):
+        SmoothNormal.smooth_normal_save_to_uv()
+        return {'FINISHED'}
  
  
 class CatterRightClickMenu(bpy.types.Menu):
@@ -503,6 +515,7 @@ class CatterRightClickMenu(bpy.types.Menu):
         layout.operator(MMTResetRotation.bl_idname)
         layout.operator(SplitMeshByCommonVertexGroup.bl_idname)
         layout.operator(WWMI_ApplyModifierForObjectWithShapeKeysOperator.bl_idname)
+        layout.operator(SmoothNormalSaveToUV.bl_idname)
         layout.separator()
         layout.operator(RecalculateTANGENTWithVectorNormalizedNormal.bl_idname)
         layout.operator(RecalculateCOLORWithVectorNormalizedNormal.bl_idname)
