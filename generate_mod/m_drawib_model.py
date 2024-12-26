@@ -39,7 +39,7 @@ class DrawIBModel:
         # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
 
         # 生成Mod的ini时要使用的内容
-        self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
+        self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
         self.d3d11GameType:D3D11GameType = None 
         self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。

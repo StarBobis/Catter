@@ -515,18 +515,18 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
 
 
 def ImprotFromWorkSpace(self, context):
-    import_drawib_folder_path_dict = ImportUtils.get_import_drawib_folder_path_dict_with_first_match_type()
-    print(import_drawib_folder_path_dict)
+    import_drawib_aliasname_folder_path_dict = ImportUtils.get_import_drawib_aliasname_folder_path_dict_with_first_match_type()
+    print(import_drawib_aliasname_folder_path_dict)
 
     workspace_collection = CollectionUtils.new_workspace_collection()
 
-    for draw_ib,import_folder_path in import_drawib_folder_path_dict.items():
+    for draw_ib_aliasname,import_folder_path in import_drawib_aliasname_folder_path_dict.items():
         import_prefix_list = ImportUtils.get_prefix_list_from_tmp_json(import_folder_path)
         if len(import_prefix_list) == 0:
-            self.report({'ERROR'},"当前output文件夹"+draw_ib+"中的内容暂不支持一键导入分支模型")
+            self.report({'ERROR'},"当前output文件夹"+draw_ib_aliasname+"中的内容暂不支持一键导入分支模型")
             continue
 
-        draw_ib_collection = CollectionUtils.new_draw_ib_collection(draw_ib=draw_ib)
+        draw_ib_collection = CollectionUtils.new_draw_ib_collection(collection_name=draw_ib_aliasname)
         workspace_collection.children.link(draw_ib_collection)
 
         part_count = 1

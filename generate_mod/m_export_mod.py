@@ -21,16 +21,17 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
                 continue
 
             # get drawib
-            draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
-            if "." in draw_ib:
-                self.report({'ERROR'},"当前选中集合中的DrawIB集合名称被意外修改导致无法识别到DrawIB，请不要修改导入时以draw_ib为名称的集合")
+            draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
+            if "_" not in draw_ib_alias_name:
+                self.report({'ERROR'},"当前选中集合中的DrawIB集合名称被意外修改导致无法识别到DrawIB，请不要修改导入时以drawib_aliasname为名称的集合")
                 return {'FINISHED'}
         
             # 如果当前集合没有子集合，说明不是一个合格的分支Mod
             if len(draw_ib_collection.children) == 0:
                 self.report({'ERROR'},"当前选中集合不是一个标准的分支模型集合，请检查您是否以分支集合方式导入了模型。")
                 return {'FINISHED'}
-            
+
+            draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
             M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
@@ -60,17 +61,19 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
             if not CollectionUtils.is_collection_visible(draw_ib_collection.name):
                 continue
 
+            
             # get drawib
-            draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
-            if "." in draw_ib:
-                self.report({'ERROR'},"当前选中集合中的DrawIB集合名称被意外修改导致无法识别到DrawIB，请不要修改导入时以draw_ib为名称的集合")
+            draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
+            if "_" not in draw_ib_alias_name:
+                self.report({'ERROR'},"当前选中集合中的DrawIB集合名称被意外修改导致无法识别到DrawIB，请不要修改导入时以drawib_aliasname为名称的集合")
                 return {'FINISHED'}
         
             # 如果当前集合没有子集合，说明不是一个合格的分支Mod
             if len(draw_ib_collection.children) == 0:
                 self.report({'ERROR'},"当前选中集合不是一个标准的分支模型集合，请检查您是否以分支集合方式导入了模型。")
                 return {'FINISHED'}
-            
+
+            draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
             M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 

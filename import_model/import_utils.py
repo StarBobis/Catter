@@ -4,11 +4,17 @@ import json
 import subprocess
 from ..config.main_config import *
 
+class DrawIBPair:
+
+    def __init__(self):
+        self.DrawIB = ""
+        self.AliasName = ""
+
 
 class ImportUtils:
     # Get drawib list from Game's Config.json.
     @classmethod
-    def get_extract_drawib_list_from_workspace_config_json(cls)->list:
+    def get_extract_drawib_list_from_workspace_config_json(cls) -> list[DrawIBPair]:
         workspace_path = MainConfig.path_workspace_folder()
 
         game_config_path = os.path.join(workspace_path,"Config.json")
@@ -19,20 +25,26 @@ class ImportUtils:
         # draw_ib_list =game_config_json["DrawIBList"]
         draw_ib_list = []
         for item in game_config_json:
-            drawib_value = item["DrawIB"]
-            draw_ib_list.append(drawib_value)
+            drawib_pair = DrawIBPair()
+            drawib_pair.AliasName = item["Alias"]
+            drawib_pair.DrawIB =  item["DrawIB"]
+
+            draw_ib_list.append(drawib_pair)
 
         return draw_ib_list
 
 
     @classmethod
-    def get_import_drawib_folder_path_dict_with_first_match_type(cls)->list:
+    def get_import_drawib_aliasname_folder_path_dict_with_first_match_type(cls)->list:
         output_folder_path = MainConfig.path_workspace_folder()
-        draw_ib_list = ImportUtils.get_extract_drawib_list_from_workspace_config_json()
+        draw_ib_list= ImportUtils.get_extract_drawib_list_from_workspace_config_json()
         
         final_import_folder_path_dict = {}
 
-        for draw_ib in draw_ib_list:
+        for draw_ib_pair in draw_ib_list:
+            draw_ib = draw_ib_pair.DrawIB
+            alias_name = draw_ib_pair.AliasName
+
             gpu_import_folder_path_list = []
             cpu_import_folder_path_list = []
 
@@ -53,9 +65,9 @@ class ImportUtils:
                     cpu_import_folder_path_list.append(final_import_folder_path)
 
             if len(gpu_import_folder_path_list) != 0:
-                final_import_folder_path_dict[draw_ib] = gpu_import_folder_path_list[0]
+                final_import_folder_path_dict[draw_ib + "_" + alias_name] = gpu_import_folder_path_list[0]
             elif len(cpu_import_folder_path_list) != 0:
-                final_import_folder_path_dict[draw_ib] = cpu_import_folder_path_list[0]
+                final_import_folder_path_dict[draw_ib + "_" + alias_name] = cpu_import_folder_path_list[0]
             else:
                 pass
                 # raise ImportError()

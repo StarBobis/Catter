@@ -135,8 +135,8 @@ class CollectionUtils:
         return workspace_collection
     
     @classmethod
-    def new_draw_ib_collection(cls,draw_ib:str):
-        draw_ib_collection = bpy.data.collections.new(draw_ib)
+    def new_draw_ib_collection(cls,collection_name:str):
+        draw_ib_collection = bpy.data.collections.new(collection_name)
         draw_ib_collection.color_tag = "COLOR_07" #粉色
         return draw_ib_collection
     
