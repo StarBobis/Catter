@@ -216,3 +216,8 @@ class CatterPropertiesImportModel(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+    import_delete_loose :bpy.props.BoolProperty(
+        name="导入模型时删除模型松散点",
+        description="勾选后在导入模型时会把松散点删除，进入编辑模式就不会看见松散的没用的点影响Mod制作了，由于很常用所以默认是勾选的。",
+        default=True
+    ) # type: ignore

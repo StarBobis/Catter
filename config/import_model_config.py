@@ -10,3 +10,11 @@ class ImportModelConfig:
         bpy.context.scene.dbmt.import_flip_scale_x
         '''
         return bpy.context.scene.dbmt.import_flip_scale_x
+    
+    @classmethod
+    def import_delete_loose(cls):
+        '''
+        bpy.context.scene.dbmt.import_delete_loose
+        '''
+        return bpy.context.scene.dbmt.import_delete_loose
+    

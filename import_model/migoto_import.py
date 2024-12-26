@@ -564,8 +564,9 @@ def ImprotFromWorkSpace(self, context):
     # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
     CollectionUtils.select_collection_objects(workspace_collection)
 
-    # 用户希望导入后删除松散点
-    ObjUtils.selected_obj_delete_loose()
+    if ImportModelConfig.import_delete_loose():
+        # 用户希望导入后删除松散点
+        ObjUtils.selected_obj_delete_loose()
 
 
 class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):

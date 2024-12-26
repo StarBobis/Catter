@@ -99,6 +99,8 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
         layout.prop(dbmt_config,"model_scale")
         #import_flip_coordinate_x 
         layout.prop(dbmt_config,"import_flip_scale_x")
+        layout.prop(dbmt_config,"import_delete_loose")
+        
         draw_seperator(self)
         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
