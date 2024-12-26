@@ -158,6 +158,14 @@ class InputLayout(object):
             ret += 'element[%i]:\n' % i
             ret += elem.to_string()
         return ret
+    
+    def contains(self,element_name:str) ->bool :
+        for elem in self.elems:
+            # print(elem)
+            if elem == element_name:
+                # print("contains " + element_name)
+                return True
+        return False
 
     def parse_element(self, f):
         elem = InputLayoutElement(f)

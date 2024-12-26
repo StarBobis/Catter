@@ -233,23 +233,26 @@ def get_export_ib_vb(context):
     # TimerUtils.End("get vb") #  0:00:00.062375 
   
     # Nico: 重计算TANGENT
-    if obj.get("3DMigoto:RecalculateTANGENT",False):
-        # operator.report({'INFO'},"导出时重新计算TANGENT")
-        # print("导出时重新计算TANGENT")
-        vb.vector_normalized_normal_to_tangent()
-    elif GenerateModConfig.recalculate_tangent():
-        # print("导出时重新计算TANGENT(全局设置)")
-        vb.vector_normalized_normal_to_tangent()
-
+    # 含有这个属性的情况下才能计算这个属性。
+    if layout.contains("TANGENT"):
+        if obj.get("3DMigoto:RecalculateTANGENT",False):
+            # operator.report({'INFO'},"导出时重新计算TANGENT")
+            # print("导出时重新计算TANGENT")
+            vb.vector_normalized_normal_to_tangent()
+        elif GenerateModConfig.recalculate_tangent():
+            # print("导出时重新计算TANGENT(全局设置)")
+            vb.vector_normalized_normal_to_tangent()
+    
 
     # Nico: 重计算COLOR
-    if obj.get("3DMigoto:RecalculateCOLOR",False):
-        # operator.report({'INFO'},"导出时重新计算COLOR")
-        # print("导出时重新计算COLOR")
-        vb.arithmetic_average_normal_to_color()
-    elif GenerateModConfig.recalculate_color():
-        # print("导出时重新计算COLOR(全局设置)")
-        vb.arithmetic_average_normal_to_color()
+    if layout.contains("COLOR"):
+        if obj.get("3DMigoto:RecalculateCOLOR",False):
+            # operator.report({'INFO'},"导出时重新计算COLOR")
+            # print("导出时重新计算COLOR")
+            vb.arithmetic_average_normal_to_color()
+        elif GenerateModConfig.recalculate_color():
+            # print("导出时重新计算COLOR(全局设置)")
+            vb.arithmetic_average_normal_to_color()
     
     return ib, vb
 
