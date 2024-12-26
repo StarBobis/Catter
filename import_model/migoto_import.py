@@ -502,7 +502,15 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
                     self.report({'ERROR'}, "未找到.fmt文件，无法导入")
             except Fatal as e:
                 self.report({'ERROR'}, str(e))
-            
+        
+
+        # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
+        CollectionUtils.select_collection_objects(collection)
+
+        if ImportModelConfig.import_delete_loose():
+            # 用户希望导入后删除松散点
+            ObjUtils.selected_obj_delete_loose()
+
         return {'FINISHED'}
 
 
