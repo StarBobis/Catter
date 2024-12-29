@@ -176,16 +176,23 @@ class SmoothNormal:
             for loop_index in range(poly.loop_start,poly.loop_start+poly.loop_total):
                 vertex_index=mesh.loops[loop_index].vertex_index
                 vertex = mesh.vertices[vertex_index]
+
+                # 初始化平滑法线和平滑权重
                 smoothnormal=Vector((0,0,0))
                 weight = 0
+
+                # 基于相邻面的法线加权平均计算平滑法线
                 if cls.need_outline(vertex):
                     costr=cls.vector_to_string(vertex.co)
 
                     if costr in co_str_data_dict:
                         a = co_str_data_dict[costr]
+                        # 对于共享此顶点的所有面的数据，遍历它们
                         for d in a:
+                            # 分别获取面的法线和权重
                             normal_vector=d['n']
                             w = d['w']
+                            # 累加加权法线和权重
                             smoothnormal  += normal_vector*w
                             weight  += w
                 if smoothnormal != Vector((0,0,0)):

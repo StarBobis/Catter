@@ -34,7 +34,7 @@ class DrawIBModel:
     def __init__(self,draw_ib_collection):
         self.__obj_name_ib_dict:dict[str,IndexBuffer] = {} 
         self.__obj_name_vb_dict:dict[str,VertexBuffer] =  {} 
-        self.__componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件。
+        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
         # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
 
@@ -175,8 +175,12 @@ class DrawIBModel:
                     # Add UniqueVertexNumber to show vertex count in mod ini.
                     print(unique_vertex_number)
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
-
-            self.__componentname_ibbuf_dict[component_name] = ib_buf
+            
+            # Only export if it's not empty.
+            if len(ib_buf) != 0:
+                self.componentname_ibbuf_dict[component_name] = ib_buf
+            else:
+                LOG.warning(self.draw_ib + " collection: " + component_name + " is hide, skip export ib buf.")
     
     
     def __read_categoryname_bytelist_dict(self):
@@ -346,9 +350,9 @@ class DrawIBModel:
         # Export IndexBuffer files.
         for partname in self.part_name_list:
             component_name = "Component " + partname
-            ib_buf = self.__componentname_ibbuf_dict.get(component_name,None)
+            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
             if ib_buf is None:
-                print("Export Failed, Can't get ib buf for partname: " + partname)
+                print("Export Skip, Can't get ib buf for partname: " + partname)
             else:
                 ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
                 with open(ib_path, 'wb') as ibf:

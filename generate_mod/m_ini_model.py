@@ -189,6 +189,11 @@ class M_IniModel:
 
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "handling = skip")
 
+            # If ib buf is emprt, continue to avoid add ib resource replace.
+            ib_buf = draw_ib_model.componentname_ibbuf_dict.get("Component " + part_name,None)
+            if ib_buf is None or len(ib_buf) == 0:
+                texture_override_ib_section.new_line()
+                continue
 
             # if ZZZ ,use run = CommandListSkinTexture solve slot check problems.
             if MainConfig.gamename == "ZZZ" :
@@ -202,6 +207,8 @@ class M_IniModel:
                 if slot_replace_dict is not None:
                     for slot,resource_name in slot_replace_dict.items():
                         texture_override_ib_section.append(cls.vlr_filter_index_indent  + "checktextureoverride = " + slot)
+
+
 
             # Add ib replace
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "ib = " + ib_resource_name)
@@ -292,7 +299,7 @@ class M_IniModel:
             if cls.vlr_filter_index_indent:
                 texture_override_ib_section.append("endif")
                 texture_override_ib_section.new_line()
-
+            
         ini_builder.append_section(texture_override_ib_section)
 
     @classmethod
@@ -490,50 +497,7 @@ class M_IniModel:
         # TimerUtils.End("export_buffer_files") 
         # [export_buffer_files] time elapsed: 0:00:00.006989 
 
-    @classmethod
-    def generate_unity_vs_config_ini(cls):
-        # TimerUtils.Start("generate_unity_vs_config_ini")
-        '''
-        Supported Games:
-        - Genshin Impact
-        - Honkai Impact 3rd
-        - Honkai StarRail
-        - Zenless Zone Zero
-        - Bloody Spell
-        - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
-        '''
-        ini_builder = M_IniBuilder()     
 
-        if GenerateModConfig.slot_style_texture_add_filter_index():
-            cls.add_texture_filter_index(ini_builder= ini_builder)
-
-        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
-
-            cls.global_generate_mod_number = cls.global_generate_mod_number + 1
-
-            if GenerateModConfig.generate_to_seperate_folder():
-                draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
-                if not os.path.exists(draw_ib_output_folder):
-                    os.makedirs(draw_ib_output_folder)
-                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
-                ini_builder.clear()
-
-        cls.generate_hash_style_texture_ini()
-
-        if not GenerateModConfig.generate_to_seperate_folder():
-            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
-        
-        # TimerUtils.End("generate_unity_vs_config_ini")
 
 
     @classmethod
@@ -610,6 +574,13 @@ class M_IniModel:
                 texture_override_ib_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
 
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "handling = skip")
+
+
+            # If ib buf is emprt, continue to avoid add ib resource replace.
+            ib_buf = draw_ib_model.componentname_ibbuf_dict.get("Component " + part_name,None)
+            if ib_buf is None or len(ib_buf) == 0:
+                texture_override_ib_section.new_line()
+                continue
 
             # Add texture slot check, hash style texture also need this.
             if not GenerateModConfig.forbid_auto_texture_ini():
@@ -826,3 +797,47 @@ class M_IniModel:
             ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
 
 
+    @classmethod
+    def generate_unity_vs_config_ini(cls):
+        # TimerUtils.Start("generate_unity_vs_config_ini")
+        '''
+        Supported Games:
+        - Genshin Impact
+        - Honkai Impact 3rd
+        - Honkai StarRail
+        - Zenless Zone Zero
+        - Bloody Spell
+        - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
+        '''
+        ini_builder = M_IniBuilder()     
+
+        if GenerateModConfig.slot_style_texture_add_filter_index():
+            cls.add_texture_filter_index(ini_builder= ini_builder)
+
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
+
+            cls.global_generate_mod_number = cls.global_generate_mod_number + 1
+
+            if GenerateModConfig.generate_to_seperate_folder():
+                draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
+                if not os.path.exists(draw_ib_output_folder):
+                    os.makedirs(draw_ib_output_folder)
+                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                ini_builder.clear()
+
+        cls.generate_hash_style_texture_ini()
+
+        if not GenerateModConfig.generate_to_seperate_folder():
+            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+        
+        # TimerUtils.End("generate_unity_vs_config_ini")
