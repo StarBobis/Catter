@@ -38,7 +38,7 @@ register_classes = (
     FillVertexGroupGaps,
     AddBoneFromVertexGroup,
     RemoveNotNumberVertexGroup,
-    # ConvertToFragmentOperator,
+    ConvertToFragmentOperator,
     MMTDeleteLoose,
     MMTResetRotation,
     CatterRightClickMenu,

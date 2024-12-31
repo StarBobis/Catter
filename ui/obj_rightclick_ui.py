@@ -234,73 +234,35 @@ class RemoveNotNumberVertexGroup(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# class ConvertToFragmentOperator(bpy.types.Operator):
-#     bl_idname = "object.convert_to_fragment"
-#     bl_label = "转换为一个3Dmigoto碎片用于合并"
-#     bl_description = "把当前选中的obj删除到只剩一个随机的三角面，用于合并到此三角面上使模型获取此obj的属性"
+class ConvertToFragmentOperator(bpy.types.Operator):
+    bl_idname = "object.convert_to_fragment"
+    bl_label = "转换为一个3Dmigoto碎片用于合并"
+    bl_description = "把当前选中的obj删除所有顶点，用于合并到这个空的obj上使你的模型获取此obj的3Dmigoto属性"
     
-#     def execute(self, context):
-#         # 获取当前选中的对象
-#         selected_objects = bpy.context.selected_objects
+    def execute(self, context):
+        # 获取当前选中的对象
+        selected_objects = bpy.context.selected_objects
 
-#         # 检查是否选中了一个Mesh对象
-#         if len(selected_objects) != 1 or selected_objects[0].type != 'MESH':
-#             raise ValueError("请选中一个Mesh对象")
+        # 检查是否选中了一个Mesh对象
+        if len(selected_objects) != 1 or selected_objects[0].type != 'MESH':
+            raise ValueError("请选中一个Mesh对象")
 
-#         # 获取选中的网格对象
-#         mesh_obj = selected_objects[0]
-#         mesh = mesh_obj.data
+        # 获取选中的网格对象
+        mesh_obj = selected_objects[0]
+        mesh = mesh_obj.data
 
-#         # 遍历所有面
-#         selected_face_index = -1
-#         for i, face in enumerate(mesh.polygons):
-#             # 检查当前面是否已经是一个三角形
-#             if len(face.vertices) == 3:
-#                 selected_face_index = i
-#                 break
+        # 进入编辑模式，选择并删除所有顶点
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.delete(type='VERT')
 
-#         if selected_face_index == -1:
-#             raise ValueError("没有选中的三角形面")
+        # 返回对象模式
+        bpy.ops.object.mode_set(mode='OBJECT')
 
-#         # 选择指定索引的面
-#         bpy.ops.object.mode_set(mode='EDIT')
-#         bpy.ops.mesh.select_all(action='DESELECT')
+        # 更新网格数据
+        mesh_obj.data.update()
 
-#         # 选择指定面的所有顶点
-#         bpy.context.tool_settings.mesh_select_mode[0] = True
-#         bpy.context.tool_settings.mesh_select_mode[1] = False
-#         bpy.context.tool_settings.mesh_select_mode[2] = False
-
-#         bpy.ops.object.mode_set(mode='OBJECT')
-
-#         # 获取选中面的所有顶点索引
-#         selected_face = mesh.polygons[selected_face_index]
-#         selected_vertices = [v for v in selected_face.vertices]
-
-#         # 删除非选定面的顶点
-#         bpy.ops.object.mode_set(mode='EDIT')
-#         bpy.ops.mesh.select_all(action='DESELECT')
-
-#         bpy.context.tool_settings.mesh_select_mode[0] = True
-#         bpy.context.tool_settings.mesh_select_mode[1] = False
-#         bpy.context.tool_settings.mesh_select_mode[2] = False
-
-#         bpy.ops.object.mode_set(mode='OBJECT')
-
-#         for vertex in mesh.vertices:
-#             if vertex.index not in selected_vertices:
-#                 vertex.select = True
-
-#         bpy.ops.object.mode_set(mode='EDIT')
-#         bpy.ops.mesh.delete(type='VERT')
-
-#         # 切换回对象模式
-#         bpy.ops.object.mode_set(mode='OBJECT')
-
-#         # 更新网格数据
-#         mesh_obj.data.update()
-
-#         return {'FINISHED'}
+        return {'FINISHED'}
 
 
 class MMTDeleteLoose(bpy.types.Operator):
@@ -498,7 +460,7 @@ class CatterRightClickMenu(bpy.types.Menu):
         layout.operator(AddBoneFromVertexGroup.bl_idname)
         layout.operator(RemoveNotNumberVertexGroup.bl_idname)
         layout.operator(RemoveAllVertexGroupOperator.bl_idname)
-        # layout.operator(ConvertToFragmentOperator.bl_idname)
+        layout.operator(ConvertToFragmentOperator.bl_idname)
         layout.operator(MMTDeleteLoose.bl_idname)
         layout.operator(MMTResetRotation.bl_idname)
         layout.operator(SplitMeshByCommonVertexGroup.bl_idname)
