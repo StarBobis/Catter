@@ -77,7 +77,9 @@ class M_IniModel:
                 if toggle_type_number >= 2:
                     key_section = M_IniSection(M_SectionType.Key)
                     key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
-                    key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
+
+                    if draw_ib_model.d3d11GameType.GPU_PreSkinning:
+                        key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
                     key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
                     key_section.append("type = cycle")
                     
@@ -98,7 +100,8 @@ class M_IniModel:
                     for i in range(switch_type_number):
                         key_section = M_IniSection(M_SectionType.Key)
                         key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
-                        key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
+                        if draw_ib_model.d3d11GameType.GPU_PreSkinning:
+                            key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
                         key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
                         key_section.append("type = cycle")
                         key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = 1,0")
