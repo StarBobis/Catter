@@ -521,13 +521,13 @@ def ImprotFromWorkSpace(self, context):
     workspace_collection = CollectionUtils.new_workspace_collection()
 
     # 读取时保存每个DrawIB对应的GameType名称，导出时可直接使用，避免3Dmigoto属性问题
-    draw_ib_gametypename_dict = {}
-    for draw_ib_aliasname,import_folder_path in import_drawib_aliasname_folder_path_dict.items():
-        tmp_json = ImportUtils.read_tmp_json(import_folder_path)
-        work_game_type = tmp_json.get("WorkGameType","")
-        draw_ib = draw_ib_aliasname.split("_")[0]
-        draw_ib_gametypename_dict[draw_ib] = work_game_type
-    MainConfig.workspacename_draw_ib_gametypename_dict_dict[MainConfig.workspacename] = draw_ib_gametypename_dict
+    # draw_ib_gametypename_dict = {}
+    # for draw_ib_aliasname,import_folder_path in import_drawib_aliasname_folder_path_dict.items():
+    #     tmp_json = ImportUtils.read_tmp_json(import_folder_path)
+    #     work_game_type = tmp_json.get("WorkGameType","")
+    #     draw_ib = draw_ib_aliasname.split("_")[0]
+    #     draw_ib_gametypename_dict[draw_ib] = work_game_type
+    # MainConfig.workspacename_draw_ib_gametypename_dict_dict[MainConfig.workspacename] = draw_ib_gametypename_dict
 
     # 开始读取模型数据
     for draw_ib_aliasname,import_folder_path in import_drawib_aliasname_folder_path_dict.items():

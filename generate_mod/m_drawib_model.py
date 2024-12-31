@@ -40,7 +40,15 @@ class DrawIBModel:
 
         # 生成Mod的ini时要使用的内容
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
-        self.d3d11GameType:D3D11GameType = None 
+        self.d3d11GameType:D3D11GameType = None
+
+        # 设置完draw_ib后，读取当前工作空间导入时保存的gametype
+        # gametypename = MainConfig.workspacename_draw_ib_gametypename_dict_dict[MainConfig.workspacename].get(self.draw_ib,"")
+        # gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
+        # if os.path.exists(gametype_file_path):
+        #     self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
+        # 这里有个问题，就是在关闭Blender之后，或者把工作空间集合发给其他人使用之后，内存里保存的内容会被删除，最终还是没办法在导出时不考虑3Dmigoto属性。
+
         self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
         self.category_hash_dict = {}
@@ -136,7 +144,7 @@ class DrawIBModel:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
                     bpy.context.view_layer.objects.active = obj
-                    ib,vb = get_export_ib_vb(bpy.context,self.d3d11GameType)
+                    ib,vb = get_export_ib_vb(bpy.context)
 
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_vb_dict[obj.name] = vb

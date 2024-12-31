@@ -21,7 +21,9 @@ class MainConfig:
     # 用于存储每个工作空间的所有DrawIB和GameType的对应关系，在导入时赋值，在导出时访问并使用。
     # 使用此机制以去除3Dmigoto属性问题，让用户不再需要合并碎片，或者合并到一个有3Dmigoto属性的物体上。
     # 彻底解决由3Dmigoto属性导致的卡手问题。
-    workspacename_draw_ib_gametypename_dict_dict:dict[str,dict[str,str]] = {}
+    # 问题是这个值没办法持久化保存，也没办法跨电脑保存，如果.blend文件被分享后，则无法复现
+    # 所以这个设计看起来无法实现，暂时不使用此设计。
+    # workspacename_draw_ib_gametypename_dict_dict:dict[str,dict[str,str]] = {}
 
     @classmethod
     def save_dbmt_path(cls):

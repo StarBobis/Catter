@@ -135,7 +135,7 @@ class HashableVertex(dict):
     #     return hash(immutable)
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
-def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
+def get_export_ib_vb(context):
     obj = ObjUtils.get_bpy_context_object()
 
     stride = obj['3DMigoto:VBStride']
