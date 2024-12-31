@@ -13,7 +13,7 @@ from bpy.props import BoolProperty, StringProperty
 
 from ..import_model.vertex_buffer import *
 from ..import_model.index_buffer import *
-
+from ..migoto.d3d11_game_type import D3D11GameType
 
 # from export_obj:
 def mesh_triangulate(me):
@@ -135,7 +135,7 @@ class HashableVertex(dict):
     #     return hash(immutable)
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
-def get_export_ib_vb(context):
+def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     obj = ObjUtils.get_bpy_context_object()
 
     stride = obj['3DMigoto:VBStride']

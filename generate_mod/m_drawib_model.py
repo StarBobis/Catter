@@ -136,7 +136,7 @@ class DrawIBModel:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
                     bpy.context.view_layer.objects.active = obj
-                    ib,vb = get_export_ib_vb(bpy.context)
+                    ib,vb = get_export_ib_vb(bpy.context,self.d3d11GameType)
 
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_vb_dict[obj.name] = vb
@@ -195,6 +195,10 @@ class DrawIBModel:
                     vb_elementname_bytelist_dict = vb.convert_to_elementname_byteslist_dict()
                     obj = bpy.data.objects[obj_name]
                     gametypename = obj.get("3DMigoto:GameTypeName",None)
+
+                    if gametypename is None:
+                        raise Fatal(obj_name + " 缺少3DMigoto:GameTypeName属性，请确认你是否合并到了一个3Dmigoto碎片上。")
+
                     gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
                     d3d11gametype = D3D11GameType(gametype_file_path)
                     self.d3d11GameType = d3d11gametype
@@ -297,6 +301,9 @@ class DrawIBModel:
 
 
     def __read_tmp_json(self):
+        # TODO 
+        # 在一开始就应该读取tmp.json的内容
+        # 应该在导入的时候就读取tmp.json的内容存储到一个数据类型中，数据类型如下：
         self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
         tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
         tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
