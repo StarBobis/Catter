@@ -99,6 +99,18 @@ class ImportUtils:
                 return import_prefix_list
         else:
             return []
+    
+
+    @classmethod
+    def read_tmp_json(cls,import_folder_path:str) ->dict:
+        tmp_json_path = os.path.join(import_folder_path, "tmp.json")
+        if os.path.exists(tmp_json_path):
+            tmp_json_file = open(tmp_json_path)
+            tmp_json = json.load(tmp_json_file)
+            tmp_json_file.close()
+            return tmp_json
+        else:
+            return None
 
 
     # Read model prefix attribute in fmt file to locate .ib and .vb file.
