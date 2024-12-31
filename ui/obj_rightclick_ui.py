@@ -454,13 +454,14 @@ class CatterRightClickMenu(bpy.types.Menu):
     
     def draw(self, context):
         layout = self.layout
+        layout.operator(ConvertToFragmentOperator.bl_idname)
+        layout.separator()
         layout.operator(RemoveUnusedVertexGroupOperator.bl_idname)
         layout.operator(MergeVertexGroupsWithSameNumber.bl_idname)
         layout.operator(FillVertexGroupGaps.bl_idname)
         layout.operator(AddBoneFromVertexGroup.bl_idname)
         layout.operator(RemoveNotNumberVertexGroup.bl_idname)
         layout.operator(RemoveAllVertexGroupOperator.bl_idname)
-        layout.operator(ConvertToFragmentOperator.bl_idname)
         layout.operator(MMTDeleteLoose.bl_idname)
         layout.operator(MMTResetRotation.bl_idname)
         layout.operator(SplitMeshByCommonVertexGroup.bl_idname)
