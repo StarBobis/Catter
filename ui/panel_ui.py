@@ -129,7 +129,8 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
 
-        # 
+        # layout.prop(context.scene.dbmt_generatemod, "use_fast_color_rgba")
+        # # 快速COLOR设置
         # if GenerateModConfig.use_fast_color_rgba():
         #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_r")
         #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_g")
@@ -142,6 +143,8 @@ class PanelGenerateMod(bpy.types.Panel):
             layout.operator("dbmt.export_unity_cs_mod_to_workspace")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
+
+
 
 
 class MigotoAttributePanel(bpy.types.Panel):
