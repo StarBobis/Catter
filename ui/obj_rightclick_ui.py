@@ -1,6 +1,6 @@
 from ..utils.shapekey_utils import *
 from ..utils.obj_utils import SmoothNormal,ObjUtils
-
+import bmesh
 from mathutils import Vector
 
 from bpy.props import BoolProperty,  CollectionProperty
@@ -251,13 +251,19 @@ class ConvertToFragmentOperator(bpy.types.Operator):
         mesh_obj = selected_objects[0]
         mesh = mesh_obj.data
 
-        # 进入编辑模式，选择并删除所有顶点
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.delete(type='VERT')
+        # 使用bmesh创建一个新的空的网格结构
+        bm = bmesh.new()
+        
+        # 清除所有的顶点、边和面
+        bm.verts.ensure_lookup_table()
+        for vert in bm.verts:
+            bm.verts.remove(vert)
+        bm.edges.ensure_lookup_table()
+        bm.faces.ensure_lookup_table()
 
-        # 返回对象模式
-        bpy.ops.object.mode_set(mode='OBJECT')
+        # 将新的空bmesh应用到原有的mesh数据块中
+        bm.to_mesh(mesh)
+        bm.free()  # 释放bmesh资源
 
         # 更新网格数据
         mesh_obj.data.update()
