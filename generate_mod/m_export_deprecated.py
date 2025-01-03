@@ -68,13 +68,12 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
             i = elem.SemanticIndex * 4
             vertex[elem.name] = elem.pad([x.weight for x in vertex_groups[i:i + 4]], 0.0)
         elif elem.name.startswith('TEXCOORD') and elem.is_float():
-            # FIXME: Handle texcoords of other dimensions
             uvs = []
             for uv_name in ('%s.xy' % elem.name, '%s.zw' % elem.name):
                 if uv_name in texcoords:
                     uvs += list(texcoords[uv_name][blender_loop_vertex.index])
             vertex[elem.name] = uvs
-        # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
+ 
         # TODO 燕云十六声使用了BINORMAL
         # elif elem.name.startswith('BINORMAL'):
         #     # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
@@ -93,14 +92,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
         # else:
             # 如果属性不在已知范围内，不做任何处理。
             # pass
-        
-        # 这里资源紧张，不应该浪费时间打印这个，每个点都打印一次那得多少次啊。
-        # 而且走DBMT标准流程得到的内容，ELementName一定会在vertex里出现
-        # if elem.name not in vertex:
-        #     print('NOTICE: Unhandled vertex element: %s' % elem.name)
-        # else:
-        #    print('%s: %s' % (elem.name, repr(vertex[elem.name])))
-
     return vertex
 
 
