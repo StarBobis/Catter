@@ -325,8 +325,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     # Attach the vertex buffer layout to the object for later exporting. Can't
     # seem to retrieve this if attached to the mesh - to_mesh() doesn't copy it:
-    obj['3DMigoto:VBLayout'] = vb.layout.serialise()
-    obj['3DMigoto:VBStride'] = vb.layout.stride
     obj['3DMigoto:GameTypeName'] = ib.gametypename
 
     # Nico: 设置默认不重计算TANGNET和COLOR

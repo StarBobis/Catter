@@ -169,7 +169,6 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
 
         input_layout_elems[input_layout_element.ElementName] = input_layout_element
     
-    # layout = InputLayout(obj['3DMigoto:VBLayout'], stride=tmp_stride)
 
     layout = InputLayout()
     layout.elems = input_layout_elems

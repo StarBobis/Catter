@@ -148,7 +148,7 @@ class PanelGenerateMod(bpy.types.Panel):
 
 
 class MigotoAttributePanel(bpy.types.Panel):
-    bl_label = "3Dmigoto属性" 
+    bl_label = "Object Properties" 
     bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -162,8 +162,13 @@ class MigotoAttributePanel(bpy.types.Panel):
             selected_obj = context.selected_objects[0]
             
             # 显示对象名称
-            layout.row().label(text=f"当前Object名称: {selected_obj.name}")
-            layout.row().label(text=f"对象Data名称: {selected_obj.data.name}")
+            layout.row().label(text=f"obj name: {selected_obj.name}")
+            layout.row().label(text=f"mesh name: {selected_obj.data.name}")
+            draw_seperator(self)
+            gametypename = selected_obj.get("3DMigoto:GameTypeName",None)
+            if gametypename is not None:
+                row = layout.row()
+                row.label(text=f"GameType: " + str(gametypename))
             draw_seperator(self)
 
             # 示例：显示位置信息
@@ -177,27 +182,11 @@ class MigotoAttributePanel(bpy.types.Panel):
                 row = layout.row()
                 row.label(text=f"导出时重计算COLOR:" + str(recalculate_color))
 
-            draw_seperator(self)
 
 
-            gametypename = selected_obj.get("3DMigoto:GameTypeName",None)
-            if gametypename is not None:
-                row = layout.row()
-                row.label(text=f"GameType: " + str(gametypename))
 
-            vblayout = selected_obj.get("3DMigoto:VBLayout",None)
-            if vblayout is not None:
-                for element_property in vblayout:
-                    row = layout.row()
-                    semantic_index_suffix = ""
-                    if element_property["SemanticIndex"] != 0:
-                        semantic_index_suffix = str(element_property["SemanticIndex"])
-                    row.label(text=element_property["SemanticName"] + semantic_index_suffix +"        " + element_property["Format"] )
 
-            vbstride = selected_obj.get("3DMigoto:VBStride",None)
-            if vbstride is not None:
-                row = layout.row()
-                row.label(text=f"3DMigoto:VBStride: " + str(vbstride))
+
 
         else:
             # 如果没有选中的对象，则显示提示信息
@@ -207,9 +196,11 @@ class MigotoAttributePanel(bpy.types.Panel):
 
 class DeveloperPanel(bpy.types.Panel):
     '''
-    仅用于开发新游戏支持时会用到，比如测试由于坐标系不同导致的NORMAL、TANGENT各个分量属性需要翻转等功能。
+    This is only used when developing support for new games, 
+    such as testing functionalities that require flipping the components of NORMAL and TANGENT attributes
+    due to differences in coordinate systems.
     '''
-    bl_label = "开发者面板" 
+    bl_label = "Dev" 
     bl_idname = "VIEW3D_PT_CATTER_Developer_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -218,7 +209,7 @@ class DeveloperPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        layout.label(text="翻转NORMAL分量")
+        layout.label(text="Flip NORMAL")
         row = layout.row()
        
         row.prop(context.scene.dbmt_generatemod, "flip_normal_x", text="X")
@@ -228,7 +219,7 @@ class DeveloperPanel(bpy.types.Panel):
 
         draw_seperator(self)
 
-        layout.label(text="翻转TANGENT分量")
+        layout.label(text="Flip TANGENT")
         row = layout.row()
        
         row.prop(context.scene.dbmt_generatemod, "flip_tangent_x", text="X")
