@@ -11,27 +11,18 @@ from ..migoto.d3d11_game_type import D3D11GameType
 
 
 def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLayout, texcoords):
-    '''
-    根据循环顶点中的顶点索引来从总的顶点中获取对应的顶点
-    这里是对每个顶点都执行一次，所以资源消耗非常敏感，不能再这里加任何额外的判断。
-
-    TODO 不能再使用这个龟速了，应该对每一种数据进行批处理，否则每一个都进行转换会导致超级龟速。
-    '''
     blender_vertex = mesh.vertices[blender_loop_vertex.vertex_index]
     vertex_groups = sorted(blender_vertex.groups, key=lambda x: x.weight, reverse=True)
-
     vertex = {}
     for elem in layout:
-        # TODO 只处理per-vertex的，这里凭白多一个判断，浪费时间，InputSlotClass永远都是per-vertex没必要再判断
-        # 后期在完全移除InputSlotClass后，再把这里的注释去掉
-        # if elem.InputSlotClass != 'per-vertex':
-        #     continue
         if elem.name == 'POSITION':
             vertex[elem.name] = elem.pad(list(blender_vertex.undeformed_co), 1.0)
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
         elif elem.name.startswith('TANGENT'):
-            vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), -1 * blender_loop_vertex.bitangent_sign)
+            # 由于在导入时翻转了UV，导致计算TANGENT后bitangent_sign的方向是相反的，所以这里导出时必须要翻转bitangent_sign
+            vertex[elem.name] = list(blender_loop_vertex.tangent)
+            vertex[elem.name].append(-1 * blender_loop_vertex.bitangent_sign)
         elif elem.name.startswith('COLOR'):
             if elem.name in mesh.vertex_colors:
                 vertex[elem.name] = elem.clip(list(mesh.vertex_colors[elem.name].data[blender_loop_vertex.index].color))
@@ -47,25 +38,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
                 if uv_name in texcoords:
                     uvs += list(texcoords[uv_name][blender_loop_vertex.index])
             vertex[elem.name] = uvs
- 
-        # TODO 燕云十六声使用了BINORMAL
-        # elif elem.name.startswith('BINORMAL'):
-        #     # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
-        #     # actually the binormal. These meshes are weird though, since they
-        #     # use 4 dimensional positions and normals, so they aren't something
-        #     # we can really deal with at all. Therefore, the below is untested,
-        #     # FIXME: So find a mesh where this is actually the binormal,
-        #     # uncomment the below code and test.
-        #     # normal = blender_loop_vertex.normal
-        #     # tangent = blender_loop_vertex.tangent
-        #     # binormal = numpy.cross(normal, tangent)
-        #     # XXX: Does the binormal need to be normalised to a unit vector?
-        #     # binormal = binormal / numpy.linalg.norm(binormal)
-        #     # vertex[elem.name] = elem.pad(list(binormal), 0.0)
-        #     pass
-        # else:
-            # 如果属性不在已知范围内，不做任何处理。
-            # pass
     return vertex
 
 
@@ -88,9 +60,10 @@ class HashableVertex(dict):
     #     immutable = tuple(sorted_items)
     #     return hash(immutable)
 
-# 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
-# TODO 导出速度过于慢，平均1000个顶点就需要1秒的处理速度。
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
+    '''
+    这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
+    '''
     TimerUtils.Start("GetExportIBVB")
 
     # 获取Mesh并三角化
@@ -142,21 +115,15 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     mesh.calc_tangents()
 
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
-    # TimerUtils.Start("GetTexcoordLayers")
     texcoord_layers = {}
     for uv_layer in mesh.uv_layers:
         texcoords = {}
-        # 因为导入时固定会翻转UV，所以导出时也要翻转UV
-        # 导入时固定会翻转UV的原因是，3Dmigoto Dump出来的贴图都是正好相反的。
         flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
         for l in mesh.loops:
             uv = flip_uv(uv_layer.data[l.index].uv)
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
-    # TimerUtils.End("GetTexcoordLayers")
 
-    # print("导出不改变顶点数：" + str(GenerateModConfig.export_same_number()))
-    # TimerUtils.Start("Hashable Vertex")
     indexed_vertices = collections.OrderedDict()
     unique_position_vertices = {}
     ib = IndexBuffer()
@@ -178,37 +145,25 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
             face.append(indexed_vertex)
         
         ib.append(face)
-    # TimerUtils.End("Hashable Vertex")
-    # print("IB UniqueVertexCount: " + str(ib.get_unique_vertex_number()))
     print("IndexedVertices Number: " + str(len(indexed_vertices)))
-    # print("unique_position_vertices Number: " + str(len(unique_position_vertices)))
-    # TimerUtils.Start("Fill VB")
     vb = VertexBuffer(layout=layout)
     for vertex in indexed_vertices:
         vb.append(vertex)
-    # TimerUtils.End("Fill VB")
   
     # Nico: 重计算TANGENT
     # 含有这个属性的情况下才能计算这个属性。
     if layout.contains("TANGENT"):
         if GenerateModConfig.recalculate_tangent():
-            # print("导出时重新计算TANGENT(全局设置)")
             vb.vector_normalized_normal_to_tangent()
         elif obj.get("3DMigoto:RecalculateTANGENT",False):
-            # operator.report({'INFO'},"导出时重新计算TANGENT")
-            # print("导出时重新计算TANGENT")
             vb.vector_normalized_normal_to_tangent()
 
     # Nico: 重计算COLOR
     if layout.contains("COLOR"):
         if GenerateModConfig.recalculate_color():
-            # print("导出时重新计算COLOR(全局设置)")
             vb.arithmetic_average_normal_to_color()
         elif obj.get("3DMigoto:RecalculateCOLOR",False):
-            # operator.report({'INFO'},"导出时重新计算COLOR")
-            # print("导出时重新计算COLOR")
             vb.arithmetic_average_normal_to_color()
-
 
     TimerUtils.End("GetExportIBVB")
     return ib, vb
