@@ -61,9 +61,11 @@ class DrawIBModel:
         self.__parse_drawib_collection_architecture(draw_ib_collection=draw_ib_collection)
         self.__parse_key_number()
         self.__parse_obj_name_ib_vb_dict()
+
         self.__read_component_ib_buf_dict()
         self.__read_categoryname_bytelist_dict()
         self.__read_tmp_json()
+
 
     def __read_gametype_from_import_json(self):
         workspace_import_json_path = os.path.join(MainConfig.path_workspace_folder(), "Import.json")
@@ -208,7 +210,6 @@ class DrawIBModel:
                         continue
 
                     vb_elementname_bytelist_dict = vb.convert_to_elementname_byteslist_dict()
-                    obj = bpy.data.objects[obj_name]
 
                     # 如果patchBLENDWEIGHTS则移除BLENWEIGHTS
                     # TODO 检查BLENDWEIGHT和BLENDWEIGHTS读取到Blender的处理方式是否相同，如果相同则全部变为BLENDWEIGHTS

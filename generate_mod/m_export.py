@@ -42,11 +42,9 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
 
 
 class HashableVertex(dict):
-    # 旧的代码注释掉了，不过不删，留着用于参考防止忘记原本的设计
-    def __hash__(self):
-        # Convert keys and values into immutable types that can be hashed
-        immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
-        return hash(immutable)
+    '''
+    把一个顶点hash化，用来当字典的Key，感觉很消耗性能。
+    TODO 后续能否移除这个？感觉不是很有必要。
 
     # 这里将步骤拆分开来，更易于理解，不要删这段代码，留着参考来理解原理
     # def __hash__(self):
@@ -58,13 +56,19 @@ class HashableVertex(dict):
     #         immutable_items.append(pair)
     #     sorted_items = sorted(immutable_items)
     #     immutable = tuple(sorted_items)
-    #     return hash(immutable)
+    #     return hash(immutable)  
+    '''
+    def __hash__(self):
+        # Convert keys and values into immutable types that can be hashed
+        immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
+        return hash(immutable)
+
 
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     '''
     这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
     '''
-    TimerUtils.Start("GetExportIBVB")
+    # TimerUtils.Start("GetExportIBVB")
 
     # 获取Mesh并三角化
     obj = ObjUtils.get_bpy_context_object()
@@ -165,7 +169,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
         elif obj.get("3DMigoto:RecalculateCOLOR",False):
             vb.arithmetic_average_normal_to_color()
 
-    TimerUtils.End("GetExportIBVB")
+    # TimerUtils.End("GetExportIBVB")
     return ib, vb
 
 
