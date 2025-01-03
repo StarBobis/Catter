@@ -42,14 +42,6 @@ class DrawIBModel:
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
         self.d3d11GameType:D3D11GameType = None
 
-        # 设置完draw_ib后，读取当前工作空间导入时保存的gametype
-        # gametypename = MainConfig.workspacename_draw_ib_gametypename_dict_dict[MainConfig.workspacename].get(self.draw_ib,"")
-        # gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
-        # if os.path.exists(gametype_file_path):
-        #     self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
-        # 这里有个问题，就是在关闭Blender之后，或者把工作空间集合发给其他人使用之后，内存里保存的内容会被删除，最终还是没办法在导出时不考虑3Dmigoto属性。
-        # 现在生成Mod时，必须存在tmp.json否则就无法生成。
-
         self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
         self.category_hash_dict = {}
@@ -58,17 +50,30 @@ class DrawIBModel:
         self.vertex_limit_hash = ""
         self.key_number = 0
         self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
-        self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
-        self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
         self.extract_gametype_folder_path = ""
 
+        # 用于自动贴图
+        self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
+        self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
+
         # 按顺序执行
+        self.__read_gametype_from_import_json()
         self.__parse_drawib_collection_architecture(draw_ib_collection=draw_ib_collection)
         self.__parse_key_number()
         self.__parse_obj_name_ib_vb_dict()
         self.__read_component_ib_buf_dict()
         self.__read_categoryname_bytelist_dict()
         self.__read_tmp_json()
+
+    def __read_gametype_from_import_json(self):
+        workspace_import_json_path = os.path.join(MainConfig.path_workspace_folder(), "Import.json")
+        draw_ib_gametypename_dict = JsonUtils.LoadFromFile(workspace_import_json_path)
+        gametypename = draw_ib_gametypename_dict.get(self.draw_ib,"")
+        gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
+        if os.path.exists(gametype_file_path):
+            self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
+        else:
+            raise Fatal("Please do a reimport model from your workspace at least once to generate a Import.json in your WorkSpace folder, because the Import.json in your WorkSpace is not found.")
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
         # TimerUtils.Start("__parse_drawib_collection_architecture")
@@ -202,21 +207,12 @@ class DrawIBModel:
 
                     vb_elementname_bytelist_dict = vb.convert_to_elementname_byteslist_dict()
                     obj = bpy.data.objects[obj_name]
-                    gametypename = obj.get("3DMigoto:GameTypeName",None)
-
-                    if gametypename is None:
-                        raise Fatal(obj_name + " 缺少3DMigoto:GameTypeName属性，请确认你是否合并到了一个3Dmigoto碎片上。")
-
-                    gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
-                    d3d11gametype = D3D11GameType(gametype_file_path)
-                    self.d3d11GameType = d3d11gametype
-
 
                     # 如果patchBLENDWEIGHTS则移除BLENWEIGHTS
                     # TODO 检查BLENDWEIGHT和BLENDWEIGHTS读取到Blender的处理方式是否相同，如果相同则全部变为BLENDWEIGHTS
                     # 数据类型里面也得改
                     blendweights_name = ""
-                    if d3d11gametype.PatchBLENDWEIGHTS:
+                    if self.d3d11GameType.PatchBLENDWEIGHTS:
                         if "BLENDWEIGHTS" in vb_elementname_bytelist_dict:
                             del vb_elementname_bytelist_dict["BLENDWEIGHTS"]
                             blendweights_name = "BLENDWEIGHTS"
@@ -225,13 +221,13 @@ class DrawIBModel:
                             blendweights_name = "BLENDWEIGHT"
 
                     tmp_categoryname_bytelist_dict:dict[str,list] = {}
-                    for element_name in d3d11gametype.OrderedFullElementList:
+                    for element_name in self.d3d11GameType.OrderedFullElementList:
                         
                         # process PatchBLENDWEIGHTS
-                        if d3d11gametype.PatchBLENDWEIGHTS and element_name == blendweights_name:
+                        if self.d3d11GameType.PatchBLENDWEIGHTS and element_name == blendweights_name:
                             continue
 
-                        d3d11Element = d3d11gametype.ElementNameD3D11ElementDict[element_name]
+                        d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
                         category_name = d3d11Element.Category
                         element_stride = d3d11Element.ByteWidth
 
@@ -266,7 +262,7 @@ class DrawIBModel:
                         tmp_categoryname_bytelist_dict[category_name] = category_new_bytelist
                     
                     # 获取完临时的，就拼接到完整的
-                    for category_name in d3d11gametype.OrderedCategoryNameList:
+                    for category_name in self.d3d11GameType.OrderedCategoryNameList:
                         # 防止空的
                         if category_name not in self.__categoryname_bytelist_dict:
                             self.__categoryname_bytelist_dict[category_name] = []
@@ -275,7 +271,7 @@ class DrawIBModel:
                         self.__categoryname_bytelist_dict[category_name].extend(tmp_categoryname_bytelist_dict[category_name])
         
         # 顺便计算一下步长得到总顶点数
-        position_stride = d3d11gametype.CategoryStrideDict["Position"]
+        position_stride = self.d3d11GameType.CategoryStrideDict["Position"]
         position_bytelength = len(self.__categoryname_bytelist_dict["Position"])
         self.draw_number = int(position_bytelength/position_stride)
 
@@ -309,9 +305,6 @@ class DrawIBModel:
 
 
     def __read_tmp_json(self):
-        # TODO 
-        # 在一开始就应该读取tmp.json的内容
-        # 应该在导入的时候就读取tmp.json的内容存储到一个数据类型中，数据类型如下：
         self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
         tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
         tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
@@ -324,9 +317,8 @@ class DrawIBModel:
         self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
         self.work_game_type = tmp_json_dict["WorkGameType"]
 
+        # 自动贴图依赖于这个字典
         partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
-        
-        filter_index_number = 0
         for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
             slot_texture_replace_dict = {}
             for texture_resource_replace in texture_resource_replace_list:

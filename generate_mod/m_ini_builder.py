@@ -126,7 +126,7 @@ class M_IniBuilder:
                         break  # 找到后停止循环，假设只有一行匹配
                         
         except FileNotFoundError:
-            print(f"Error: The file at {ini_file_path} was not found.")
+            print(f"The file at {ini_file_path} was not found.")
             return ""
         except Exception as e:
             print(f"An error occurred: {e}")
