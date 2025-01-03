@@ -296,9 +296,19 @@ class ConvertToFragmentOperator(bpy.types.Operator):
 
         # 切换回对象模式
         bpy.ops.object.mode_set(mode='OBJECT')
-
+        
+        # 顶点位置全部归0，这样就不会显示出来了
         for v_index in selected_vertices:
             mesh.vertices[v_index].co = (0, 0, 0)
+
+        # 移除这些顶点的权重数据，这样即使动画中发生了很大的位置偏移，这三个顶点由于没有权重也不会显示。
+        for v_index in selected_vertices:
+            for group in mesh_obj.vertex_groups:
+                try:
+                    group.remove([v_index])
+                except RuntimeError:
+                    # 如果顶点不在该顶点组中，则会抛出异常，我们只需要忽略它
+                    pass
 
         # 更新网格数据
         mesh_obj.data.update()
