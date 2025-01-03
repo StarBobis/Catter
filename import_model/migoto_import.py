@@ -93,7 +93,7 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
                         obj.vertex_groups[vg_map[i]].add((vertex.index,), w, 'REPLACE')
 
 
-def import_uv_layers(mesh, obj, texcoords, flip_texcoord_v):
+def import_uv_layers(mesh, obj, texcoords):
     for (texcoord, data) in sorted(texcoords.items()):
         '''
         Nico: 在我们的游戏Mod设计中，TEXCOORD只能有两个分量
@@ -123,12 +123,9 @@ def import_uv_layers(mesh, obj, texcoords, flip_texcoord_v):
 
             # Can't find an easy way to flip the display of V in Blender, so
             # add an option to flip it on import & export:
-            if flip_texcoord_v:
-                flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
-                # Record that V was flipped, so we know to undo it when exporting:
-                obj['3DMigoto:' + uv_name] = {'flip_v': True}
-            else:
-                flip_uv = lambda uv: uv
+            # 导入时100%必须翻转UV，因为游戏里Dump出来的贴图，就已经是UV翻转的了。
+            flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
+           
             uvs = [[d[cmap[c]] for c in components] for d in data]
             for l in mesh.loops:
                 blender_uvs.data[l.index].uv = flip_uv(uvs[l.vertex_index])
@@ -302,7 +299,7 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
         print(texture_path)
 
 
-def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str, flip_texcoord_v=True):
+def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str):
     # get import prefix
     mesh_name = os.path.basename(fmt_path)
     if mesh_name.endswith(".fmt"):
@@ -349,7 +346,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     (blend_indices, blend_weights, texcoords, vertex_layers, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
 
-    import_uv_layers(mesh, obj, texcoords, flip_texcoord_v)
+    import_uv_layers(mesh, obj, texcoords)
 
     # WWMI metadata.json, if contains then we can import merged vgmap.
     # TODO 这里每次导入都要读取一次，效率太低了
@@ -423,14 +420,6 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
     files: CollectionProperty(
         name="File Path",
         type=bpy.types.OperatorFileListElement,
-    ) # type: ignore
-
-    # 这里flip_texcoord_v是因为我们游戏里Dump出来的图片是逆向的，所以这里要flip一下才能对上
-    # 理论上可以去掉，设为总是flip对吗？
-    flip_texcoord_v: BoolProperty(
-        name="Flip TEXCOORD V",
-        description="Flip TEXCOORD V asix during importing",
-        default=True,
     ) # type: ignore
 
     def get_vb_ib_paths_from_fmt_prefix(self, filename):

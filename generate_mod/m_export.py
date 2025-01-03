@@ -135,78 +135,38 @@ class HashableVertex(dict):
     #     return hash(immutable)
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
-def get_export_ib_vb(context):
+def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
+    # 获取Mesh并三角化
     obj = ObjUtils.get_bpy_context_object()
+    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
+    mesh_triangulate(mesh)
+    # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
+    mesh.calc_tangents()
 
+    # TODO 这里要改为通过d3d11GameType来获取layout
     stride = obj['3DMigoto:VBStride']
     layout = InputLayout(obj['3DMigoto:VBLayout'], stride=stride)
 
-    # 获取Mesh
-    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
-    # 使用bmesh复制出一个新mesh并三角化
-    mesh_triangulate(mesh)
-
-    # 构建ib
-    ib = IndexBuffer("DXGI_FORMAT_R32_UINT")
-    ib.gametypename = obj['3DMigoto:GameTypeName']
-
-    # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
-    # Nico: 这一步如果存在TANGENT属性则会导致顶点数量增加
-    mesh.calc_tangents()
-
-    print("导出不改变顶点数：" + str(GenerateModConfig.export_same_number()))
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
     texcoord_layers = {}
     for uv_layer in mesh.uv_layers:
         texcoords = {}
-
-        try:
-            flip_texcoord_v = obj['3DMigoto:' + uv_layer.name]['flip_v']
-            if flip_texcoord_v:
-                flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
-            else:
-                flip_uv = lambda uv: uv
-        except KeyError:
-            flip_uv = lambda uv: uv
-
+        # 因为导入时固定会翻转UV，所以导出时也要翻转UV
+        # 导入时固定会翻转UV的原因是，3Dmigoto Dump出来的贴图都是正好相反的。
+        flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
         for l in mesh.loops:
             uv = flip_uv(uv_layer.data[l.index].uv)
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
 
-
-
-    # Blender's vertices have unique positions, but may have multiple
-    # normals, tangents, UV coordinates, etc - these are stored in the
-    # loops. To export back to DX we need these combined together such that
-    # a vertex is a unique set of all attributes, but we don't want to
-    # completely blow this out - we still want to reuse identical vertices
-    # via the index buffer. There might be a convenience function in
-    # Blender to do this, but it's easy enough to do this ourselves
+    # print("导出不改变顶点数：" + str(GenerateModConfig.export_same_number()))
     indexed_vertices = collections.OrderedDict()
-
     unique_position_vertices = {}
-    '''
-    Nico:
-        顶点转换为3dmigoto类型的顶点再经过hashable后，如果存在TANGENT则会导致数量变多，不存在则不会导致数量变多。
-        Nico: 初始的Vertex即使是经过TANGENT计算，数量也是和原来一样的
-        但是这里使用了blender_lvertex导致了生成的HashableVertex不一样，因为其它都是固定的只有这个blender_lvertex会改变
-        需要注意的是如果不计算TANGENT或者没有TANGENT属性时不会额外生成顶点
-    '''
+    ib = IndexBuffer()
     for poly in mesh.polygons:
         face = []
         for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
-            #
             vertex = blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_lvertex, layout, texcoord_layers)
-            '''
-            Nico:
-                首先将当前顶点计算为Hash后的顶点然后如果该计算后的Hash顶点不存在，则插入到indexed_vertices里
-                随后将该顶点添加到face[]里，索引为该顶点在字典里的索引
-                这里我们把获取到的vertex的切线加到一个vertex:切线值的字典中
-                如果vertex的顶点在字典中出现了，则返回字典中对应列表和当前值的平均值，否则不进行更新
-                这样就能得到每个Position对应的平均切线，在切线值相同的情况下，就不会产生额外的多余顶点了。
-                这里我选择简单的使用这个顶点第一次出现的TANGENT作为它的TANGENT，以此避免产生额外多余顶点的问题，后续可以优化为使用平均值作为TANGENT
-            '''
             if GenerateModConfig.export_same_number():
                 if "POSITION" in vertex and "NORMAL" in vertex and "TANGENT" in vertex :
                     if tuple(vertex["POSITION"] + vertex["NORMAL"] ) in unique_position_vertices:
@@ -222,15 +182,12 @@ def get_export_ib_vb(context):
         if ib is not None:
             ib.append(face)
 
-    print("IB UniqueVertexCount: " + str(ib.get_unique_vertex_number()))
-    print("IndexedVertices Number: " + str(len(indexed_vertices)))
-    print("unique_position_vertices Number: " + str(len(unique_position_vertices)))
-
-    # TimerUtils.Start("get vb")
+    # print("IB UniqueVertexCount: " + str(ib.get_unique_vertex_number()))
+    # print("IndexedVertices Number: " + str(len(indexed_vertices)))
+    # print("unique_position_vertices Number: " + str(len(unique_position_vertices)))
     vb = VertexBuffer(layout=layout)
     for vertex in indexed_vertices:
         vb.append(vertex)
-    # TimerUtils.End("get vb") #  0:00:00.062375 
   
     # Nico: 重计算TANGENT
     # 含有这个属性的情况下才能计算这个属性。
@@ -242,7 +199,6 @@ def get_export_ib_vb(context):
             # operator.report({'INFO'},"导出时重新计算TANGENT")
             # print("导出时重新计算TANGENT")
             vb.vector_normalized_normal_to_tangent()
-    
 
     # Nico: 重计算COLOR
     if layout.contains("COLOR"):
@@ -253,8 +209,6 @@ def get_export_ib_vb(context):
             # operator.report({'INFO'},"导出时重新计算COLOR")
             # print("导出时重新计算COLOR")
             vb.arithmetic_average_normal_to_color()
-        
-    
     return ib, vb
 
 

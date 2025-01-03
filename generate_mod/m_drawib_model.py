@@ -149,7 +149,7 @@ class DrawIBModel:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
                     bpy.context.view_layer.objects.active = obj
-                    ib,vb = get_export_ib_vb(bpy.context)
+                    ib,vb = get_export_ib_vb(bpy.context,self.d3d11GameType)
 
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_vb_dict[obj.name] = vb

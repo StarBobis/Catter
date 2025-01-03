@@ -13,7 +13,11 @@ class IndexBuffer(object):
         self.offset = 0
         self.topology = 'trianglelist'
 
-        if isinstance(args[0], io.IOBase):
+        # 如果是IOBase类型，说明是以文件名称初始化的，此时fmt要从文件中解析
+        if len(args) == 0:
+            # 如果不填写参数，则默认为DXGI_FORMAT_R32_UINT类型
+            self.format = "DXGI_FORMAT_R32_UINT"
+        elif isinstance(args[0], io.IOBase):
             assert (len(args) == 1)
             self.parse_fmt(args[0])
         else:
