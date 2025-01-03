@@ -251,19 +251,54 @@ class ConvertToFragmentOperator(bpy.types.Operator):
         mesh_obj = selected_objects[0]
         mesh = mesh_obj.data
 
-        # 使用bmesh创建一个新的空的网格结构
-        bm = bmesh.new()
-        
-        # 清除所有的顶点、边和面
-        bm.verts.ensure_lookup_table()
-        for vert in bm.verts:
-            bm.verts.remove(vert)
-        bm.edges.ensure_lookup_table()
-        bm.faces.ensure_lookup_table()
+        # 遍历所有面
+        selected_face_index = -1
+        for i, face in enumerate(mesh.polygons):
+            # 检查当前面是否已经是一个三角形
+            if len(face.vertices) == 3:
+                selected_face_index = i
+                break
 
-        # 将新的空bmesh应用到原有的mesh数据块中
-        bm.to_mesh(mesh)
-        bm.free()  # 释放bmesh资源
+        if selected_face_index == -1:
+            raise ValueError("没有选中的三角形面")
+
+        # 选择指定索引的面
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+
+        # 选择指定面的所有顶点
+        bpy.context.tool_settings.mesh_select_mode[0] = True
+        bpy.context.tool_settings.mesh_select_mode[1] = False
+        bpy.context.tool_settings.mesh_select_mode[2] = False
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # 获取选中面的所有顶点索引
+        selected_face = mesh.polygons[selected_face_index]
+        selected_vertices = [v for v in selected_face.vertices]
+
+        # 删除非选定面的顶点
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+
+        bpy.context.tool_settings.mesh_select_mode[0] = True
+        bpy.context.tool_settings.mesh_select_mode[1] = False
+        bpy.context.tool_settings.mesh_select_mode[2] = False
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        for vertex in mesh.vertices:
+            if vertex.index not in selected_vertices:
+                vertex.select = True
+
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.delete(type='VERT')
+
+        # 切换回对象模式
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        for v_index in selected_vertices:
+            mesh.vertices[v_index].co = (0, 0, 0)
 
         # 更新网格数据
         mesh_obj.data.update()
