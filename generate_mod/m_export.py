@@ -29,6 +29,8 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
     '''
     根据循环顶点中的顶点索引来从总的顶点中获取对应的顶点
     这里是对每个顶点都执行一次，所以资源消耗非常敏感，不能再这里加任何额外的判断。
+
+    TODO 不能再使用这个龟速了，应该对每一种数据进行批处理，否则每一个都进行转换会导致超级龟速。
     '''
     blender_vertex = mesh.vertices[blender_loop_vertex.vertex_index]
     vertex_groups = sorted(blender_vertex.groups, key=lambda x: x.weight, reverse=True)
@@ -146,6 +148,7 @@ class HashableVertex(dict):
     #     return hash(immutable)
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
+# TODO 导出速度过于慢，平均1000个顶点就需要1秒的处理速度。
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     TimerUtils.Start("GetExportIBVB")
 
@@ -199,6 +202,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     mesh.calc_tangents()
 
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
+    # TimerUtils.Start("GetTexcoordLayers")
     texcoord_layers = {}
     for uv_layer in mesh.uv_layers:
         texcoords = {}
@@ -209,8 +213,10 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
             uv = flip_uv(uv_layer.data[l.index].uv)
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
+    # TimerUtils.End("GetTexcoordLayers")
 
     # print("导出不改变顶点数：" + str(GenerateModConfig.export_same_number()))
+    # TimerUtils.Start("Hashable Vertex")
     indexed_vertices = collections.OrderedDict()
     unique_position_vertices = {}
     ib = IndexBuffer()
@@ -230,15 +236,17 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
 
             indexed_vertex = indexed_vertices.setdefault(HashableVertex(vertex), len(indexed_vertices))
             face.append(indexed_vertex)
-        if ib is not None:
-            ib.append(face)
-
+        
+        ib.append(face)
+    # TimerUtils.End("Hashable Vertex")
     # print("IB UniqueVertexCount: " + str(ib.get_unique_vertex_number()))
-    # print("IndexedVertices Number: " + str(len(indexed_vertices)))
+    print("IndexedVertices Number: " + str(len(indexed_vertices)))
     # print("unique_position_vertices Number: " + str(len(unique_position_vertices)))
+    # TimerUtils.Start("Fill VB")
     vb = VertexBuffer(layout=layout)
     for vertex in indexed_vertices:
         vb.append(vertex)
+    # TimerUtils.End("Fill VB")
   
     # Nico: 重计算TANGENT
     # 含有这个属性的情况下才能计算这个属性。
