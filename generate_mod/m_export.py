@@ -67,6 +67,12 @@ class HashableVertex(dict):
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     '''
     这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
+
+    TODO 现有的架构会先转换为.ib .vb格式，随后再转换为Buffer格式，1000个顶点大约需要1秒，在频繁需要刷权重的情况下是无法忍受的
+    这个现有的架构已经优化到极限无法在不改变易读性的情况下继续优化执行速度了。
+    尤其是对每个顶点进行Hashable操作，而且在每个顶点中都遍历处理一遍layout的每个元素，这相当于把一个简单的事情二维展开，变得非常复杂。
+    虽然易于理解，但是执行速度特别慢，所以计算使用numpy，改为从mesh中直接一步得到对应Buffer数据，因为每个Buffer的数据类型是固定的，又可以省去python自带列表的类型推断开销。
+    TODO 所以现在应该学习numpy的使用，学会后再来优化这里。
     '''
     # TimerUtils.Start("GetExportIBVB")
 
@@ -144,10 +150,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
                         tangent_var = vertex["TANGENT"]
                         unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])] = tangent_var
                         vertex["TANGENT"] = tangent_var
-
-            indexed_vertex = indexed_vertices.setdefault(HashableVertex(vertex), len(indexed_vertices))
-            face.append(indexed_vertex)
-        
+            face.append(indexed_vertices.setdefault(HashableVertex(vertex), len(indexed_vertices)))
         ib.append(face)
     print("IndexedVertices Number: " + str(len(indexed_vertices)))
     vb = VertexBuffer(layout=layout)
