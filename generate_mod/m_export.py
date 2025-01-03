@@ -10,7 +10,7 @@ from ..import_model.index_buffer import *
 from ..migoto.d3d11_game_type import D3D11GameType
 
 
-def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:InputLayout, texcoords):
+def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLayout, texcoords):
     '''
     根据循环顶点中的顶点索引来从总的顶点中获取对应的顶点
     这里是对每个顶点都执行一次，所以资源消耗非常敏感，不能再这里加任何额外的判断。
@@ -59,9 +59,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             if GenerateModConfig.flip_tangent_w():
                 vertex[elem.name][3] = -1 * vertex[elem.name][3]
         elif elem.name.startswith('COLOR'):
-            if elem.name not in mesh.vertex_colors:
-                raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  elem.name + "]")
-            
             if elem.name in mesh.vertex_colors:
                 vertex[elem.name] = elem.clip(list(mesh.vertex_colors[elem.name].data[blender_loop_vertex.index].color))
         elif elem.name.startswith('BLENDINDICES'):
@@ -76,12 +73,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             for uv_name in ('%s.xy' % elem.name, '%s.zw' % elem.name):
                 if uv_name in texcoords:
                     uvs += list(texcoords[uv_name][blender_loop_vertex.index])
-                # 这里如果找不到对应TEXCOORD的话，就提示用户补充
-                elif uv_name.endswith('.zw'):
-                    # 不需要考虑.zw的情况
-                    pass
-                else:
-                    raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  uv_name + "]")
             vertex[elem.name] = uvs
         # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
         # TODO 燕云十六声使用了BINORMAL
@@ -158,7 +149,6 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
         input_layout_element.initialize_encoder_decoder()
 
         input_layout_elems[input_layout_element.ElementName] = input_layout_element
-
         # 校验并补全所有COLOR的存在
         if d3d11_element_name.startswith("COLOR"):
             if d3d11_element_name not in obj.data.vertex_colors and input_layout_elems.get(d3d11_element_name,None) is not None:
@@ -208,7 +198,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     for poly in mesh.polygons:
         face = []
         for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
-            vertex = blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_lvertex, layout, texcoord_layers)
+            vertex = blender_vertex_to_3dmigoto_vertex(mesh, blender_lvertex, layout, texcoord_layers)
             if GenerateModConfig.export_same_number():
                 if "POSITION" in vertex and "NORMAL" in vertex and "TANGENT" in vertex :
                     if tuple(vertex["POSITION"] + vertex["NORMAL"] ) in unique_position_vertices:
