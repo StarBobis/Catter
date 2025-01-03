@@ -143,9 +143,32 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
     mesh.calc_tangents()
 
-    # TODO 这里要改为通过d3d11GameType来获取layout
-    stride = obj['3DMigoto:VBStride']
-    layout = InputLayout(obj['3DMigoto:VBLayout'], stride=stride)
+    # 通过d3d11GameType来获取layout，解决每个物体的3Dmigoto属性不一致的问题。
+    tmp_stride = 0
+    input_layout_elems = collections.OrderedDict()
+    for d3d11_element_name in d3d11GameType.OrderedFullElementList:
+        d3d11_element = d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
+        input_layout_element = InputLayoutElement()
+        input_layout_element.SemanticName = d3d11_element.SemanticName
+        input_layout_element.SemanticIndex = d3d11_element.SemanticIndex
+        input_layout_element.Format = d3d11_element.Format
+        input_layout_element.AlignedByteOffset = tmp_stride
+        tmp_stride = tmp_stride + d3d11_element.ByteWidth
+        input_layout_element.InputSlotClass = d3d11_element.InputSlotClass
+        input_layout_element.ElementName = d3d11_element.ElementName
+        input_layout_element.format_len = MigotoUtils.format_components(input_layout_element.Format)
+
+        input_layout_element.initialize_encoder_decoder()
+
+        input_layout_elems[input_layout_element.ElementName] = input_layout_element
+    
+    # layout = InputLayout(obj['3DMigoto:VBLayout'], stride=tmp_stride)
+    
+    layout = InputLayout()
+    layout.elems = input_layout_elems
+    layout.stride = tmp_stride
+
+
 
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
     texcoord_layers = {}

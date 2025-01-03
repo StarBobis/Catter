@@ -14,22 +14,24 @@ class InputLayoutElement(object):
     AlignedByteOffset = ""
     InputSlotClass = ""
     ElementName = ""
-    
-    # 业务逻辑项
-    Category = ""
-    ExtractSlot = ""
-    ExtractTechnique = ""
 
     # 固定项
     InputSlot = "0"
     InstanceDataStepRate = "0"
 
-    def __init__(self, arg):
-        if isinstance(arg, io.IOBase):
-            self.from_file(arg)
-        else:
-            self.from_dict(arg)
+    def __init__(self, arg=None):
+        # 不为空的时候说明是从文件或者dict中初始化的
+        if arg is not None:
+            if isinstance(arg, io.IOBase):
+                self.from_file(arg)
+            else:
+                self.from_dict(arg)
 
+            self.initialize_encoder_decoder()
+        
+        # 为空的时候说明每一个属性都是我们手动赋值上去的
+    
+    def initialize_encoder_decoder(self):
         self.encoder, self.decoder = MigotoUtils.EncoderDecoder(self.Format)
     
     def read_attribute_line(self, f) -> bool:
@@ -143,11 +145,13 @@ class InputLayoutElement(object):
 
 class InputLayout(object):
     def __init__(self, custom_prop=[], stride=0):
+        # TODO 需要确认一下，我怎么感觉只用到了elems和stride其它的导入的属性都没用上
         self.elems = collections.OrderedDict()
         self.stride = stride
-        for item in custom_prop:
-            elem = InputLayoutElement(item)
-            self.elems[elem.name] = elem
+        if len(custom_prop) != 0:
+            for item in custom_prop:
+                elem = InputLayoutElement(item)
+                self.elems[elem.name] = elem
 
     def serialise(self):
         return [x.to_dict() for x in self.elems.values()]

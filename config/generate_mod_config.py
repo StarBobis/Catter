@@ -2,6 +2,7 @@ import bpy
 
 # Simple Class to get attributes.
 # easy to use, safe to modifiy.
+# TODO 使用@property装饰器，将这些方法转换为属性，方便调用，而不是每次调用都得加()
 class GenerateModConfig:
 
     @classmethod

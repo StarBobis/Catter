@@ -327,10 +327,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # seem to retrieve this if attached to the mesh - to_mesh() doesn't copy it:
     obj['3DMigoto:VBLayout'] = vb.layout.serialise()
     obj['3DMigoto:VBStride'] = vb.layout.stride
-    obj['3DMigoto:FirstVertex'] = vb.first
-    obj['3DMigoto:IBFormat'] = ib.format
     obj['3DMigoto:GameTypeName'] = ib.gametypename
-    obj['3DMigoto:FirstIndex'] = ib.first
 
     # Nico: 设置默认不重计算TANGNET和COLOR
     obj["3DMigoto:RecalculateTANGENT"] = False
@@ -389,9 +386,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     if ImportModelConfig.import_flip_scale_x():
         obj.scale.x = obj.scale.x * -1
-
-    
-
 
     # Flush every time export
     bpy.context.view_layer.update()

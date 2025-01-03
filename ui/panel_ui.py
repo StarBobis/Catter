@@ -199,21 +199,6 @@ class MigotoAttributePanel(bpy.types.Panel):
                 row = layout.row()
                 row.label(text=f"3DMigoto:VBStride: " + str(vbstride))
 
-            firstvertex = selected_obj.get("3DMigoto:FirstVertex",None)
-            if firstvertex is not None:
-                row = layout.row()
-                row.label(text=f"3DMigoto:FirstVertex: " + str(firstvertex))
-
-            ibformat = selected_obj.get("3DMigoto:IBFormat",None)
-            if ibformat is not None:
-                row = layout.row()
-                row.label(text=f"3DMigoto:IBFormat: " + str(ibformat))
-
-            firstindex = selected_obj.get("3DMigoto:FirstIndex",None)
-            if firstindex is not None:
-                row = layout.row()
-                row.label(text=f"3DMigoto:FirstIndex: " + str(firstindex))
-            
         else:
             # 如果没有选中的对象，则显示提示信息
             row = layout.row()
