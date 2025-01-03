@@ -197,6 +197,8 @@ class InputLayout(object):
     
     # 这个是按照element_name,buffer list的形式转换，组合并返回
     def get_elementname_bytelist_dict_of_vertex(self, vertex) ->dict[str,list]:
+        # TODO if there can't get data from element_name, if data is empty
+        # we need to patch it with 0
         elementname_buf_dict = {}
         for element_name, data in vertex.items():
             if element_name.startswith('~'):

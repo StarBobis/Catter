@@ -41,7 +41,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
         if elem.name == 'POSITION':
             vertex[elem.name] = elem.pad(list(blender_vertex.undeformed_co), 1.0)
 
-
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
 
@@ -74,6 +73,7 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
                 vertex[elem.name] = list(mesh.vertex_colors[elem.name + '.RGB'].data[blender_loop_vertex.index].color)[
                                     :3] + \
                                     [mesh.vertex_colors[elem.name + '.A'].data[blender_loop_vertex.index].color[0]]
+                # vertex[elem.name] = list[0.0, 0.0, 0.0, 1.0]
                 
         elif elem.name.startswith('BLENDINDICES'):
             i = elem.SemanticIndex * 4
@@ -87,9 +87,16 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             for uv_name in ('%s.xy' % elem.name, '%s.zw' % elem.name):
                 if uv_name in texcoords:
                     uvs += list(texcoords[uv_name][blender_loop_vertex.index])
+                # 这里如果找不到对应TEXCOORD的话，就提示用户补充
+                elif uv_name.endswith('.zw'):
+                    # 不需要考虑.zw的情况
+                    pass
+                else:
+                    raise Fatal("当前obj ["+ obj.name +"] 缺少UV: ["+  uv_name + "]")
             vertex[elem.name] = uvs
         # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
-        # elif elem.name.startswith('BINORMAL'):
+        # TODO 燕云十六声使用了BINORMAL
+        elif elem.name.startswith('BINORMAL'):
             # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
             # actually the binormal. These meshes are weird though, since they
             # use 4 dimensional positions and normals, so they aren't something
@@ -102,7 +109,7 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             # XXX: Does the binormal need to be normalised to a unit vector?
             # binormal = binormal / numpy.linalg.norm(binormal)
             # vertex[elem.name] = elem.pad(list(binormal), 0.0)
-            # pass
+            pass
 
         else:
             # 如果属性不在已知范围内，不做任何处理。

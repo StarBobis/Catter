@@ -11,6 +11,7 @@ class VertexBuffer(object):
     # parameters, as they would all share the *same* InputLayout since the
     # default values are only evaluated once on file load
     def __init__(self, f=None, layout=None):
+        # 这里的vertices是3Dmigoto顶点，不是Blender顶点。
         self.vertices = []
         self.layout = layout and layout or InputLayout()
         self.first = 0
@@ -82,7 +83,10 @@ class VertexBuffer(object):
                     model_elementname_buf_dict[elementname] = []
                 model_elementname_buf_dict[elementname].extend(bytelist)
 
-        # print(type(model_elementname_buf_dict["POSITION"]))
+        # TODO 这里拿到的就是空的了
+        LOG.newline()
+        print("TEXCOORD Length:" + str(len(model_elementname_buf_dict["TEXCOORD"])))
+        LOG.newline()
         return model_elementname_buf_dict
 
         

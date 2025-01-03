@@ -233,7 +233,11 @@ class DrawIBModel:
 
                         add_byte_list = vb_elementname_bytelist_dict[element_name]
                         vertex_number = int(len(add_byte_list) / element_stride)
-                        # print(vertex_number)
+                        LOG.newline()
+                        print("add_byte_list length:" + str(len(add_byte_list)))
+                        print("element_name:" + element_name)
+                        print("element_stride:" + str(element_stride))
+                        print("vertex_number:" + str(vertex_number))
 
                         # 防止没被初始化
                         if category_name not in tmp_categoryname_bytelist_dict:
