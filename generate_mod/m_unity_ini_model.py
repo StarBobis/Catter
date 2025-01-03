@@ -5,10 +5,13 @@ from .m_ini_builder import *
 from .m_drawib_model import *
 
 
-# 这个代表了整个Mod的导出模型，数据来源为一个命名空间,形态键数据要放到这里才行
-class M_IniModel:
+class M_UnityIniModel:
+    '''
+    Unity VertexShader PreSkinning
+    Unity ComputeShader PreSkinning
+    Unity CPU PreSkinning
+    '''
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
-    shapekeys = {}
 
     global_key_index_constants = 0
     global_key_index_logic = 0
@@ -26,7 +29,6 @@ class M_IniModel:
         You have to call this to clean cache data before generate mod.
         '''
         cls.drawib_drawibmodel_dict = {}
-        cls.shapekeys = {}
         
         cls.global_key_index_constants = 0
         cls.global_key_index_logic = 0
@@ -486,19 +488,13 @@ class M_IniModel:
 
     @classmethod
     def export_buffer_files(cls):
-        # TimerUtils.Start("export_buffer_files")
         '''
         Export to buffer files from ib and vb.
         '''
         for draw_ib_model in cls.drawib_drawibmodel_dict.values():
             draw_ib_model.write_buffer_files()
         
-        # TODO WWMI need to output shapekey buffers.
-        if len(cls.shapekeys) != 0:
-            pass
 
-        # TimerUtils.End("export_buffer_files") 
-        # [export_buffer_files] time elapsed: 0:00:00.006989 
 
 
 

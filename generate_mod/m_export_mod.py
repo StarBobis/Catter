@@ -1,7 +1,7 @@
 import bpy
 
 from ..utils.command_utils import *
-from .m_ini_model import *
+from .m_unity_ini_model import *
         
 
 class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
@@ -12,7 +12,7 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
     def execute(self, context):
         TimerUtils.Start("GenerateMod UnityVS")
 
-        M_IniModel.initialzie()
+        M_UnityIniModel.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
@@ -33,11 +33,11 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
 
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_IniModel.export_buffer_files()
-        M_IniModel.generate_unity_vs_config_ini()
+        M_UnityIniModel.export_buffer_files()
+        M_UnityIniModel.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
@@ -53,7 +53,7 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
-        M_IniModel.initialzie()
+        M_UnityIniModel.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
@@ -75,11 +75,11 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
 
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_IniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_IniModel.export_buffer_files()
-        M_IniModel.generate_unity_cs_config_ini()
+        M_UnityIniModel.export_buffer_files()
+        M_UnityIniModel.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
