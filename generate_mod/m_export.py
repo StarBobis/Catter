@@ -67,14 +67,11 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
                 vertex[elem.name][3] = -1 * vertex[elem.name][3]
 
         elif elem.name.startswith('COLOR'):
+            if elem.name not in mesh.vertex_colors:
+                raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  elem.name + "]")
+            
             if elem.name in mesh.vertex_colors:
                 vertex[elem.name] = elem.clip(list(mesh.vertex_colors[elem.name].data[blender_loop_vertex.index].color))
-            else:
-                vertex[elem.name] = list(mesh.vertex_colors[elem.name + '.RGB'].data[blender_loop_vertex.index].color)[
-                                    :3] + \
-                                    [mesh.vertex_colors[elem.name + '.A'].data[blender_loop_vertex.index].color[0]]
-                # vertex[elem.name] = list[0.0, 0.0, 0.0, 1.0]
-                
         elif elem.name.startswith('BLENDINDICES'):
             i = elem.SemanticIndex * 4
             vertex[elem.name] = elem.pad([x.group for x in vertex_groups[i:i + 4]], 0)
@@ -92,7 +89,7 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
                     # 不需要考虑.zw的情况
                     pass
                 else:
-                    raise Fatal("当前obj ["+ obj.name +"] 缺少UV: ["+  uv_name + "]")
+                    raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  uv_name + "]")
             vertex[elem.name] = uvs
         # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
         # TODO 燕云十六声使用了BINORMAL
@@ -145,10 +142,7 @@ class HashableVertex(dict):
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     # 获取Mesh并三角化
     obj = ObjUtils.get_bpy_context_object()
-    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
-    mesh_triangulate(mesh)
-    # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
-    mesh.calc_tangents()
+
 
     # 通过d3d11GameType来获取layout，解决每个物体的3Dmigoto属性不一致的问题。
     tmp_stride = 0
@@ -168,11 +162,37 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
         input_layout_element.initialize_encoder_decoder()
 
         input_layout_elems[input_layout_element.ElementName] = input_layout_element
+
+        # 校验并补全所有COLOR的存在
+        if d3d11_element_name.startswith("COLOR"):
+            if d3d11_element_name not in obj.data.vertex_colors and input_layout_elems.get(d3d11_element_name,None) is not None:
+                obj.data.vertex_colors.new(name=d3d11_element_name)
+                print("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  "COLOR" + "]，已自动补全")
+        
+        # 校验TEXCOORD是否存在
+        if d3d11_element_name.startswith("TEXCOORD"):
+            if d3d11_element_name + ".xy" not in obj.data.uv_layers:
+                # 此时如果只有一个UV，则自动改名为TEXCOORD.xy
+                if len(obj.data.uv_layers) == 1 and d3d11_element_name == "TEXCOORD":
+                        obj.data.uv_layers[0].name = d3d11_element_name + ".xy"
+                else:
+                    obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
+                    # raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  d3d11_element_name + ".xy" + "] 请手动设置一下")
+     
+        
+    
     
 
     layout = InputLayout()
     layout.elems = input_layout_elems
     layout.stride = tmp_stride
+
+    # Nico: 通过evaluated_get获取到的是一个新的mesh
+    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
+    # 注意这个三角化之后就变成新的mesh了
+    mesh_triangulate(mesh)
+    # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
+    mesh.calc_tangents()
 
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
     texcoord_layers = {}
