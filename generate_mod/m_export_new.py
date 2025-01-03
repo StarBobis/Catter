@@ -20,9 +20,8 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
         elif elem.name.startswith('TANGENT'):
-            vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), blender_loop_vertex.bitangent_sign)
-            if GenerateModConfig.flip_tangent_w():
-                vertex[elem.name][3] = -1 * vertex[elem.name][3]
+            # 由于在导入时翻转了UV，导致计算TANGENT后bitangent_sign的方向是相反的，所以这里导出时必须要翻转bitangent_sign
+            vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), -1 * blender_loop_vertex.bitangent_sign)
         elif elem.name.startswith('COLOR'):
             if elem.name in mesh.vertex_colors:
                 vertex[elem.name] = elem.clip(list(mesh.vertex_colors[elem.name].data[blender_loop_vertex.index].color))
@@ -164,7 +163,6 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
             vb.arithmetic_average_normal_to_color()
         elif obj.get("3DMigoto:RecalculateCOLOR",False):
             vb.arithmetic_average_normal_to_color()
-
 
     TimerUtils.End("GetExportIBVB")
     return ib, vb

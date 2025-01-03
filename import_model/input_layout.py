@@ -110,8 +110,8 @@ class InputLayoutElement(object):
 
     def pad(self, data, val):
         padding = self.format_len - len(data)
-        assert (padding >= 0)
-        data.extend([val] * padding)
+        if padding >= 0:
+            data.extend([val] * padding)
         return data 
 
     def clip(self, data):
@@ -146,7 +146,7 @@ class InputLayoutElement(object):
 class InputLayout(object):
     def __init__(self, custom_prop=[], stride=0):
         # TODO 需要确认一下，我怎么感觉只用到了elems和stride其它的导入的属性都没用上
-        self.elems = collections.OrderedDict()
+        self.elems:collections.OrderedDict[str,InputLayoutElement] = collections.OrderedDict()
         self.stride = stride
         if len(custom_prop) != 0:
             for item in custom_prop:
