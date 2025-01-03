@@ -122,7 +122,6 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
         layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
-        layout.prop(context.scene.dbmt_generatemod, "flip_tangent_w")
         layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
         layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
         layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
@@ -193,37 +192,4 @@ class MigotoAttributePanel(bpy.types.Panel):
             row = layout.row()
             row.label(text="未选中mesh对象")
 
-
-class DeveloperPanel(bpy.types.Panel):
-    '''
-    This is only used when developing support for new games, 
-    such as testing functionalities that require flipping the components of NORMAL and TANGENT attributes
-    due to differences in coordinate systems.
-    '''
-    bl_label = "Dev" 
-    bl_idname = "VIEW3D_PT_CATTER_Developer_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Catter'
-
-    def draw(self, context):
-        layout = self.layout
-
-        layout.label(text="Flip NORMAL")
-        row = layout.row()
-       
-        row.prop(context.scene.dbmt_generatemod, "flip_normal_x", text="X")
-        row.prop(context.scene.dbmt_generatemod, "flip_normal_y", text="Y")
-        row.prop(context.scene.dbmt_generatemod, "flip_normal_z", text="Z")
-        row.prop(context.scene.dbmt_generatemod, "flip_normal_w", text="W")
-
-        draw_seperator(self)
-
-        layout.label(text="Flip TANGENT")
-        row = layout.row()
-       
-        row.prop(context.scene.dbmt_generatemod, "flip_tangent_x", text="X")
-        row.prop(context.scene.dbmt_generatemod, "flip_tangent_y", text="Y")
-        row.prop(context.scene.dbmt_generatemod, "flip_tangent_z", text="Z")
-        row.prop(context.scene.dbmt_generatemod, "flip_tangent_w", text="W")
 

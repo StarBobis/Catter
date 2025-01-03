@@ -30,34 +30,8 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
             vertex[elem.name] = elem.pad(list(blender_vertex.undeformed_co), 1.0)
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
-
-            # XXX 对于NORMAL的x,y,z,w翻转测试，只有开发时会出现，不应该让用户体验到计算延迟
-            # 所以注释掉，只在测试的时候打开
-            # if GenerateModConfig.flip_normal_x():
-            #     vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            # if GenerateModConfig.flip_normal_y():
-            #     vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            # if GenerateModConfig.flip_normal_z():
-            #     vertex[elem.name][2] = -1 * vertex[elem.name][2]
-            # if GenerateModConfig.flip_normal_w():
-            #     if len(vertex[elem.name]) == 4:
-            #         vertex[elem.name][3] = -1 * vertex[elem.name][3]
-
         elif elem.name.startswith('TANGENT'):
-            # Nico: Unity games need to flip TANGENT.w to get perfect shadow.
-            vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), blender_loop_vertex.bitangent_sign)
-
-            # XXX 对于TANGENT的x,y,z翻转测试，只有开发时会出现，不应该让用户体验到计算延迟
-            # 所以注释掉，只在测试的时候打开
-            # if GenerateModConfig.flip_tangent_x():
-            #     vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            # if GenerateModConfig.flip_tangent_y():
-            #     vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            # if GenerateModConfig.flip_tangent_z():
-            #     vertex[elem.name][2] = -1 * vertex[elem.name][2]
-
-            if GenerateModConfig.flip_tangent_w():
-                vertex[elem.name][3] = -1 * vertex[elem.name][3]
+            vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), -1 * blender_loop_vertex.bitangent_sign)
         elif elem.name.startswith('COLOR'):
             if elem.name in mesh.vertex_colors:
                 vertex[elem.name] = elem.clip(list(mesh.vertex_colors[elem.name].data[blender_loop_vertex.index].color))

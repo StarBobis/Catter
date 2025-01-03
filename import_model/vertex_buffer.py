@@ -199,12 +199,10 @@ class VertexBuffer(object):
                 vertex["TANGENT"][1] = normalized_normal[1]
                 vertex["TANGENT"][2] = normalized_normal[2]
 
-                # 注意：这里的flip_tangent_w单独调用，并不会和顶点计算时冲突
+                # 注意：这里的flip单独调用，并不会和顶点计算时冲突
                 # 因为这里的w分量是现场计算得来的而不是顶点中获取的
-                if GenerateModConfig.flip_tangent_w():
-                    vertex["TANGENT"][3] = -1 * w
-                else:
-                    vertex["TANGENT"][3] = w
+                vertex["TANGENT"][3] = -1 * w
+              
                 new_vertices.append(vertex)
 
         self.vertices = new_vertices

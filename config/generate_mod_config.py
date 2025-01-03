@@ -56,62 +56,6 @@ class GenerateModConfig:
         return bpy.context.scene.dbmt_generatemod.export_same_number
     
     @classmethod
-    def flip_normal_x(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_normal_x
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_normal_x
-
-    @classmethod
-    def flip_normal_y(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_normal_y
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_normal_y
-    
-    @classmethod
-    def flip_normal_z(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_normal_z
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_normal_z
-    
-    @classmethod
-    def flip_normal_w(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_normal_w
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_normal_w
-    
-    @classmethod
-    def flip_tangent_x(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_tangent_x
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_tangent_x\
-    
-    @classmethod
-    def flip_tangent_y(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_tangent_y
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_tangent_y
-    
-    @classmethod
-    def flip_tangent_z(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_tangent_z
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_tangent_z
-    
-    @classmethod
-    def flip_tangent_w(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.flip_tangent_w
-        '''
-        return bpy.context.scene.dbmt_generatemod.flip_tangent_w
-
-    @classmethod
     def recalculate_tangent(cls):
         '''
         bpy.context.scene.dbmt_generatemod.recalculate_tangent
