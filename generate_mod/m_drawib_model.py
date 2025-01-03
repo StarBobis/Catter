@@ -70,11 +70,11 @@ class DrawIBModel:
         draw_ib_gametypename_dict = JsonUtils.LoadFromFile(workspace_import_json_path)
         gametypename = draw_ib_gametypename_dict.get(self.draw_ib,"")
         gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
-        print(gametype_file_path)
+        # print(gametype_file_path)
         if os.path.exists(gametype_file_path):
             self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
         else:
-            raise Fatal("Please do a reimport model from your workspace at least once to generate a Import.json in your WorkSpace folder, because the Import.json in your WorkSpace is not found.")
+            raise Fatal("Please do a reimport model from your workspace at least once to generate a Import.json in your WorkSpace folder, because the Import.json in your WorkSpace is not found." + gametype_file_path)
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
         # TimerUtils.Start("__parse_drawib_collection_architecture")
