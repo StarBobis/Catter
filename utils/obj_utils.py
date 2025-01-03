@@ -5,10 +5,19 @@ from mathutils import Vector
 from mathutils import *
 from math import * 
 import math
+import bmesh
 
 from ..migoto.migoto_utils import Fatal
 
 class ObjUtils:
+
+    @classmethod
+    def mesh_triangulate(cls,me):
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+        bm.to_mesh(me)
+        bm.free()
 
     @classmethod
     def get_bpy_context_object(cls):

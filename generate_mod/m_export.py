@@ -15,15 +15,6 @@ from ..import_model.vertex_buffer import *
 from ..import_model.index_buffer import *
 from ..migoto.d3d11_game_type import D3D11GameType
 
-# from export_obj:
-def mesh_triangulate(me):
-    import bmesh
-    bm = bmesh.new()
-    bm.from_mesh(me)
-    bmesh.ops.triangulate(bm, faces=bm.faces)
-    bm.to_mesh(me)
-    bm.free()
-
 
 def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:InputLayout, texcoords):
     '''
@@ -197,7 +188,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     # Nico: 通过evaluated_get获取到的是一个新的mesh
     mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
     # 注意这个三角化之后就变成新的mesh了
-    mesh_triangulate(mesh)
+    ObjUtils.mesh_triangulate(mesh)
     # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
     mesh.calc_tangents()
 
