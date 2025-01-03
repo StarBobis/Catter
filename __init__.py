@@ -30,6 +30,7 @@ register_classes = (
     DBMTExportUnityVSModToWorkSpace,
     DBMTExportUnityCSModToWorkSpace,
     DBMTImportAllFromCurrentWorkSpace,
+    DBMTExportUnityVSModToWorkSpaceFast,
 
     # 右键菜单栏
     RemoveAllVertexGroupOperator,

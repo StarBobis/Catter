@@ -1,6 +1,6 @@
 from ..import_model.vertex_buffer import *
 from ..import_model.index_buffer import *
-from .m_export import get_export_ib_vb
+from .m_export import get_buffer_ib_vb_fast
 
 from ..migoto.global_config import *
 
@@ -29,7 +29,7 @@ class ModelCollection:
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
-class DrawIBModel:
+class DrawIBModelFast:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
     def __init__(self,draw_ib_collection):
         self.__obj_name_ib_dict:dict[str,IndexBuffer] = {} 
@@ -62,9 +62,9 @@ class DrawIBModel:
         self.__parse_key_number()
         self.__parse_obj_name_ib_vb_dict()
 
-        self.__read_component_ib_buf_dict()
-        self.__read_categoryname_bytelist_dict()
-        self.__read_tmp_json()
+        # self.__read_component_ib_buf_dict()
+        # self.__read_categoryname_bytelist_dict()
+        # self.__read_tmp_json()
 
 
     def __read_gametype_from_import_json(self):
@@ -152,10 +152,10 @@ class DrawIBModel:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
                     bpy.context.view_layer.objects.active = obj
-                    ib,vb = get_export_ib_vb(self.d3d11GameType)
+                    get_buffer_ib_vb_fast(self.d3d11GameType)
 
-                    self.__obj_name_ib_dict[obj.name] = ib
-                    self.__obj_name_vb_dict[obj.name] = vb
+                    # self.__obj_name_ib_dict[obj.name] = ib
+                    # self.__obj_name_vb_dict[obj.name] = vb
         
         # TimerUtils.End("__parse_obj_name_ib_vb_dict")
 

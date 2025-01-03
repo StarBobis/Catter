@@ -16,7 +16,6 @@ class Fatal(Exception):
 
 
 class MigotoUtils:
-
     f32_pattern = re.compile(r'''(?:DXGI_FORMAT_)?(?:[RGBAD]32)+_FLOAT''')
     f16_pattern = re.compile(r'''(?:DXGI_FORMAT_)?(?:[RGBAD]16)+_FLOAT''')
     u32_pattern = re.compile(r'''(?:DXGI_FORMAT_)?(?:[RGBAD]32)+_UINT''')
@@ -34,6 +33,39 @@ class MigotoUtils:
     misc_int_pattern = re.compile(r'''(?:DXGI_FORMAT_)?(?:[RGBAD][0-9]+)+_[SU]INT''')
 
     components_pattern = re.compile(r'''(?<![0-9])[0-9]+(?![0-9])''')
+
+    @classmethod
+    def get_dtype_from_format(cls,fmt):
+        '''
+        解析DXGI Format字符串，返回numpy的数据类型
+        '''
+        if cls.f32_pattern.match(fmt):
+            return numpy.float32
+        elif cls.f16_pattern.match(fmt):
+            return numpy.float16
+        elif cls.u32_pattern.match(fmt):
+            return numpy.uint32
+        elif cls.u16_pattern.match(fmt):
+            return numpy.uint16
+        elif cls.u8_pattern.match(fmt):
+            return numpy.uint8
+        elif cls.s32_pattern.match(fmt):
+            return numpy.int32
+        elif cls.s16_pattern.match(fmt):
+            return numpy.int16
+        elif cls.s8_pattern.match(fmt):
+            return numpy.int8
+
+        elif cls.unorm16_pattern.match(fmt):
+            return numpy.uint16
+        elif cls.unorm8_pattern.match(fmt):
+            return numpy.uint8
+        elif cls.snorm16_pattern.match(fmt):
+            return numpy.int16
+        elif cls.snorm8_pattern.match(fmt):
+            return numpy.int8
+
+        raise Fatal('Mesh uses an unsupported DXGI Format: %s' % fmt)
 
     @classmethod
     def EncoderDecoder(cls,fmt):

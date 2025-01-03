@@ -9,6 +9,9 @@ from ..import_model.index_buffer import *
 
 from ..migoto.d3d11_game_type import D3D11GameType
 
+import numpy
+
+
 
 def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLayout, texcoords):
     blender_vertex = mesh.vertices[blender_loop_vertex.vertex_index]
@@ -64,7 +67,7 @@ class HashableVertex(dict):
         return hash(immutable)
 
 
-def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
+def get_export_ib_vb(d3d11GameType:D3D11GameType):
     '''
     这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 
@@ -118,7 +121,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     layout.stride = tmp_stride
 
     # Nico: 通过evaluated_get获取到的是一个新的mesh
-    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
+    mesh = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh()
     # 注意这个三角化之后就变成新的mesh了
     ObjUtils.mesh_triangulate(mesh)
     # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
@@ -176,7 +179,7 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
     return ib, vb
 
 
-def get_buffer_ib_vb_fast(context,d3d11GameType:D3D11GameType):
+def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     '''
     使用Numpy直接从mesh中转换数据到目标格式Buffer
     TODO 完成此功能并全流程测试通过后删除上面的get_export_ib_vb函数
@@ -184,52 +187,13 @@ def get_buffer_ib_vb_fast(context,d3d11GameType:D3D11GameType):
     '''
     TimerUtils.Start("GetExportIBVB Fast")
 
-    # 获取Mesh并三角化
     obj = ObjUtils.get_bpy_context_object()
-
-    # 通过d3d11GameType来获取layout，解决每个物体的3Dmigoto属性不一致的问题。
-    tmp_stride = 0
-    input_layout_elems = collections.OrderedDict()
-    for d3d11_element_name in d3d11GameType.OrderedFullElementList:
-        d3d11_element = d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
-        input_layout_element = InputLayoutElement()
-        input_layout_element.SemanticName = d3d11_element.SemanticName
-        input_layout_element.SemanticIndex = d3d11_element.SemanticIndex
-        input_layout_element.Format = d3d11_element.Format
-        input_layout_element.AlignedByteOffset = tmp_stride
-        tmp_stride = tmp_stride + d3d11_element.ByteWidth
-        input_layout_element.InputSlotClass = d3d11_element.InputSlotClass
-        input_layout_element.ElementName = d3d11_element.ElementName
-        input_layout_element.format_len = MigotoUtils.format_components(input_layout_element.Format)
-
-        input_layout_element.initialize_encoder_decoder()
-
-        input_layout_elems[input_layout_element.ElementName] = input_layout_element
-        # 校验并补全所有COLOR的存在
-        if d3d11_element_name.startswith("COLOR"):
-            if d3d11_element_name not in obj.data.vertex_colors and input_layout_elems.get(d3d11_element_name,None) is not None:
-                obj.data.vertex_colors.new(name=d3d11_element_name)
-                print("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  "COLOR" + "]，已自动补全")
-        
-        # 校验TEXCOORD是否存在
-        if d3d11_element_name.startswith("TEXCOORD"):
-            if d3d11_element_name + ".xy" not in obj.data.uv_layers:
-                # 此时如果只有一个UV，则自动改名为TEXCOORD.xy
-                if len(obj.data.uv_layers) == 1 and d3d11_element_name == "TEXCOORD":
-                        obj.data.uv_layers[0].name = d3d11_element_name + ".xy"
-                else:
-                    obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
-                    # raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  d3d11_element_name + ".xy" + "] 请手动设置一下")
-
-    layout = InputLayout()
-    layout.elems = input_layout_elems
-    layout.stride = tmp_stride
-
     # Nico: 通过evaluated_get获取到的是一个新的mesh
-    mesh = obj.evaluated_get(context.evaluated_depsgraph_get()).to_mesh()
+    mesh = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh()
     # 注意这个三角化之后就变成新的mesh了
     ObjUtils.mesh_triangulate(mesh)
     # Calculates tangents and makes loop normals valid (still with our custom normal data from import time):
+    # 前提是有UVMap，否则会报错
     mesh.calc_tangents()
 
     # Nico: 拼凑texcoord层级，有几个UVMap就拼出几个来
@@ -242,43 +206,144 @@ def get_buffer_ib_vb_fast(context,d3d11GameType:D3D11GameType):
             texcoords[l.index] = uv
         texcoord_layers[uv_layer.name] = texcoords
 
-    indexed_vertices = collections.OrderedDict()
-    unique_position_vertices = {}
-    ib = IndexBuffer()
-    for poly in mesh.polygons:
-        face = []
-        for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
-            vertex = blender_vertex_to_3dmigoto_vertex(mesh, blender_lvertex, layout, texcoord_layers)
-            if GenerateModConfig.export_same_number():
-                if "POSITION" in vertex and "NORMAL" in vertex and "TANGENT" in vertex :
-                    if tuple(vertex["POSITION"] + vertex["NORMAL"] ) in unique_position_vertices:
-                        tangent_var = unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])]
-                        vertex["TANGENT"] = tangent_var
-                    else:
-                        tangent_var = vertex["TANGENT"]
-                        unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])] = tangent_var
-                        vertex["TANGENT"] = tangent_var
-            face.append(indexed_vertices.setdefault(HashableVertex(vertex), len(indexed_vertices)))
-        ib.append(face)
-    print("IndexedVertices Number: " + str(len(indexed_vertices)))
-    vb = VertexBuffer(layout=layout)
-    for vertex in indexed_vertices:
-        vb.append(vertex)
-  
-    # Nico: 重计算TANGENT
-    # 含有这个属性的情况下才能计算这个属性。
-    if layout.contains("TANGENT"):
-        if GenerateModConfig.recalculate_tangent():
-            vb.vector_normalized_normal_to_tangent()
-        elif obj.get("3DMigoto:RecalculateTANGENT",False):
-            vb.vector_normalized_normal_to_tangent()
+    # 获取顶点位置数据
+    vertices = mesh.vertices
+    elementname_data_dict = {}
+    for d3d11_element_name in d3d11GameType.OrderedFullElementList:
+        d3d11_element = d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
+        if d3d11_element_name == 'POSITION':
+            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+            positions = numpy.empty(len(vertices)*3, dtype=numpy_dtype)
+            for i, v in enumerate(vertices):
+                positions[i*3:(i+1)*3] = v.co[:]
+            elementname_data_dict[d3d11_element_name] = positions
+            # print(type(positions))
+        elif d3d11_element_name == 'NORMAL':
+            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+            normals = numpy.empty(len(vertices)*3, dtype=numpy_dtype)
+            for i, v in enumerate(vertices):
+                normals[i*3:(i+1)*3] = v.normal[:]
+            elementname_data_dict[d3d11_element_name] = normals
+        elif d3d11_element_name == 'TANGENT':
+            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+            tangents = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+            for i, v in enumerate(vertices):
+                tangents[i*4:(i+1)*4] = v.tangent[:]
+            elementname_data_dict[d3d11_element_name] = tangents
+        elif d3d11_element_name.startswith('COLOR'):
+            if d3d11_element_name in mesh.vertex_colors:
+                numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+                colors = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+                for i, v in enumerate(mesh.vertex_colors[d3d11_element_name].data):
+                    colors[i*4:(i+1)*4] = v.color[:]
+                elementname_data_dict[d3d11_element_name] = colors
+        elif d3d11_element_name.startswith('BLENDINDICES'):
+            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+            blendindices = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+            for i, v in enumerate(vertices):
+                blendindices[i*4:(i+1)*4] = [x.group for x in sorted(v.groups, key=lambda x: x.weight, reverse=True)]
+            elementname_data_dict[d3d11_element_name] = blendindices
+        elif d3d11_element_name.startswith('BLENDWEIGHT'):
+            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
+            blendweights = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+            for i, v in enumerate(vertices):
+                blendweights[i*4:(i+1)*4] = [x.weight for x in sorted(v.groups, key=lambda x: x.weight, reverse=True)]
+            elementname_data_dict[d3d11_element_name] = blendweights
+        elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.is_float():
+            for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
+                if uv_name in texcoord_layers:
+                    uv = numpy.empty(len(vertices)*2, dtype=numpy.float32)
+                    for i, v in enumerate(texcoord_layers[uv_name].values()):
+                        uv[i*2:(i+1)*2] = v[:]
+                    elementname_data_dict[d3d11_element_name] = uv
 
-    # Nico: 重计算COLOR
-    if layout.contains("COLOR"):
-        if GenerateModConfig.recalculate_color():
-            vb.arithmetic_average_normal_to_color()
-        elif obj.get("3DMigoto:RecalculateCOLOR",False):
-            vb.arithmetic_average_normal_to_color()
+    print(elementname_data_dict.keys())
+
+    # 打开文件准备写入二进制数据  
+    # 已测试，写入没问题
+    # with open("C:\\Users\\Administrator\\Desktop\\TestOutput\\"+obj.name+"-POSITION.buf", 'wb') as file:
+    #     file.write(positions.tobytes())
 
     TimerUtils.End("GetExportIBVB Fast")
-    return ib, vb
+
+
+    # # 通过d3d11GameType来获取layout，解决每个物体的3Dmigoto属性不一致的问题。
+    # tmp_stride = 0
+    # input_layout_elems = collections.OrderedDict()
+    # for d3d11_element_name in d3d11GameType.OrderedFullElementList:
+    #     d3d11_element = d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
+    #     input_layout_element = InputLayoutElement()
+    #     input_layout_element.SemanticName = d3d11_element.SemanticName
+    #     input_layout_element.SemanticIndex = d3d11_element.SemanticIndex
+    #     input_layout_element.Format = d3d11_element.Format
+    #     input_layout_element.AlignedByteOffset = tmp_stride
+    #     tmp_stride = tmp_stride + d3d11_element.ByteWidth
+    #     input_layout_element.InputSlotClass = d3d11_element.InputSlotClass
+    #     input_layout_element.ElementName = d3d11_element.ElementName
+    #     input_layout_element.format_len = MigotoUtils.format_components(input_layout_element.Format)
+
+    #     input_layout_element.initialize_encoder_decoder()
+
+    #     input_layout_elems[input_layout_element.ElementName] = input_layout_element
+    #     # 校验并补全所有COLOR的存在
+    #     if d3d11_element_name.startswith("COLOR"):
+    #         if d3d11_element_name not in obj.data.vertex_colors and input_layout_elems.get(d3d11_element_name,None) is not None:
+    #             obj.data.vertex_colors.new(name=d3d11_element_name)
+    #             print("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  "COLOR" + "]，已自动补全")
+        
+    #     # 校验TEXCOORD是否存在
+    #     if d3d11_element_name.startswith("TEXCOORD"):
+    #         if d3d11_element_name + ".xy" not in obj.data.uv_layers:
+    #             # 此时如果只有一个UV，则自动改名为TEXCOORD.xy
+    #             if len(obj.data.uv_layers) == 1 and d3d11_element_name == "TEXCOORD":
+    #                     obj.data.uv_layers[0].name = d3d11_element_name + ".xy"
+    #             else:
+    #                 obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
+    #                 # raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  d3d11_element_name + ".xy" + "] 请手动设置一下")
+
+    # layout = InputLayout()
+    # layout.elems = input_layout_elems
+    # layout.stride = tmp_stride
+
+
+
+    # indexed_vertices = collections.OrderedDict()
+    # unique_position_vertices = {}
+    # ib = IndexBuffer()
+    # for poly in mesh.polygons:
+    #     face = []
+    #     for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
+    #         vertex = blender_vertex_to_3dmigoto_vertex(mesh, blender_lvertex, layout, texcoord_layers)
+    #         if GenerateModConfig.export_same_number():
+    #             if "POSITION" in vertex and "NORMAL" in vertex and "TANGENT" in vertex :
+    #                 if tuple(vertex["POSITION"] + vertex["NORMAL"] ) in unique_position_vertices:
+    #                     tangent_var = unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])]
+    #                     vertex["TANGENT"] = tangent_var
+    #                 else:
+    #                     tangent_var = vertex["TANGENT"]
+    #                     unique_position_vertices[tuple(vertex["POSITION"] + vertex["NORMAL"])] = tangent_var
+    #                     vertex["TANGENT"] = tangent_var
+    #         face.append(indexed_vertices.setdefault(HashableVertex(vertex), len(indexed_vertices)))
+    #     ib.append(face)
+    # print("IndexedVertices Number: " + str(len(indexed_vertices)))
+    # vb = VertexBuffer(layout=layout)
+    # for vertex in indexed_vertices:
+    #     vb.append(vertex)
+  
+    # # Nico: 重计算TANGENT
+    # # 含有这个属性的情况下才能计算这个属性。
+    # if layout.contains("TANGENT"):
+    #     if GenerateModConfig.recalculate_tangent():
+    #         vb.vector_normalized_normal_to_tangent()
+    #     elif obj.get("3DMigoto:RecalculateTANGENT",False):
+    #         vb.vector_normalized_normal_to_tangent()
+
+    # # Nico: 重计算COLOR
+    # if layout.contains("COLOR"):
+    #     if GenerateModConfig.recalculate_color():
+    #         vb.arithmetic_average_normal_to_color()
+    #     elif obj.get("3DMigoto:RecalculateCOLOR",False):
+    #         vb.arithmetic_average_normal_to_color()
+
+
+    # return ib, vb
