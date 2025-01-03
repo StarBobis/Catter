@@ -48,6 +48,7 @@ class DrawIBModel:
         # if os.path.exists(gametype_file_path):
         #     self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
         # 这里有个问题，就是在关闭Blender之后，或者把工作空间集合发给其他人使用之后，内存里保存的内容会被删除，最终还是没办法在导出时不考虑3Dmigoto属性。
+        # 现在生成Mod时，必须存在tmp.json否则就无法生成。
 
         self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
@@ -57,7 +58,6 @@ class DrawIBModel:
         self.vertex_limit_hash = ""
         self.key_number = 0
         self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
-        self.PartName_SlotReplaceDict_Dict = {} # Deprecated TODO 有空把这个移除掉，用下面那个
         self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
         self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
         self.extract_gametype_folder_path = ""
@@ -328,7 +328,6 @@ class DrawIBModel:
         
         filter_index_number = 0
         for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
-            slot_replace_dict = {}
             slot_texture_replace_dict = {}
             for texture_resource_replace in texture_resource_replace_list:
                 splits = texture_resource_replace.split("=")
@@ -336,7 +335,6 @@ class DrawIBModel:
                 texture_filename = splits[1].strip()
 
                 resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
-                slot_replace_dict[slot_name] = resource_name
 
                 filename_splits = os.path.splitext(texture_filename)[0].split("-")
                 texture_hash = filename_splits[1]
@@ -349,7 +347,6 @@ class DrawIBModel:
 
                 self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
 
-            self.PartName_SlotReplaceDict_Dict[partname] = slot_replace_dict
             self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
 
 

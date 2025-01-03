@@ -204,11 +204,11 @@ class M_IniModel:
             # Add texture slot check, hash style texture also need this.
             elif not GenerateModConfig.forbid_auto_texture_ini():
                 texture_override_ib_section.append(cls.vlr_filter_index_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-                slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                slot_texturereplace_dict = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
 
                 # It may not have auto texture
-                if slot_replace_dict is not None:
-                    for slot,resource_name in slot_replace_dict.items():
+                if slot_texturereplace_dict is not None:
+                    for slot in slot_texturereplace_dict.keys():
                         texture_override_ib_section.append(cls.vlr_filter_index_indent  + "checktextureoverride = " + slot)
 
 
@@ -588,11 +588,11 @@ class M_IniModel:
             # Add texture slot check, hash style texture also need this.
             if not GenerateModConfig.forbid_auto_texture_ini():
                 texture_override_ib_section.append(cls.vlr_filter_index_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-                slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                slot_texturereplace_dict = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
 
                 # It may not have auto texture
-                if slot_replace_dict is not None:
-                    for slot,resource_name in slot_replace_dict.items():
+                if slot_texturereplace_dict is not None:
+                    for slot in slot_texturereplace_dict.keys():
                         texture_override_ib_section.append(cls.vlr_filter_index_indent  + "checktextureoverride = " + slot)
 
             # Add ib replace
@@ -600,11 +600,11 @@ class M_IniModel:
 
             # Add slot style texture slot replace.
             if not GenerateModConfig.forbid_auto_texture_ini() and not GenerateModConfig.hash_style_auto_texture():
-                slot_replace_dict = draw_ib_model.PartName_SlotReplaceDict_Dict.get(part_name,None)
+                slot_texturereplace_dict = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
                 # It may not have auto texture
-                if slot_replace_dict is not None:
-                    for slot,resource_name in slot_replace_dict.items():
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + slot + " = " + resource_name)
+                if slot_texturereplace_dict is not None:
+                    for slot,texture_replace_obj in slot_texturereplace_dict.items():
+                        texture_override_ib_section.append(cls.vlr_filter_index_indent + slot + " = " + texture_replace_obj.resource_name)
 
             # 如果不使用GPU-Skinning即为Object类型，此时需要在ib下面替换对应槽位
             if not d3d11GameType.GPU_PreSkinning:
