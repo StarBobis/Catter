@@ -197,6 +197,7 @@ class DrawIBModel:
     
     
     def __read_categoryname_bytelist_dict(self):
+        # TimerUtils.Start("__read_categoryname_bytelist_dict")
         for component_name, model_collection_list in self.componentname_modelcollection_list_dict.items():
             for model_collection in model_collection_list:
                 for obj_name in model_collection.obj_name_list:
@@ -233,11 +234,11 @@ class DrawIBModel:
 
                         add_byte_list = vb_elementname_bytelist_dict[element_name]
                         vertex_number = int(len(add_byte_list) / element_stride)
-                        LOG.newline()
-                        print("add_byte_list length:" + str(len(add_byte_list)))
-                        print("element_name:" + element_name)
-                        print("element_stride:" + str(element_stride))
-                        print("vertex_number:" + str(vertex_number))
+                        # LOG.newline()
+                        # print("add_byte_list length:" + str(len(add_byte_list)))
+                        # print("element_name:" + element_name)
+                        # print("element_stride:" + str(element_stride))
+                        # print("vertex_number:" + str(vertex_number))
 
                         # 防止没被初始化
                         if category_name not in tmp_categoryname_bytelist_dict:
@@ -278,6 +279,9 @@ class DrawIBModel:
         position_stride = self.d3d11GameType.CategoryStrideDict["Position"]
         position_bytelength = len(self.__categoryname_bytelist_dict["Position"])
         self.draw_number = int(position_bytelength/position_stride)
+
+        # TimerUtils.End("__read_categoryname_bytelist_dict")  
+        # 耗时大概1S左右
 
     def __read_shapekey_data(self):
         # 这里不用担心循环obj_name时顺序是否正确，因为python3.7版本之后dict会保留插入时的顺序。

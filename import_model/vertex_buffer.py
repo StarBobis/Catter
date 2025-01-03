@@ -83,10 +83,9 @@ class VertexBuffer(object):
                     model_elementname_buf_dict[elementname] = []
                 model_elementname_buf_dict[elementname].extend(bytelist)
 
-        # TODO 这里拿到的就是空的了
-        LOG.newline()
-        print("TEXCOORD Length:" + str(len(model_elementname_buf_dict["TEXCOORD"])))
-        LOG.newline()
+        # LOG.newline()
+        # print("TEXCOORD Length:" + str(len(model_elementname_buf_dict["TEXCOORD"])))
+        # LOG.newline()
         return model_elementname_buf_dict
 
         

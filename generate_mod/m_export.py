@@ -26,46 +26,51 @@ def mesh_triangulate(me):
 
 
 def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:InputLayout, texcoords):
-    # 根据循环顶点中的顶点索引来从总的顶点中获取对应的顶点
+    '''
+    根据循环顶点中的顶点索引来从总的顶点中获取对应的顶点
+    这里是对每个顶点都执行一次，所以资源消耗非常敏感，不能再这里加任何额外的判断。
+    '''
     blender_vertex = mesh.vertices[blender_loop_vertex.vertex_index]
-    vertex = {}
-
-    # ignoring groups with weight=0.0
     vertex_groups = sorted(blender_vertex.groups, key=lambda x: x.weight, reverse=True)
 
+    vertex = {}
     for elem in layout:
-        # 只处理per-vertex的
-        if elem.InputSlotClass != 'per-vertex':
-            continue
-
+        # TODO 只处理per-vertex的，这里凭白多一个判断，浪费时间，InputSlotClass永远都是per-vertex没必要再判断
+        # 后期在完全移除InputSlotClass后，再把这里的注释去掉
+        # if elem.InputSlotClass != 'per-vertex':
+        #     continue
         if elem.name == 'POSITION':
             vertex[elem.name] = elem.pad(list(blender_vertex.undeformed_co), 1.0)
-
         elif elem.name == 'NORMAL':
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.normal), 0.0)
 
-            if GenerateModConfig.flip_normal_x():
-                vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            if GenerateModConfig.flip_normal_y():
-                vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            if GenerateModConfig.flip_normal_z():
-                vertex[elem.name][2] = -1 * vertex[elem.name][2]
-            if GenerateModConfig.flip_normal_w():
-                if len(vertex[elem.name]) == 4:
-                    vertex[elem.name][3] = -1 * vertex[elem.name][3]
+            # XXX 对于NORMAL的x,y,z,w翻转测试，只有开发时会出现，不应该让用户体验到计算延迟
+            # 所以注释掉，只在测试的时候打开
+            # if GenerateModConfig.flip_normal_x():
+            #     vertex[elem.name][0] = -1 * vertex[elem.name][0]
+            # if GenerateModConfig.flip_normal_y():
+            #     vertex[elem.name][1] = -1 * vertex[elem.name][1]
+            # if GenerateModConfig.flip_normal_z():
+            #     vertex[elem.name][2] = -1 * vertex[elem.name][2]
+            # if GenerateModConfig.flip_normal_w():
+            #     if len(vertex[elem.name]) == 4:
+            #         vertex[elem.name][3] = -1 * vertex[elem.name][3]
 
         elif elem.name.startswith('TANGENT'):
             # Nico: Unity games need to flip TANGENT.w to get perfect shadow.
             vertex[elem.name] = elem.pad(list(blender_loop_vertex.tangent), blender_loop_vertex.bitangent_sign)
-            if GenerateModConfig.flip_tangent_x():
-                vertex[elem.name][0] = -1 * vertex[elem.name][0]
-            if GenerateModConfig.flip_tangent_y():
-                vertex[elem.name][1] = -1 * vertex[elem.name][1]
-            if GenerateModConfig.flip_tangent_z():
-                vertex[elem.name][2] = -1 * vertex[elem.name][2]
+
+            # XXX 对于TANGENT的x,y,z翻转测试，只有开发时会出现，不应该让用户体验到计算延迟
+            # 所以注释掉，只在测试的时候打开
+            # if GenerateModConfig.flip_tangent_x():
+            #     vertex[elem.name][0] = -1 * vertex[elem.name][0]
+            # if GenerateModConfig.flip_tangent_y():
+            #     vertex[elem.name][1] = -1 * vertex[elem.name][1]
+            # if GenerateModConfig.flip_tangent_z():
+            #     vertex[elem.name][2] = -1 * vertex[elem.name][2]
+
             if GenerateModConfig.flip_tangent_w():
                 vertex[elem.name][3] = -1 * vertex[elem.name][3]
-
         elif elem.name.startswith('COLOR'):
             if elem.name not in mesh.vertex_colors:
                 raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的COLOR: ["+  elem.name + "]")
@@ -93,27 +98,28 @@ def blender_vertex_to_3dmigoto_vertex(mesh, obj, blender_loop_vertex, layout:Inp
             vertex[elem.name] = uvs
         # Nico: 不需要考虑BINORMAL，现代游戏的渲染基本上不会使用BINORMAL这种过时的渲染方案
         # TODO 燕云十六声使用了BINORMAL
-        elif elem.name.startswith('BINORMAL'):
-            # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
-            # actually the binormal. These meshes are weird though, since they
-            # use 4 dimensional positions and normals, so they aren't something
-            # we can really deal with at all. Therefore, the below is untested,
-            # FIXME: So find a mesh where this is actually the binormal,
-            # uncomment the below code and test.
-            # normal = blender_loop_vertex.normal
-            # tangent = blender_loop_vertex.tangent
-            # binormal = numpy.cross(normal, tangent)
-            # XXX: Does the binormal need to be normalised to a unit vector?
-            # binormal = binormal / numpy.linalg.norm(binormal)
-            # vertex[elem.name] = elem.pad(list(binormal), 0.0)
-            pass
-
-        else:
+        # elif elem.name.startswith('BINORMAL'):
+        #     # Some DOA6 meshes (skirts) use BINORMAL, but I'm not certain it is
+        #     # actually the binormal. These meshes are weird though, since they
+        #     # use 4 dimensional positions and normals, so they aren't something
+        #     # we can really deal with at all. Therefore, the below is untested,
+        #     # FIXME: So find a mesh where this is actually the binormal,
+        #     # uncomment the below code and test.
+        #     # normal = blender_loop_vertex.normal
+        #     # tangent = blender_loop_vertex.tangent
+        #     # binormal = numpy.cross(normal, tangent)
+        #     # XXX: Does the binormal need to be normalised to a unit vector?
+        #     # binormal = binormal / numpy.linalg.norm(binormal)
+        #     # vertex[elem.name] = elem.pad(list(binormal), 0.0)
+        #     pass
+        # else:
             # 如果属性不在已知范围内，不做任何处理。
-            pass
-
-        if elem.name not in vertex:
-            print('NOTICE: Unhandled vertex element: %s' % elem.name)
+            # pass
+        
+        # 这里资源紧张，不应该浪费时间打印这个，每个点都打印一次那得多少次啊。
+        # 而且走DBMT标准流程得到的内容，ELementName一定会在vertex里出现
+        # if elem.name not in vertex:
+        #     print('NOTICE: Unhandled vertex element: %s' % elem.name)
         # else:
         #    print('%s: %s' % (elem.name, repr(vertex[elem.name])))
 
@@ -127,8 +133,9 @@ class HashableVertex(dict):
         immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
         return hash(immutable)
 
+    # 这里将步骤拆分开来，更易于理解，不要删这段代码，留着参考来理解原理
     # def __hash__(self):
-    #     # 这里将步骤拆分开来，更易于理解
+    #     
     #     immutable_items = []
     #     for k, v in self.items():
     #         tuple_v = tuple(v)
@@ -140,9 +147,10 @@ class HashableVertex(dict):
 
 # 这个函数获取当前场景中选中的obj的用于导出的ib和vb文件
 def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
+    TimerUtils.Start("GetExportIBVB")
+
     # 获取Mesh并三角化
     obj = ObjUtils.get_bpy_context_object()
-
 
     # 通过d3d11GameType来获取layout，解决每个物体的3Dmigoto属性不一致的问题。
     tmp_stride = 0
@@ -178,10 +186,6 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
                 else:
                     obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
                     # raise Fatal("当前obj ["+ obj.name +"] 缺少游戏渲染所需的UV: ["+  d3d11_element_name + ".xy" + "] 请手动设置一下")
-     
-        
-    
-    
 
     layout = InputLayout()
     layout.elems = input_layout_elems
@@ -256,6 +260,9 @@ def get_export_ib_vb(context,d3d11GameType:D3D11GameType):
             # operator.report({'INFO'},"导出时重新计算COLOR")
             # print("导出时重新计算COLOR")
             vb.arithmetic_average_normal_to_color()
+
+
+    TimerUtils.End("GetExportIBVB")
     return ib, vb
 
 

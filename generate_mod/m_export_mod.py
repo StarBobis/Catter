@@ -53,6 +53,8 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
+        TimerUtils.Start("GenerateMod UnityCS")
+
         M_UnityIniModel.initialzie()
 
         workspace_collection = bpy.context.collection
@@ -84,5 +86,7 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
         self.report({'INFO'},"Generate Mod Success!")
 
         CommandUtils.OpenGeneratedModFolder()
+
+        TimerUtils.End("GenerateMod UnityCS")
         return {'FINISHED'}
 
