@@ -215,6 +215,9 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
             # print("POSITION " + str(len(positions) * 4 / 12 )) 2807
             # write_to_file_test(obj.name + "-POSITION.buf", positions_data)
             # 已测试通过，数据正常
+            # TODO 编码为目标格式
+            # TODO 将编码为目标格式变成通用函数
+            # TODO 考虑Position 4D情况
         elif d3d11_element_name == 'NORMAL':
             normals = numpy.empty(len(vertices)*3, dtype=MigotoUtils.get_dtype_from_format(d3d11_element.Format))
             for i, v in enumerate(vertices):
@@ -225,6 +228,8 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
             # print("NORMAL " + str(len(normals) * 4 / 12)) 2807
             # write_to_file_test(obj.name + "-NORMAL.buf", normals_data)
             # 已测试通过，数据正常
+
+            # TODO 考虑NORMAL 4D情况
         elif d3d11_element_name == 'TANGENT':
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
             loop_count = len(mesh.loops)
@@ -251,45 +256,45 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
             elementname_data_dict[d3d11_element_name] = tangents_data
             # write_to_file_test(obj.name + "-TANGENT.buf", tangents_data)
             # 已测试通过，数据正常
+            # TODO 编码为目标格式
         elif d3d11_element_name.startswith('COLOR'):
+            print("Processing: " + d3d11_element_name)
             if d3d11_element_name in mesh.vertex_colors:
                 numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-
                 # 因为COLOR属性存储在Blender里固定是float32类型所以这里只能用numpy.float32
                 result = numpy.zeros(len(mesh.loops), dtype=(numpy.float32, 4))
                 mesh.vertex_colors[d3d11_element_name].data.foreach_get("color", result.ravel())
 
+                # TODO 需要抽象为通用方法
+                # TODO 需要考虑更多转换情况
+                # TODO 需要差分解耦合，因为COLOR的类型最终和其它的不一样。
+                # 这是因为转换为目标类型造成的，所以必须先收集，最后统一转换
                 # 我们需要转换为目标类型，所以获取encoder
                 encoder, decoder = MigotoUtils.EncoderDecoder(d3d11_element.Format)
                 # 将 result 展平为一维数组
                 flat_result = result.ravel()
                 # 编码为目标格式
                 color_data = encoder(flat_result)
+                print(type(color_data))
                 elementname_data_dict[d3d11_element_name] = color_data
                 # write_to_file_test(obj.name + "-"+ d3d11_element_name +".buf", color_data)
                 # 已测试通过，数据正常
         elif d3d11_element_name.startswith('BLENDINDICES'):
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            
-            # 初始化 NumPy 数组用于存放混合索引数据
             blendindices = numpy.empty(len(vertices) * 4, dtype=numpy_dtype)
 
-            # 将混合索引数据填充到 NumPy 数组中
             for i, v in enumerate(vertices):
-                # 获取并排序顶点组中的索引，按照权重大小降序排列
                 sorted_groups = sorted(v.groups, key=lambda x: x.weight, reverse=True)
-                
-                # 提取索引并确保我们总是有 4 个索引值，如果不足则用 0 填充
                 indices = [x.group for x in sorted_groups] + [0] * max(0, 4 - len(sorted_groups))
-                
-                # 确保只取前 4 个索引值，以确保不会超出范围
                 blendindices[i*4:(i+1)*4] = indices[:4]
 
             blendindices_data = blendindices.ravel()
             elementname_data_dict[d3d11_element_name] = blendindices_data
             # write_to_file_test(obj.name + "-"+ d3d11_element_name +".buf", blendindices_data)
             # 已测试通过，数据正常
+            # TODO 编码为目标格式
         elif d3d11_element_name.startswith('BLENDWEIGHT'):
+            print("Processing: " + d3d11_element_name)
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
     
             # 初始化 NumPy 数组用于存放混合权重数据
@@ -307,19 +312,21 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
                 blendweights[i*4:(i+1)*4] = weights[:4]
 
             blendweights_data = blendweights.ravel()
+            print(type(blendweights_data[0]))
             elementname_data_dict[d3d11_element_name] = blendweights_data
             # write_to_file_test(obj.name + "-"+ d3d11_element_name +".buf", blendweights_data)
             # 已测试通过，数据正常
+            # TODO 编码为目标格式
         elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
-            # TODO 就剩TEXCOORD了
+            print("Processing: " + d3d11_element_name)
+
             for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
                 if uv_name in texcoord_layers:
-                    print(uv_name) # TEXCOORD.xy
-                    uv = numpy.empty(len(vertices)*2, dtype=numpy.float32)
-                    for i, v in enumerate(texcoord_layers[uv_name].values()):
-                        uv[i*2:(i+1)*2] = v[:]
-                    elementname_data_dict[d3d11_element_name] = uv
-    
+                    uvs_array = numpy.array(list(texcoord_layers[uv_name].values()),dtype=numpy.float32).flatten()
+                    elementname_data_dict[d3d11_element_name] = uvs_array
+
+                    # write_to_file_test(obj.name + "-"+ d3d11_element_name +".buf", uvs_array)
+                    # 已测试通过，数据正常
     print(elementname_data_dict.keys())
 
     # # 假设 elementname_data_dict 已经根据上面的代码填充完毕
