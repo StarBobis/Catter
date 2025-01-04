@@ -50,12 +50,12 @@ class BufferModel:
                 self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
         LOG.newline()
 
-        for element_name,value in self.elementname_bytesdata_dict.items():
-            d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-            print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value)) + " shape: " + str(value.shape) + "  ByteWidth:" + str(d3d11Element.ByteWidth))
-            # if to_files:
-                # TODO 这里写出来得到的结果是错误的，说明astype有问题
-                # self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
+        # for element_name,value in self.elementname_bytesdata_dict.items():
+        #     d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
+        #     print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value)) + " shape: " + str(value.shape) + "  ByteWidth:" + str(d3d11Element.ByteWidth))
+        #     # if to_files:
+        #         # TODO 这里写出来得到的结果是错误的，说明astype有问题
+        #         # self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
 
         LOG.newline()
     
@@ -82,8 +82,54 @@ class BufferModel:
                     else:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
-    
-    
+    def convert_to_r8g8b8a8_snorm(self, input_array):
+        """
+        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_SNORM 格式的 int8 ndarray。
+
+        参数:
+            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [-1, 1] 范围内。
+
+        返回:
+            numpy.ndarray: 转换后的 (N, 4) 形状的 int8 ndarray，符合 R8G8B8A8_SNORM 格式。
+        """
+        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
+            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
+
+        # 确保数据在 [-1, 1] 范围内（如果已经是则可以跳过这一步）
+        normalized = numpy.clip(input_array, -1.0, 1.0)
+
+        # 将 [-1, 1] 范围内的浮点数缩放到 [-128, 127]
+        scaled = (normalized * 127).round()
+
+        # 转换为 int8 类型
+        result_int8 = scaled.astype(numpy.int8)
+
+        return result_int8
+     
+    def convert_to_r8g8b8a8_unorm(self,input_array):
+        """
+        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_UNORM 格式的 uint8 ndarray。
+
+        参数:
+            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [0, 1] 范围内。
+
+        返回:
+            numpy.ndarray: 转换后的 (N, 4) 形状的 uint8 ndarray，符合 R8G8B8A8_UNORM 格式。
+        """
+        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
+            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
+
+        # 确保数据在 [0, 1] 范围内（如果已经是则可以跳过这一步）
+        normalized = numpy.clip(input_array, 0.0, 1.0)
+
+        # 将 [0, 1] 范围内的浮点数缩放到 [0, 255]
+        scaled = (normalized * 255).round()
+
+        # 转换为 uint8 类型
+        result_uint8 = scaled.astype(numpy.uint8)
+
+        return result_uint8
+
     def split_array_into_chunks(array, n):
         """
         将 NumPy 数组平均分成若干份，每份包含 n 个元素，并存入新的字典中返回。
@@ -155,11 +201,22 @@ class BufferModel:
                 loop_vertex_indices = numpy.empty(len(mesh.loops), dtype=int)
                 mesh.loops.foreach_get("vertex_index", loop_vertex_indices)
                 # 使用高级索引一次性提取所需的位置数据
-                positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices].ravel()
-                # 将位置数据存入字典
-                elementname_data_dict[d3d11_element_name] = positions
+                positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
 
-                self.split_array_into_chunks_of_n_and_append(positions, 3)
+                print(str(MigotoUtils.format_size(d3d11_element.Format)))
+                # TODO 在这里进行转换
+                # if d3d11_element.Format == 'R16G16B16A16_FLOAT':
+                #     positions = positions.astype(numpy.float16)
+                #     new_array = numpy.zeros((positions.shape[0], 4))
+                #     new_array[:, :3] = positions
+                #     positions = new_array
+
+                positions_ravel = positions.ravel()
+
+                # 将位置数据存入字典
+                elementname_data_dict[d3d11_element_name] = positions_ravel
+
+                self.split_array_into_chunks_of_n_and_append(positions_ravel, 3)
 
             elif d3d11_element_name == 'NORMAL':
                 dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
@@ -202,12 +259,18 @@ class BufferModel:
 
             elif d3d11_element_name.startswith('COLOR'):
                 if d3d11_element_name in mesh.vertex_colors:
-                    numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
                     # 因为COLOR属性存储在Blender里固定是float32类型所以这里只能用numpy.float32
                     result = numpy.zeros(len(mesh.loops), dtype=(numpy.float32, 4))
                     mesh.vertex_colors[d3d11_element_name].data.foreach_get("color", result.ravel())
+                    
+                    if d3d11_element.Format == 'R8G8B8A8_UNORM':
+                        result = self.convert_to_r8g8b8a8_unorm(result)
 
                     color_data = result.ravel()
+                    
+                    # encoder,decoder = MigotoUtils.EncoderDecoder(d3d11_element.Format)
+                    # color_data = encoder(color_data)
+
                     elementname_data_dict[d3d11_element_name] = color_data
                     self.split_array_into_chunks_of_n_and_append(color_data, 4)
 
@@ -282,6 +345,8 @@ class BufferModel:
 
     def convert_ndarray_to_bytes(self):
         '''
+        Deprecated
+
         数据全部编码为目标格式
         TODO 这个要在单独的顶点被统计出来之后再搞，不然没有意义。
         '''
@@ -369,7 +434,7 @@ class BufferModel:
         pass
 
 
-    def calc_index_buffer(self,mesh:bpy.types.Mesh):
+    def calc_index_vertex_buffer(self,mesh:bpy.types.Mesh):
         '''
         This saves me a lot of time to make another wheel,it's already optimized very good.
         Credit to XXMITools for learn the design and copy the original code
@@ -381,10 +446,16 @@ class BufferModel:
         ib = [[indexed_vertices.setdefault(self.vertexindex_bytesdata_dict[blender_lvertex.index], len(indexed_vertices))
                 for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
                     ]for poly in mesh.polygons]
-        
         print("IndexedVertices Number: " + str(len(indexed_vertices)))
-        print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据
+        # print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据，符合预期
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
+
+        # indexed_vertices 中key是字节串，value是顺序索引
+        # TODO 所以到这一步之前，就应该已经补全数据并做好了数据转换了
+
+        # TODO 组装后，补全数据，然后将数据转换为list[bytes]
+
+
        
         # Step 1: Flatten the list of lists into a single list.
         flattened_ib = [item for sublist in ib for item in sublist]
@@ -394,6 +465,7 @@ class BufferModel:
         packed_data = struct.pack(f'<{len(flattened_ib)}I', *flattened_ib)
 
         # Write to a binary file.
+        
         with open(self.test_output_path + mesh.name + "-IB.buf", 'wb') as f:
             f.write(packed_data)
     
@@ -423,7 +495,7 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
 
     # 读取并解析数据到ndarray中，全部都是ravel()过的
     buffer_model.parse_elementname_ravel_ndarray_dict(mesh)
-    buffer_model.calc_index_buffer(mesh)
+    buffer_model.calc_index_vertex_buffer(mesh)
 
     buffer_model.convert_ndarray_to_bytes()
     buffer_model.show(obj,to_files=True)
