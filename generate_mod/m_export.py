@@ -10,6 +10,7 @@ from ..import_model.index_buffer import *
 from ..migoto.d3d11_game_type import D3D11GameType
 
 import numpy
+import hashlib
 
 
 
@@ -45,22 +46,6 @@ def blender_vertex_to_3dmigoto_vertex(mesh, blender_loop_vertex, layout:InputLay
 
 
 class HashableVertex(dict):
-    '''
-    把一个顶点hash化，用来当字典的Key，感觉很消耗性能。
-    TODO 后续能否移除这个？感觉不是很有必要。
-
-    # 这里将步骤拆分开来，更易于理解，不要删这段代码，留着参考来理解原理
-    # def __hash__(self):
-    #     
-    #     immutable_items = []
-    #     for k, v in self.items():
-    #         tuple_v = tuple(v)
-    #         pair = (k, tuple_v)
-    #         immutable_items.append(pair)
-    #     sorted_items = sorted(immutable_items)
-    #     immutable = tuple(sorted_items)
-    #     return hash(immutable)  
-    '''
     def __hash__(self):
         # Convert keys and values into immutable types that can be hashed
         immutable = tuple((k, tuple(v)) for k, v in sorted(self.items()))
@@ -179,6 +164,11 @@ def get_export_ib_vb(d3d11GameType:D3D11GameType):
     return ib, vb
 
 
+def write_to_file_test(file_name:str,data):
+    file_path = "C:\\Users\\Administrator\\Desktop\\TestOutput\\" + file_name
+    with open(file_path, 'wb') as file:
+        file.write(data.tobytes())
+
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     '''
     使用Numpy直接从mesh中转换数据到目标格式Buffer
@@ -212,57 +202,163 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     for d3d11_element_name in d3d11GameType.OrderedFullElementList:
         d3d11_element = d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
         if d3d11_element_name == 'POSITION':
-            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            positions = numpy.empty(len(vertices)*3, dtype=numpy_dtype)
+            positions = numpy.empty(len(vertices)*3, dtype=MigotoUtils.get_dtype_from_format(d3d11_element.Format))
             for i, v in enumerate(vertices):
                 positions[i*3:(i+1)*3] = v.co[:]
             elementname_data_dict[d3d11_element_name] = positions
-            # print(type(positions))
+            print("POSITION " + str(len(positions) * 4)) 
+            # write_to_file_test(obj.name + "-POSITION.buf", positions)
+            # 已测试通过，数据正常
         elif d3d11_element_name == 'NORMAL':
-            numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            normals = numpy.empty(len(vertices)*3, dtype=numpy_dtype)
+            normals = numpy.empty(len(vertices)*3, dtype=MigotoUtils.get_dtype_from_format(d3d11_element.Format))
             for i, v in enumerate(vertices):
                 normals[i*3:(i+1)*3] = v.normal[:]
             elementname_data_dict[d3d11_element_name] = normals
+            print("NORMAL " + str(len(normals) * 4)) 
+            # write_to_file_test(obj.name + "-NORMAL.buf", normals)
+            # 已测试通过，数据正常
         elif d3d11_element_name == 'TANGENT':
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            tangents = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
-            for i, v in enumerate(vertices):
-                tangents[i*4:(i+1)*4] = v.tangent[:]
-            elementname_data_dict[d3d11_element_name] = tangents
+            loop_count = len(mesh.loops)
+
+            # 预先创建输出数组
+            output_tangents = numpy.empty(loop_count * 4, dtype=numpy_dtype)
+
+            # 使用 foreach_get 批量获取切线和副切线符号数据
+            tangents = numpy.empty(loop_count * 3, dtype=numpy_dtype)
+            bitangent_signs = numpy.empty(loop_count, dtype=numpy_dtype)
+
+            mesh.loops.foreach_get("tangent", tangents)
+            mesh.loops.foreach_get("bitangent_sign", bitangent_signs)
+
+            # 将副切线符号乘以 -1（因为在导入时翻转了UV，所以导出时必须翻转bitangent_signs）
+            bitangent_signs *= -1
+
+            # 将切线分量放置到输出数组中
+            output_tangents[0::4] = tangents[0::3]  # x 分量
+            output_tangents[1::4] = tangents[1::3]  # y 分量
+            output_tangents[2::4] = tangents[2::3]  # z 分量
+            output_tangents[3::4] = bitangent_signs  # w 分量 (副切线符号)
+
+            elementname_data_dict[d3d11_element_name] = output_tangents
+            # write_to_file_test(obj.name + "-TANGENT.buf", output_tangents)
+            # 已测试通过，数据正常
         elif d3d11_element_name.startswith('COLOR'):
             if d3d11_element_name in mesh.vertex_colors:
                 numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-                colors = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
-                for i, v in enumerate(mesh.vertex_colors[d3d11_element_name].data):
-                    colors[i*4:(i+1)*4] = v.color[:]
+                
+                # 获取颜色数据长度，假设每个顶点有一个颜色
+                color_data = mesh.vertex_colors[d3d11_element_name].data
+                loop_count = len(color_data)
+
+                # 初始化 NumPy 数组用于存放颜色数据
+                colors = numpy.empty(loop_count * 4, dtype=numpy_dtype)
+
+                # 将颜色数据填充到 NumPy 数组中
+                for i, loop_color in enumerate(color_data):
+                    colors[i*4:(i+1)*4] = loop_color.color
+
                 elementname_data_dict[d3d11_element_name] = colors
         elif d3d11_element_name.startswith('BLENDINDICES'):
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            blendindices = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+            
+            # 初始化 NumPy 数组用于存放混合索引数据
+            blendindices = numpy.empty(len(vertices) * 4, dtype=numpy_dtype)
+
+            # 将混合索引数据填充到 NumPy 数组中
             for i, v in enumerate(vertices):
-                blendindices[i*4:(i+1)*4] = [x.group for x in sorted(v.groups, key=lambda x: x.weight, reverse=True)]
+                # 获取并排序顶点组中的索引，按照权重大小降序排列
+                sorted_groups = sorted(v.groups, key=lambda x: x.weight, reverse=True)
+                
+                # 提取索引并确保我们总是有 4 个索引值，如果不足则用 0 填充
+                indices = [x.group for x in sorted_groups] + [0] * max(0, 4 - len(sorted_groups))
+                
+                # 确保只取前 4 个索引值，以确保不会超出范围
+                blendindices[i*4:(i+1)*4] = indices[:4]
+
             elementname_data_dict[d3d11_element_name] = blendindices
         elif d3d11_element_name.startswith('BLENDWEIGHT'):
             numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-            blendweights = numpy.empty(len(vertices)*4, dtype=numpy_dtype)
+    
+            # 初始化 NumPy 数组用于存放混合权重数据
+            blendweights = numpy.empty(len(vertices) * 4, dtype=numpy_dtype)
+
+            # 将混合权重数据填充到 NumPy 数组中
             for i, v in enumerate(vertices):
-                blendweights[i*4:(i+1)*4] = [x.weight for x in sorted(v.groups, key=lambda x: x.weight, reverse=True)]
+                # 获取并排序顶点组中的权重，按照权重大小降序排列
+                sorted_weights = sorted((x.weight for x in v.groups), reverse=True)
+                
+                # 使用列表推导式确保我们总是有 4 个权重值，如果不足则用 0.0 填充
+                weights = sorted_weights + [0.0] * max(0, 4 - len(sorted_weights))
+                
+                # 确保只取前 4 个权重值，以确保不会超出范围
+                blendweights[i*4:(i+1)*4] = weights[:4]
+
             elementname_data_dict[d3d11_element_name] = blendweights
-        elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.is_float():
+        elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.ElementName.endswith('FLOAT'):
             for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
                 if uv_name in texcoord_layers:
                     uv = numpy.empty(len(vertices)*2, dtype=numpy.float32)
                     for i, v in enumerate(texcoord_layers[uv_name].values()):
                         uv[i*2:(i+1)*2] = v[:]
                     elementname_data_dict[d3d11_element_name] = uv
-
+    
     print(elementname_data_dict.keys())
+
+    # 假设 elementname_data_dict 已经根据上面的代码填充完毕
+    # 我们将创建一个新的字典来存储唯一的顶点和它们对应的索引
+    unique_vertices = {}
+    index_buffer = []
+
+    # 首先，我们需要确定哪些元素应该参与哈希计算。
+    # 这通常包括位置（POSITION）、法线（NORMAL）、纹理坐标（TEXCOORD）等。
+    # 在这里我们假设所有在elementname_data_dict中的元素都应该参与哈希计算。
+    elements_to_hash = list(elementname_data_dict.keys())
+
+    # 然后遍历所有的顶点
+    for vertex_index in range(len(vertices)):
+        # 创建一个空字符串用于拼接顶点属性
+        vertex_data_str = b''
+
+        # 对于每个需要参与哈希计算的元素
+        for element_name in elements_to_hash:
+            # 获取该元素的数据
+            data = elementname_data_dict[element_name]
+            stride = d3d11GameType.ElementNameD3D11ElementDict[element_name].ByteWidth
+            
+            # 每个顶点的元素数据是连续存储的，所以我们可以直接切片获取对应的数据
+            vertex_element_data = data[vertex_index*stride:(vertex_index+1)*stride]
+
+            # 将顶点元素数据转换为字节串并添加到vertex_data_str中
+            vertex_data_str += vertex_element_data.tobytes()
+
+        # 使用哈希函数生成一个唯一的哈希值
+        hash_value = hashlib.md5(vertex_data_str).hexdigest()
+
+        if hash_value not in unique_vertices:
+            # 如果哈希值不在unique_vertices中，则添加它，并分配一个新的索引
+            new_index = len(unique_vertices)
+            unique_vertices[hash_value] = new_index
+        else:
+            # 否则，使用已有的索引
+            new_index = unique_vertices[hash_value]
+
+        # 添加索引到索引缓冲区
+        index_buffer.append(new_index)
+
+    # 将索引缓冲区转换为NumPy数组以方便后续使用
+    index_buffer_array = numpy.array(index_buffer, dtype=numpy.uint32)
+
+    # 输出结果
+    print("Index Buffer:", str(len(index_buffer_array)))
+
+    # TODO 这里的问题在于，最终得到的数量比旧的方法生成的顶点索引数要少
+    # 如果Hash方法没出问题的话，那就是生成每个Element数据的方法出问题了。
+    # 先完成每个CategoryBuffer的输出，这样就能验证了，先确保每个CategoryBuffer的输出都是正确的。
 
     # 打开文件准备写入二进制数据  
     # 已测试，写入没问题
-    # with open("C:\\Users\\Administrator\\Desktop\\TestOutput\\"+obj.name+"-POSITION.buf", 'wb') as file:
-    #     file.write(positions.tobytes())
+
 
     TimerUtils.End("GetExportIBVB Fast")
 
