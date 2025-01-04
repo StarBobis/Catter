@@ -13,6 +13,10 @@ class ObjUtils:
 
     @classmethod
     def mesh_triangulate(cls,me):
+        '''
+        三角化一个mesh
+        注意这个三角化之后就变成新的mesh了
+        '''
         bm = bmesh.new()
         bm.from_mesh(me)
         bmesh.ops.triangulate(bm, faces=bm.faces)
