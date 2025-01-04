@@ -8,7 +8,7 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
         name="打开生成的Mod文件夹",
         description="生成Mod后打开生成的Mod文件夹",
-        default=False
+        default=True
     ) # type: ignore
 
     hash_style_auto_texture: bpy.props.BoolProperty(
@@ -79,10 +79,13 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
 
 
 class CatterPropertiesCreditInfo(bpy.types.PropertyGroup):
-    # ------------------------------------------------------------------------------------------------------------
-    # I don't think write author name and author link and other information on blender panel is a good idea.
-    # Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
-    # So default add is not a good idea, not goods enough to let every author happy.
+    '''
+    I don't think write author name and author link and other information on blender panel is a good idea.
+    Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
+    So default add is not a good idea, not goods enough to let every author happy.
+    But keep these code here, maybe will use it in the future.
+    '''
+
     credit_info_author_name: bpy.props.StringProperty(
         name="作者昵称",
         description="作者的昵称",
