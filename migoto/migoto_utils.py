@@ -69,6 +69,10 @@ class MigotoUtils:
 
     @classmethod
     def EncoderDecoder(cls,fmt):
+        '''
+        转换效率极低，不建议使用
+        有条件还是调用numpy的astype方法
+        '''
         if cls.f32_pattern.match(fmt):
             return (lambda data: b''.join(struct.pack('<f', x) for x in data),
                     lambda data: numpy.frombuffer(data, numpy.float32).tolist())

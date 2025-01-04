@@ -1,6 +1,6 @@
 from ..import_model.vertex_buffer import *
 from ..import_model.index_buffer import *
-from .m_export import get_buffer_ib_vb_fast
+from .m_export_fast import get_buffer_ib_vb_fast
 
 from ..migoto.global_config import *
 
