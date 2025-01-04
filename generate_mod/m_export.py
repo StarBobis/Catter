@@ -162,12 +162,4 @@ def get_export_ib_vb(d3d11GameType:D3D11GameType):
     return ib, vb
 
 
-def write_to_file_test(file_name:str,data):
-    file_path = "C:\\Users\\Administrator\\Desktop\\TestOutput\\" + file_name
-    if isinstance(data,bytes):
-        with open(file_path, 'wb') as file:
-            file.write(data)
-    else:
-        with open(file_path, 'wb') as file:
-            file.write(data.tobytes())
 
