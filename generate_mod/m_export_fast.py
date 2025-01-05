@@ -13,39 +13,22 @@ from ..utils.log_utils import LOG
 from ..migoto.d3d11_game_type import D3D11GameType
 from ..migoto.migoto_utils import MigotoUtils
 
+from ..config.generate_mod_config import GenerateModConfig
+
 
 class BufferDataConverter:
     '''
     各种格式转换
     '''
     @classmethod
-    def average_normal_tangent(cls):
-        '''
-        TODO
-        重计算TANGENT
-
-        # 含有这个属性的情况下才能计算这个属性。
-        # if layout.contains("TANGENT"):
-        #     if GenerateModConfig.recalculate_tangent():
-        #         vb.vector_normalized_normal_to_tangent()
-        #     elif obj.get("3DMigoto:RecalculateTANGENT",False):
-        #         vb.vector_normalized_normal_to_tangent()
-        '''
-        pass
+    def average_normal_tangent(cls,indexed_vertices):
+        
+        return indexed_vertices
 
     @classmethod
-    def average_normal_color(cls):
-        '''
-        TODO
-        重计算COLOR
-
-        # if layout.contains("COLOR"):
-        #     if GenerateModConfig.recalculate_color():
-        #         vb.arithmetic_average_normal_to_color()
-        #     elif obj.get("3DMigoto:RecalculateCOLOR",False):
-        #         vb.arithmetic_average_normal_to_color()
-        '''
-        pass
+    def average_normal_color(cls,indexed_vertices):
+        
+        return indexed_vertices
 
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_snorm(cls, input_array):
@@ -111,8 +94,6 @@ class BufferModel:
         '''
         注意这里是从mesh.loops中获取数据，而不是从mesh.vertices中获取数据
         所以后续使用的时候要用mesh.loop里的索引来进行获取数据
-        这里转换出来基本上都是float32类型，占4个字节，只有BLENDINDICES是uint32类型，也占4个字节
-        顶点数计算公式： ndarray长度 / 元素个数 = 顶点数 （这里的顶点数是len(mesh.loops)的数量）
         '''
         mesh_loops = mesh.loops
         mesh_loops_length = len(mesh_loops)
@@ -286,8 +267,10 @@ class BufferModel:
             self.vertexindex_data_dict[key] = tuple(arrays)
         # TimerUtils.End("ConvertToBytes") # 0:00:00.014523
 
-    def calc_index_vertex_buffer(self,mesh:bpy.types.Mesh):
+    def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
+        计算IndexBuffer和CategoryBufferDict并返回
+
         This saves me a lot of time to make another wheel,it's already optimized very good.
         Credit to XXMITools for learn the design and copy the original code
         https://github.com/leotorrez/XXMITools
@@ -305,6 +288,20 @@ class BufferModel:
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
         # (2) TODO 重计算TANGENT和重计算COLOR
+
+
+        if "TANGENT" in self.d3d11GameType.OrderedFullElementList:
+            if GenerateModConfig.recalculate_tangent():
+                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices)
+            elif obj.get("3DMigoto:RecalculateTANGENT",False):
+                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices)
+
+        if "COLOR" in self.d3d11GameType.OrderedFullElementList:
+            if GenerateModConfig.recalculate_color():
+                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices)
+            elif obj.get("3DMigoto:RecalculateCOLOR",False):
+                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices)
+        
 
 
         # TimerUtils.Start("ToBytes")
@@ -339,11 +336,9 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     TODO 完成此功能并全流程测试通过后删除上面的get_export_ib_vb函数
     并移除IndexBuffer和VertexBuffer中的部分方法例如encode、pad等，进一步减少复杂度。
     '''
-    # TimerUtils.Start("GetExportIBVB Fast")
-    # 获取Mesh
-    obj = ObjUtils.get_bpy_context_object()
-
     buffer_model = BufferModel(d3d11GameType=d3d11GameType)
+
+    obj = ObjUtils.get_bpy_context_object()
     buffer_model.check_and_verify_attributes(obj)
     
     # Nico: 通过evaluated_get获取到的是一个新的mesh，用于导出，不影响原始Mesh
@@ -355,12 +350,10 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     # 前提是有UVMap，前面的步骤应该保证了模型至少有一个TEXCOORD.xy
     mesh.calc_tangents()
 
-    # 读取并解析数据到ndarray中，全部都是ravel()过的
+    # 读取并解析数据
     buffer_model.parse_elementname_ravel_ndarray_dict(mesh)
-    # buffer_model.show(obj,to_files=True)
 
-    # TimerUtils.End("GetExportIBVB Fast")
-    return buffer_model.calc_index_vertex_buffer(mesh)
+    return buffer_model.calc_index_vertex_buffer(obj,mesh)
 
 
 
