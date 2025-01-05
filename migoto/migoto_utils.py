@@ -35,7 +35,7 @@ class MigotoUtils:
     components_pattern = re.compile(r'''(?<![0-9])[0-9]+(?![0-9])''')
 
     @classmethod
-    def get_dtype_from_format(cls,fmt):
+    def get_nptype_from_format(cls,fmt):
         '''
         解析DXGI Format字符串，返回numpy的数据类型
         '''
@@ -118,6 +118,11 @@ class MigotoUtils:
 
     @classmethod
     def format_components(cls,fmt):
+        '''
+        输入FORMAT返回该FORMAT的元素个数
+        例如输入R32G32B32_FLOAT 返回元素个数：3
+        这里R32G32B32_FLOAT的元素个数是3，所以就返回3
+        '''
         return len(cls.components_pattern.findall(fmt))
 
     @classmethod

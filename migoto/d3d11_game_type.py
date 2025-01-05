@@ -131,6 +131,17 @@ class D3D11GameType:
             self.CategoryStrideDict[d3d11_element.Category] = self.CategoryStrideDict.get(d3d11_element.Category,0) + d3d11_element.ByteWidth
             self.ElementNameD3D11ElementDict[d3d11_element.ElementName] = d3d11_element
     
+    def get_real_category_stride_dict(self) -> dict:
+        '''
+        获取考虑过patchBLENDWEIGHTS之后的CategoryStrideDict
+        '''
+        new_dict = {}
+        for categoryname,category_stride in self.CategoryStrideDict.items():
+            split_category_stride = category_stride
+            if categoryname == "Blend" and self.PatchBLENDWEIGHTS:
+                split_category_stride = self.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
+            new_dict[categoryname] = split_category_stride
+        return new_dict
 
     # used in mod reverse, combine every category's buffer file into a final vertex buffer .vb file.
     # so we can import it into blender.
