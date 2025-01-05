@@ -26,11 +26,12 @@ register_classes = (
 
     # 3Dmigoto ib和vb格式导入导出
     Import3DMigotoRaw,
+    DBMTImportAllFromCurrentWorkSpace,
 
     DBMTExportUnityVSModToWorkSpace,
     DBMTExportUnityCSModToWorkSpace,
-    DBMTImportAllFromCurrentWorkSpace,
     DBMTExportUnityVSModToWorkSpaceFast,
+    DBMTExportUnityCSModToWorkSpaceFast,
 
     # 右键菜单栏
     RemoveAllVertexGroupOperator,

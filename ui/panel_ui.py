@@ -141,6 +141,7 @@ class PanelGenerateMod(bpy.types.Panel):
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
             layout.operator("dbmt.export_unity_cs_mod_to_workspace")
+            layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
 
