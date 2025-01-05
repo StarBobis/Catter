@@ -18,91 +18,33 @@ class NumpyTypeConverter:
 
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_snorm(cls, input_array):
-        """
-        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_SNORM 格式的 int8 ndarray。
-
-        参数:
-            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [-1, 1] 范围内。
-
-        返回:
-            numpy.ndarray: 转换后的 (N, 4) 形状的 int8 ndarray，符合 R8G8B8A8_SNORM 格式。
-        """
-        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
-            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
-
         # 确保数据在 [-1, 1] 范围内（如果已经是则可以跳过这一步）
         normalized = numpy.clip(input_array, -1.0, 1.0)
 
         # 将 [-1, 1] 范围内的浮点数缩放到 [-128, 127]
         scaled = (normalized * 127).round()
 
-        # 转换为 int8 类型
-        result_int8 = scaled.astype(numpy.int8)
-
-        return result_int8
+        return scaled.astype(numpy.int8)
      
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_unorm(cls,input_array):
-        """
-        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_UNORM 格式的 uint8 ndarray。
-
-        参数:
-            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [0, 1] 范围内。
-
-        返回:
-            numpy.ndarray: 转换后的 (N, 4) 形状的 uint8 ndarray，符合 R8G8B8A8_UNORM 格式。
-        """
-        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
-            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
-
         # 确保数据在 [0, 1] 范围内（如果已经是则可以跳过这一步）
         normalized = numpy.clip(input_array, 0.0, 1.0)
 
         # 将 [0, 1] 范围内的浮点数缩放到 [0, 255]
         scaled = (normalized * 255).round()
 
-        # 转换为 uint8 类型
-        result_uint8 = scaled.astype(numpy.uint8)
-
-        return result_uint8
+        return scaled.astype(numpy.uint8)
 
 
 class BufferModel:
-
     '''
     BufferModel用于抽象每一个obj的mesh对象中的数据，加快导出速度。
     '''
     
     def __init__(self,d3d11GameType:D3D11GameType) -> None:
         self.d3d11GameType:D3D11GameType = d3d11GameType
-        self.elementname_data_dict = {}
-        self.elementname_bytesdata_dict = {}
         self.vertexindex_data_dict = {}
-        self.test_output_path = "C:\\Users\\Administrator\\Desktop\\TestOutput\\"
-
-    def write_to_file_test(self,file_name:str,data):
-        file_path = self.test_output_path + file_name
-        if isinstance(data,bytes):
-            with open(file_path, 'wb') as file:
-                file.write(data)
-        else:
-            with open(file_path, 'wb') as file:
-                file.write(data.tobytes())
-
-
-    def show(self,obj,to_files=False):
-        '''
-        展示所有数据，仅用于测试开发
-        '''
-        for element_name,value in self.elementname_data_dict.items():
-            d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-            print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value))  + "  ByteWidth:" + str(d3d11Element.ByteWidth))
-            
-            # 这里写出来得到的结果是正确的，只不过没有得到正确的转换
-            # if to_files:
-            #     self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
-        LOG.newline()
-
     
     def check_and_verify_attributes(self,obj:bpy.types.Object):
         '''
@@ -215,7 +157,6 @@ class BufferModel:
             texcoord_layers[uv_layer.name] = texcoords
         
 
-        elementname_data_dict = {}
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
 
@@ -236,7 +177,6 @@ class BufferModel:
                 positions_bytes = positions.ravel()
 
                 # 将位置数据存入字典
-                elementname_data_dict[d3d11_element_name] = positions_bytes
                 self.split_array_into_chunks_of_n_and_append(positions_bytes, 3)
 
                 # TimerUtils.End("Position Get") # 0:00:00.057535 
@@ -256,7 +196,6 @@ class BufferModel:
                     loop_normals = new_array
 
                 loop_normals_bytes = loop_normals.ravel()
-                elementname_data_dict[d3d11_element_name] = loop_normals_bytes
                 self.split_array_into_chunks_of_n_and_append(loop_normals_bytes, 3)
 
                 # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
@@ -286,7 +225,6 @@ class BufferModel:
                     tangents_data = tangents_data.astype(numpy.float16)
                     
 
-                elementname_data_dict[d3d11_element_name] = tangents_data
                 self.split_array_into_chunks_of_n_and_append(tangents_data, 4)
 
                 # TimerUtils.End("Get TANGENT") # 0:00:00.030449
@@ -305,13 +243,11 @@ class BufferModel:
 
                     color_data = result.ravel()
 
-                    elementname_data_dict[d3d11_element_name] = color_data
                     self.split_array_into_chunks_of_n_and_append(color_data, 4)
 
                 # TimerUtils.End("Get COLOR") # 0:00:00.030605 
 
             elif d3d11_element_name.startswith('BLENDINDICES'):
-                elementname_data_dict[d3d11_element_name] = blendindices_flat
                 # TODO 处理R32_UINT类型 R32G32_FLOAT类型
                 self.split_array_into_chunks_of_n_and_append(blendindices_flat, 4)
  
@@ -319,7 +255,6 @@ class BufferModel:
                 # patch时跳过生成数据
                 # TODO 处理R32G32_FLOAT类型
                 if not self.d3d11GameType.PatchBLENDWEIGHTS:
-                    elementname_data_dict[d3d11_element_name] = blendweights_flat
                     self.split_array_into_chunks_of_n_and_append(blendweights_flat, 4)
 
             elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
@@ -331,11 +266,9 @@ class BufferModel:
                         if d3d11_element.Format == 'R16G16_FLOAT':
                             uvs_array = uvs_array.astype(numpy.float16)
 
-                        elementname_data_dict[d3d11_element_name] = uvs_array
                         self.split_array_into_chunks_of_n_and_append(uvs_array, 2)
                 # TimerUtils.End("GET TEXCOORD") # 0:00:00.034990
         
-        self.elementname_data_dict = elementname_data_dict
 
         # TimerUtils.Start("ConvertToBytes")
         for key, arrays in self.vertexindex_data_dict.items():
@@ -388,11 +321,8 @@ class BufferModel:
         # print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据，符合预期
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
-        # indexed_vertices 中key是tuple，value是顺序索引
-        # TODO 将数据转换为list[bytes]
         # TimerUtils.Start("ToBytes")
-
-        # 这里没办法，只能对每个顶点进行逐个顶点的追加，是无法避免的开销。
+        # 这里没办法，只能对CategoryBuf进行逐个顶点追加，是无法避免的开销。
         category_buffer_dict:dict[str,list] = {}
         for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
             category_buffer_dict[categoryname] = []
@@ -415,21 +345,7 @@ class BufferModel:
         flattened_ib = [item for sublist in ib for item in sublist]
         # TimerUtils.End("ToBytes") # 0:00:00.292768 
         return flattened_ib,category_buffer_dict
-    
-        # 输出测试  已通过
-        # Step 1: Flatten the list of lists into a single list.
-        # Step 2: Pack the integers directly using the flattened list.
-        # '<' means little-endian, 'I' means unsigned int (32 bits).
 
-        
-        # packed_data = struct.pack(f'<{len(flattened_ib)}I', *flattened_ib)
-        # with open(self.test_output_path + mesh.name + "-IB.buf", 'wb') as f:
-        #     f.write(packed_data)
-        
-        # for categoryname, category_buffer_list in category_buffer_dict.items():
-        #     print("output categoryname: " + categoryname)
-        #     with open(self.test_output_path + mesh.name + "-" + categoryname + ".buf", 'wb') as f:
-        #         f.write(bytes(category_buffer_list))
     
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):

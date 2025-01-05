@@ -181,8 +181,8 @@ class DrawIBModelFast:
                     for ib_number in ib:
                         offset_ib.append(ib_number + vertex_number_ib_offset)
                     
-                    print("component name: " + component_name)
-                    print("vertex_number_ib_offset: " + str(vertex_number_ib_offset))
+                    print("Component name: " + component_name)
+                    print("Draw Offset: " + str(vertex_number_ib_offset))
                     ib_buf.extend(offset_ib)
 
                     drawindexed_obj = M_DrawIndexed()
@@ -195,15 +195,16 @@ class DrawIBModelFast:
                     offset = offset + draw_number
 
                     # Add UniqueVertexNumber to show vertex count in mod ini.
-                    print("draw number: " + str(unique_vertex_number))
+                    print("Draw Number: " + str(unique_vertex_number))
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
+
+                    LOG.newline()
             
             # Only export if it's not empty.
             if len(ib_buf) != 0:
                 self.componentname_ibbuf_dict[component_name] = ib_buf
             else:
                 LOG.warning(self.draw_ib + " collection: " + component_name + " is hide, skip export ib buf.")
-    
     
     def __read_categoryname_bytelist_dict(self):
         # TimerUtils.Start("__read_categoryname_bytelist_dict")
@@ -297,11 +298,6 @@ class DrawIBModelFast:
                 self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
 
             self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
-
-
-
-    
-    
 
     def write_buffer_files(self):
         '''

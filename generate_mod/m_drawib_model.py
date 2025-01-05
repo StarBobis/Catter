@@ -351,11 +351,6 @@ class DrawIBModel:
 
             self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
 
-
-
-    
-    
-
     def write_buffer_files(self):
         '''
         用于导出IndexBuffer文件和CategoryBuffer文件
