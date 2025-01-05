@@ -14,6 +14,59 @@ from ..migoto.d3d11_game_type import D3D11GameType
 from ..migoto.migoto_utils import MigotoUtils
 
 
+class NumpyTypeConverter:
+
+    @classmethod
+    def convert_4x_float32_to_r8g8b8a8_snorm(cls, input_array):
+        """
+        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_SNORM 格式的 int8 ndarray。
+
+        参数:
+            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [-1, 1] 范围内。
+
+        返回:
+            numpy.ndarray: 转换后的 (N, 4) 形状的 int8 ndarray，符合 R8G8B8A8_SNORM 格式。
+        """
+        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
+            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
+
+        # 确保数据在 [-1, 1] 范围内（如果已经是则可以跳过这一步）
+        normalized = numpy.clip(input_array, -1.0, 1.0)
+
+        # 将 [-1, 1] 范围内的浮点数缩放到 [-128, 127]
+        scaled = (normalized * 127).round()
+
+        # 转换为 int8 类型
+        result_int8 = scaled.astype(numpy.int8)
+
+        return result_int8
+     
+    @classmethod
+    def convert_4x_float32_to_r8g8b8a8_unorm(cls,input_array):
+        """
+        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_UNORM 格式的 uint8 ndarray。
+
+        参数:
+            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [0, 1] 范围内。
+
+        返回:
+            numpy.ndarray: 转换后的 (N, 4) 形状的 uint8 ndarray，符合 R8G8B8A8_UNORM 格式。
+        """
+        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
+            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
+
+        # 确保数据在 [0, 1] 范围内（如果已经是则可以跳过这一步）
+        normalized = numpy.clip(input_array, 0.0, 1.0)
+
+        # 将 [0, 1] 范围内的浮点数缩放到 [0, 255]
+        scaled = (normalized * 255).round()
+
+        # 转换为 uint8 类型
+        result_uint8 = scaled.astype(numpy.uint8)
+
+        return result_uint8
+
+
 class BufferModel:
 
     '''
@@ -75,53 +128,6 @@ class BufferModel:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
 
-    def convert_to_r8g8b8a8_snorm(self, input_array):
-        """
-        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_SNORM 格式的 int8 ndarray。
-
-        参数:
-            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [-1, 1] 范围内。
-
-        返回:
-            numpy.ndarray: 转换后的 (N, 4) 形状的 int8 ndarray，符合 R8G8B8A8_SNORM 格式。
-        """
-        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
-            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
-
-        # 确保数据在 [-1, 1] 范围内（如果已经是则可以跳过这一步）
-        normalized = numpy.clip(input_array, -1.0, 1.0)
-
-        # 将 [-1, 1] 范围内的浮点数缩放到 [-128, 127]
-        scaled = (normalized * 127).round()
-
-        # 转换为 int8 类型
-        result_int8 = scaled.astype(numpy.int8)
-
-        return result_int8
-     
-    def convert_to_r8g8b8a8_unorm(self,input_array):
-        """
-        将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_UNORM 格式的 uint8 ndarray。
-
-        参数:
-            input_array (numpy.ndarray): 输入的 (N, 4) 形状的 float32 ndarray，每个元素在 [0, 1] 范围内。
-
-        返回:
-            numpy.ndarray: 转换后的 (N, 4) 形状的 uint8 ndarray，符合 R8G8B8A8_UNORM 格式。
-        """
-        if not isinstance(input_array, numpy.ndarray) or input_array.dtype != numpy.float32 or input_array.shape[-1] != 4:
-            raise ValueError("输入必须是形状为 (N, 4) 的 float32 类型的 NumPy 数组")
-
-        # 确保数据在 [0, 1] 范围内（如果已经是则可以跳过这一步）
-        normalized = numpy.clip(input_array, 0.0, 1.0)
-
-        # 将 [0, 1] 范围内的浮点数缩放到 [0, 255]
-        scaled = (normalized * 255).round()
-
-        # 转换为 uint8 类型
-        result_uint8 = scaled.astype(numpy.uint8)
-
-        return result_uint8
 
     def split_array_into_chunks(array, n):
         """
@@ -220,12 +226,12 @@ class BufferModel:
 
                 positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
 
-                # TODO 在这里进行转换
-                # if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                #     positions = positions.astype(numpy.float16)
-                #     new_array = numpy.zeros((positions.shape[0], 4))
-                #     new_array[:, :3] = positions
-                #     positions = new_array
+                # TODO 测试astype能用吗？
+                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
+                    positions = positions.astype(numpy.float16)
+                    new_array = numpy.zeros((positions.shape[0], 4))
+                    new_array[:, :3] = positions
+                    positions = new_array
 
                 positions_bytes = positions.ravel()
 
@@ -240,6 +246,14 @@ class BufferModel:
 
                 loop_normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
                 mesh_loops.foreach_get('normal', loop_normals)
+
+
+                # TODO 测试astype能用吗？
+                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
+                    loop_normals = loop_normals.astype(numpy.float16)
+                    new_array = numpy.zeros((loop_normals.shape[0], 4))
+                    new_array[:, :3] = loop_normals
+                    loop_normals = new_array
 
                 loop_normals_bytes = loop_normals.ravel()
                 elementname_data_dict[d3d11_element_name] = loop_normals_bytes
@@ -268,6 +282,10 @@ class BufferModel:
                 output_tangents[3::4] = bitangent_signs  # w 分量 (副切线符号)
                 tangents_data = output_tangents.ravel()
 
+                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
+                    tangents_data = tangents_data.astype(numpy.float16)
+                    
+
                 elementname_data_dict[d3d11_element_name] = tangents_data
                 self.split_array_into_chunks_of_n_and_append(tangents_data, 4)
 
@@ -280,8 +298,10 @@ class BufferModel:
                     result = numpy.zeros(mesh_loops_length, dtype=(numpy.float32, 4))
                     mesh.vertex_colors[d3d11_element_name].data.foreach_get("color", result.ravel())
                     
-                    if d3d11_element.Format == 'R8G8B8A8_UNORM':
-                        result = self.convert_to_r8g8b8a8_unorm(result)
+                    if d3d11_element.Format == 'R16G16B16A16_FLOAT':
+                        result = result.astype(numpy.float16)
+                    elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+                        result = NumpyTypeConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
                     color_data = result.ravel()
 
@@ -292,10 +312,12 @@ class BufferModel:
 
             elif d3d11_element_name.startswith('BLENDINDICES'):
                 elementname_data_dict[d3d11_element_name] = blendindices_flat
+                # TODO 处理R32_UINT类型 R32G32_FLOAT类型
                 self.split_array_into_chunks_of_n_and_append(blendindices_flat, 4)
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
+                # TODO 处理R32G32_FLOAT类型
                 if not self.d3d11GameType.PatchBLENDWEIGHTS:
                     elementname_data_dict[d3d11_element_name] = blendweights_flat
                     self.split_array_into_chunks_of_n_and_append(blendweights_flat, 4)
@@ -305,6 +327,10 @@ class BufferModel:
                 for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
                     if uv_name in texcoord_layers:
                         uvs_array = numpy.array(list(texcoord_layers[uv_name].values()),dtype=numpy.float32).flatten()
+
+                        if d3d11_element.Format == 'R16G16_FLOAT':
+                            uvs_array = uvs_array.astype(numpy.float16)
+
                         elementname_data_dict[d3d11_element_name] = uvs_array
                         self.split_array_into_chunks_of_n_and_append(uvs_array, 2)
                 # TimerUtils.End("GET TEXCOORD") # 0:00:00.034990
@@ -315,12 +341,6 @@ class BufferModel:
         for key, arrays in self.vertexindex_data_dict.items():
             self.vertexindex_data_dict[key] = tuple(arrays)
         # TimerUtils.End("ConvertToBytes") # 0:00:00.014523
-
-    def patch_data(self):
-        '''
-        补全数据，例如POSITION默认只有3个元素，如果Format为R16G16B16A16_FLOAT则需要补全为4个元素，末尾补0
-        例如NROMAL只有3个元素，部分游戏Format为R16G16B16A16_FLOAT需要第四位补1
-        '''
 
 
     def average_normal_tangent(self):
