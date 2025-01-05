@@ -13,6 +13,7 @@ from ..utils.log_utils import LOG
 from ..migoto.d3d11_game_type import D3D11GameType
 from ..migoto.migoto_utils import MigotoUtils
 
+
 class BufferModel:
 
     '''
@@ -24,7 +25,6 @@ class BufferModel:
         self.elementname_data_dict = {}
         self.elementname_bytesdata_dict = {}
         self.vertexindex_data_dict = {}
-        self.vertexindex_bytesdata_dict = {}
         self.test_output_path = "C:\\Users\\Administrator\\Desktop\\TestOutput\\"
 
     def write_to_file_test(self,file_name:str,data):
@@ -43,21 +43,13 @@ class BufferModel:
         '''
         for element_name,value in self.elementname_data_dict.items():
             d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-            print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value)) + " shape: " + str(value.shape) + "  ByteWidth:" + str(d3d11Element.ByteWidth))
+            print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value))  + "  ByteWidth:" + str(d3d11Element.ByteWidth))
             
             # 这里写出来得到的结果是正确的，只不过没有得到正确的转换
             if to_files:
                 self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
         LOG.newline()
 
-        # for element_name,value in self.elementname_bytesdata_dict.items():
-        #     d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-        #     print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value)) + " shape: " + str(value.shape) + "  ByteWidth:" + str(d3d11Element.ByteWidth))
-        #     # if to_files:
-        #         # TODO 这里写出来得到的结果是错误的，说明astype有问题
-        #         # self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
-
-        LOG.newline()
     
     def check_and_verify_attributes(self,obj:bpy.types.Object):
         '''
@@ -82,6 +74,7 @@ class BufferModel:
                     else:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
+
     def convert_to_r8g8b8a8_snorm(self, input_array):
         """
         将输入的 (N, 4) 形状的 float32 ndarray 转换为 R8G8B8A8_SNORM 格式的 int8 ndarray。
@@ -154,20 +147,12 @@ class BufferModel:
 
         return chunks_dict
     
-    def split_array_into_chunks_of_n_and_append(self,array, n):
-        """
-        将 NumPy 数组平均分成若干份，每份包含 n 个元素，并追加到传入的字典中。
+    def split_array_into_chunks_of_n_and_append(self,ndarray, n):
+        # 将所有元素直接追加到一个列表中
+        for i, element in enumerate(ndarray):
+            chunk_index = i // n
+            self.vertexindex_data_dict.setdefault(chunk_index, []).append(element)
         
-        参数:
-            array (numpy.ndarray): 要分割的一维 NumPy 数组。
-            n (int): 每份的元素数量。
-        """
-        # 计算总共需要分成多少份
-        num_chunks = len(array) // n
-        # 使用列表推导式生成子数组并追加到 global_dict 中
-        for i in range(num_chunks):
-            chunk = array[i * n : (i + 1) * n]
-            self.vertexindex_data_dict.setdefault(i, []).append(chunk)
 
     def parse_elementname_ravel_ndarray_dict(self,mesh:bpy.types.Mesh) -> dict:
         '''
@@ -176,34 +161,65 @@ class BufferModel:
         这里转换出来基本上都是float32类型，占4个字节，只有BLENDINDICES是uint32类型，也占4个字节
         顶点数计算公式： ndarray长度 / 元素个数 = 顶点数 （这里的顶点数是len(mesh.loops)的数量）
         '''
+        mesh_loops = mesh.loops
+        mesh_loops_length = len(mesh_loops)
+        mesh_vertices = mesh.vertices
+        mesh_vertices_length = len(mesh.vertices)
+
+        # 创建一个包含所有循环顶点索引的NumPy数组
+        loop_vertex_indices = numpy.empty(mesh_loops_length, dtype=int)
+        mesh_loops.foreach_get("vertex_index", loop_vertex_indices)
+
+        # TimerUtils.Start("GET BLEND") 0:00:00.141898 
+        # 准备一个空数组用于存储结果，形状为(mesh_loops_length, 4)
+        blendindices = numpy.zeros((mesh_loops_length, 4), dtype=int)
+        blendweights = numpy.zeros((mesh_loops_length, 4), dtype=numpy.float32)
+
+        # 提取所有顶点的骨骼权重索引和权重，并限制每个顶点最多4个非零权重
+        vertex_info = {}
+        for v in mesh_vertices:
+            sorted_groups = sorted(v.groups, key=lambda x: x.weight, reverse=True)[:4]
+            vertex_info[v.index] = {
+                'groups': [g.group for g in sorted_groups],
+                'weights': [g.weight for g in sorted_groups]
+            }
+
+        # 填充blendindices和blendweights数组
+        for i, vertex_index in enumerate(loop_vertex_indices):
+            info = vertex_info.get(vertex_index, {'groups': [], 'weights': []})
+            groups = info['groups']
+            weights = info['weights']
+            blendindices[i, :len(groups)] = groups[:4]
+            blendweights[i, :len(weights)] = weights[:4]
+
+        # 展平为一维数组
+        blendindices_flat = blendindices.reshape(-1)
+        blendweights_flat = blendweights.reshape(-1)
+
+        # TimerUtils.End("GET BLEND")
 
         # Nico: 提前拼凑texcoord层级，有几个UVMap就拼出几个来，略微提升速度(虽然只提升几十毫秒。。)
         texcoord_layers = {}
         for uv_layer in mesh.uv_layers:
             texcoords = {}
             flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
-            for l in mesh.loops:
+            for l in mesh_loops:
                 uv = flip_uv(uv_layer.data[l.index].uv)
                 texcoords[l.index] = uv
             texcoord_layers[uv_layer.name] = texcoords
+        
 
         elementname_data_dict = {}
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
 
             if d3d11_element_name == 'POSITION':
-                dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-                # 直接从Blender的API获取所有顶点的位置到一个NumPy数组中
-                vertex_coords = numpy.empty(len(mesh.vertices) * 3, dtype=dtype)
-                mesh.vertices.foreach_get('co', vertex_coords)
+                # TimerUtils.Start("Position Get")
+                vertex_coords = numpy.empty(mesh_vertices_length * 3, dtype=numpy.float32)
+                mesh_vertices.foreach_get('co', vertex_coords)
 
-                # 创建一个包含所有循环顶点索引的NumPy数组
-                loop_vertex_indices = numpy.empty(len(mesh.loops), dtype=int)
-                mesh.loops.foreach_get("vertex_index", loop_vertex_indices)
-                # 使用高级索引一次性提取所需的位置数据
                 positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
 
-                print(str(MigotoUtils.format_size(d3d11_element.Format)))
                 # TODO 在这里进行转换
                 # if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                 #     positions = positions.astype(numpy.float16)
@@ -211,39 +227,36 @@ class BufferModel:
                 #     new_array[:, :3] = positions
                 #     positions = new_array
 
-                positions_ravel = positions.ravel()
+                positions_bytes = positions.ravel()
 
                 # 将位置数据存入字典
-                elementname_data_dict[d3d11_element_name] = positions_ravel
+                elementname_data_dict[d3d11_element_name] = positions_bytes
+                self.split_array_into_chunks_of_n_and_append(positions_bytes, 3)
 
-                self.split_array_into_chunks_of_n_and_append(positions_ravel, 3)
+                # TimerUtils.End("Position Get") # 0:00:00.057535 
 
             elif d3d11_element_name == 'NORMAL':
-                dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-                
-                # 直接从Blender的API获取所有循环的法线到一个NumPy数组中
-                num_loops = len(mesh.loops)
-                loop_normals = numpy.empty(num_loops * 3, dtype=dtype)
-                mesh.loops.foreach_get('normal', loop_normals)
+                # TimerUtils.Start("Get NORMAL")
 
-                # 将法线数据存入字典
-                elementname_data_dict[d3d11_element_name] = loop_normals.ravel()
+                loop_normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                mesh_loops.foreach_get('normal', loop_normals)
 
-                self.split_array_into_chunks_of_n_and_append(loop_normals, 3)
+                loop_normals_bytes = loop_normals.ravel()
+                elementname_data_dict[d3d11_element_name] = loop_normals_bytes
+                self.split_array_into_chunks_of_n_and_append(loop_normals_bytes, 3)
+
+                # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
 
             elif d3d11_element_name == 'TANGENT':
-                numpy_dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-                loop_count = len(mesh.loops)
-
-                # 预先创建输出数组
-                output_tangents = numpy.empty(loop_count * 4, dtype=numpy_dtype)
+                # TimerUtils.Start("Get TANGENT")
+                output_tangents = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
 
                 # 使用 foreach_get 批量获取切线和副切线符号数据
-                tangents = numpy.empty(loop_count * 3, dtype=numpy_dtype)
-                bitangent_signs = numpy.empty(loop_count, dtype=numpy_dtype)
+                tangents = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                bitangent_signs = numpy.empty(mesh_loops_length, dtype=numpy.float32)
 
-                mesh.loops.foreach_get("tangent", tangents)
-                mesh.loops.foreach_get("bitangent_sign", bitangent_signs)
+                mesh_loops.foreach_get("tangent", tangents)
+                mesh_loops.foreach_get("bitangent_sign", bitangent_signs)
 
                 # 将副切线符号乘以 -1（因为在导入时翻转了UV，所以导出时必须翻转bitangent_signs）
                 bitangent_signs *= -1
@@ -254,150 +267,52 @@ class BufferModel:
                 output_tangents[2::4] = tangents[2::3]  # z 分量
                 output_tangents[3::4] = bitangent_signs  # w 分量 (副切线符号)
                 tangents_data = output_tangents.ravel()
+
                 elementname_data_dict[d3d11_element_name] = tangents_data
                 self.split_array_into_chunks_of_n_and_append(tangents_data, 4)
 
+                # TimerUtils.End("Get TANGENT") # 0:00:00.030449
             elif d3d11_element_name.startswith('COLOR'):
+                # TimerUtils.Start("Get COLOR")
+
                 if d3d11_element_name in mesh.vertex_colors:
                     # 因为COLOR属性存储在Blender里固定是float32类型所以这里只能用numpy.float32
-                    result = numpy.zeros(len(mesh.loops), dtype=(numpy.float32, 4))
+                    result = numpy.zeros(mesh_loops_length, dtype=(numpy.float32, 4))
                     mesh.vertex_colors[d3d11_element_name].data.foreach_get("color", result.ravel())
                     
                     if d3d11_element.Format == 'R8G8B8A8_UNORM':
                         result = self.convert_to_r8g8b8a8_unorm(result)
 
                     color_data = result.ravel()
-                    
-                    # encoder,decoder = MigotoUtils.EncoderDecoder(d3d11_element.Format)
-                    # color_data = encoder(color_data)
 
                     elementname_data_dict[d3d11_element_name] = color_data
                     self.split_array_into_chunks_of_n_and_append(color_data, 4)
 
+                # TimerUtils.End("Get COLOR") # 0:00:00.030605 
+
             elif d3d11_element_name.startswith('BLENDINDICES'):
-                # 获取骨骼权重索引的数据类型
-                dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-                
-                # 提取所有顶点的骨骼权重索引，并填充到一个字典中
-                vertex_groups = {v.index: sorted(v.groups, key=lambda x: x.weight, reverse=True)[:4] for v in mesh.vertices}
-
-                # 创建一个包含所有循环顶点索引的NumPy数组
-                loop_vertex_indices = numpy.empty(len(mesh.loops), dtype=int)
-                mesh.loops.foreach_get("vertex_index", loop_vertex_indices)
-
-                # 创建一个函数来获取前4个骨骼索引，不足的部分用0填充
-                def get_top_4_indices(vertex_groups, vertex_index):
-                    groups = vertex_groups.get(vertex_index, [])
-                    indices = [g.group for g in groups] + [0] * (4 - len(groups))
-                    return indices[:4]
-
-                # 使用vectorize将Python函数转换为适用于NumPy数组的向量化函数
-                vectorized_get_indices = numpy.vectorize(get_top_4_indices, otypes=[object])
-
-                # 应用向量化函数，获取所有循环的骨骼索引
-                blendindices_list = vectorized_get_indices(numpy.repeat([vertex_groups], len(mesh.loops), axis=0), loop_vertex_indices)
-
-                # 将结果展平为一维数组
-                blendindices = numpy.array(blendindices_list.tolist()).reshape(-1)
-
-                elementname_data_dict[d3d11_element_name] = blendindices
-                self.split_array_into_chunks_of_n_and_append(blendindices, 4)
-
+                elementname_data_dict[d3d11_element_name] = blendindices_flat
+                self.split_array_into_chunks_of_n_and_append(blendindices_flat, 4)
+ 
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
-                # 获取混合权重的数据类型
-                dtype = MigotoUtils.get_dtype_from_format(d3d11_element.Format)
-
-                # 提取所有顶点的骨骼权重，并填充到一个NumPy数组中
-                num_vertices = len(mesh.vertices)
-                vertex_weights_array = numpy.zeros((num_vertices, 4), dtype=dtype)
-
-                for v in mesh.vertices:
-                    weights = sorted((x.weight for x in v.groups), reverse=True)[:4]
-                    vertex_weights_array[v.index, :len(weights)] = weights
-
-                # 创建一个包含所有循环顶点索引的NumPy数组
-                loop_vertex_indices = numpy.empty(len(mesh.loops), dtype=int)
-                mesh.loops.foreach_get("vertex_index", loop_vertex_indices)
-
-                # 使用高级索引一次性提取所需权重数据
-                blendweights = vertex_weights_array[loop_vertex_indices].reshape(-1)
-
-                # 将混合权重数据存入字典
-                elementname_data_dict[d3d11_element_name] = blendweights
-                self.split_array_into_chunks_of_n_and_append(blendweights, 4)
+                elementname_data_dict[d3d11_element_name] = blendweights_flat
+                self.split_array_into_chunks_of_n_and_append(blendweights_flat, 4)
 
             elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
+                # TimerUtils.Start("GET TEXCOORD")
                 for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
                     if uv_name in texcoord_layers:
                         uvs_array = numpy.array(list(texcoord_layers[uv_name].values()),dtype=numpy.float32).flatten()
-                        elementname_data_dict[d3d11_element_name] = uvs_array.ravel()
+                        elementname_data_dict[d3d11_element_name] = uvs_array
                         self.split_array_into_chunks_of_n_and_append(uvs_array, 2)
+                # TimerUtils.End("GET TEXCOORD") # 0:00:00.034990
         
         self.elementname_data_dict = elementname_data_dict
 
-        # TODO 后续需要优化
-        # 12000顶点0.4秒  如果有12万顶点将消耗4秒
         # TimerUtils.Start("ConvertToBytes")
         for key, arrays in self.vertexindex_data_dict.items():
-            self.vertexindex_bytesdata_dict[key] = numpy.concatenate([arr.flatten() for arr in arrays]).tobytes()
-        # TimerUtils.End("ConvertToBytes")  
-
-
-    def convert_ndarray_to_bytes(self):
-        '''
-        Deprecated
-
-        数据全部编码为目标格式
-        TODO 这个要在单独的顶点被统计出来之后再搞，不然没有意义。
-        '''
-        # TimerUtils.Start("ConvertNDarrayToTargetFormat")
-        elementname_bytesdata_dict = {}
-
-        for element_name,value in self.elementname_data_dict.items():
-            d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-            # print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value)) + " shape: " + str(value.shape))
-
-            if element_name == 'POSITION':
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    # TODO 需要测试astype是否正常工作
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name == 'NORMAL':
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name == 'TANGENT':
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name.startswith('COLOR'):
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.uint8)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name.startswith('BLENDINDICES'):
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name.startswith('BLENDWEIGHT'):
-                if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-            elif element_name.startswith('TEXCOORD'):
-                if d3d11_element.Format == 'R16G16_FLOAT':
-                    elementname_bytesdata_dict[element_name] = value.astype(numpy.float16)
-                else:
-                    elementname_bytesdata_dict[element_name] = value
-
-        self.elementname_bytesdata_dict = elementname_bytesdata_dict
-        # TimerUtils.End("ConvertNDarrayToTargetFormat")  单纯使用astype速度极快，不到0.001s
+            self.vertexindex_data_dict[key] = tuple(arrays)
+        # TimerUtils.End("ConvertToBytes") # 0:00:00.014523
 
     def patch_data(self):
         '''
@@ -442,20 +357,17 @@ class BufferModel:
         Special Thanks for @leotorrez 
         '''
         # TimerUtils.Start("CalcIndexBuffer")
+        mesh_loops = mesh.loops
         indexed_vertices = collections.OrderedDict()
-        ib = [[indexed_vertices.setdefault(self.vertexindex_bytesdata_dict[blender_lvertex.index], len(indexed_vertices))
-                for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
+        ib = [[indexed_vertices.setdefault(self.vertexindex_data_dict[blender_lvertex.index], len(indexed_vertices))
+                for blender_lvertex in mesh_loops[poly.loop_start:poly.loop_start + poly.loop_total]
                     ]for poly in mesh.polygons]
         print("IndexedVertices Number: " + str(len(indexed_vertices)))
         # print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据，符合预期
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
-        # indexed_vertices 中key是字节串，value是顺序索引
-        # TODO 所以到这一步之前，就应该已经补全数据并做好了数据转换了
-
+        # indexed_vertices 中key是tuple，value是顺序索引
         # TODO 组装后，补全数据，然后将数据转换为list[bytes]
-
-
        
         # Step 1: Flatten the list of lists into a single list.
         flattened_ib = [item for sublist in ib for item in sublist]
@@ -497,7 +409,6 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     buffer_model.parse_elementname_ravel_ndarray_dict(mesh)
     buffer_model.calc_index_vertex_buffer(mesh)
 
-    buffer_model.convert_ndarray_to_bytes()
     buffer_model.show(obj,to_files=True)
 
     TimerUtils.End("GetExportIBVB Fast")
