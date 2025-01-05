@@ -3,6 +3,7 @@ import hashlib
 import bpy
 import collections
 import struct
+import math
 
 from ..utils.collection_utils import CollectionUtils
 from ..utils.json_utils import JsonUtils
@@ -20,13 +21,55 @@ class BufferDataConverter:
     '''
     各种格式转换
     '''
+    # 向量归一化
+    def vector_normalize(self,v):
+        """归一化向量"""
+        length = math.sqrt(sum(x * x for x in v))
+        if length == 0:
+            return v  # 避免除以零
+        return [x / length for x in v]
+    
+    def add_and_normalize_vectors(self,v1, v2):
+        """将两个向量相加并规范化(normalize)"""
+        # 相加
+        result = [a + b for a, b in zip(v1, v2)]
+        # 归一化
+        normalized_result = self.vector_normalize(result)
+        return normalized_result
+    
+    # 辅助函数：计算两个向量的点积
+    def dot_product(self,v1, v2):
+        return sum(a * b for a, b in zip(v1, v2))
+    
     @classmethod
-    def average_normal_tangent(cls,indexed_vertices):
+    def average_normal_tangent(cls,indexed_vertices,d3d11GameType:D3D11GameType):
+        '''
+        Nico: 米游所有游戏都能用到这个，还有曾经的GPU-PreSkinning的GF2也会用到这个，崩坏三2.0新角色除外。
+        
+        尽管这个可以起到相似的效果，但是仍然无法完美获取模型本身的TANGENT数据，只能做到身体轮廓线99%近似。
+        经过测试，头发轮廓线部分并不是简单的向量归一化，也不是算术平均归一化。
+
+        TODO 这里可能有格式兼容性问题
+        '''
+        # TODO 有空再实现吧。
+        
+        # position_element = d3d11GameType.ElementNameD3D11ElementDict["POSITION"]
+        # normal_element = d3d11GameType.ElementNameD3D11ElementDict["NORMAL"]
+        # tangent_element = d3d11GameType.ElementNameD3D11ElementDict["TANGENT"]
+        
+
+        # for vertex_byte_list in indexed_vertices.keys():
+        #     break
         
         return indexed_vertices
 
     @classmethod
-    def average_normal_color(cls,indexed_vertices):
+    def average_normal_color(cls,indexed_vertices,d3d11GameType:D3D11GameType):
+        '''
+        Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
+
+        TODO 这里可能有格式兼容性问题
+        '''
         
         return indexed_vertices
 
@@ -272,7 +315,7 @@ class BufferModel:
         计算IndexBuffer和CategoryBufferDict并返回
 
         This saves me a lot of time to make another wheel,it's already optimized very good.
-        Credit to XXMITools for learn the design and copy the original code
+        Credit to XXMITools for learn the design and copy the original code and modified for our needs.
         https://github.com/leotorrez/XXMITools
         Special Thanks for @leotorrez 
         '''
@@ -283,25 +326,29 @@ class BufferModel:
         ib = [[indexed_vertices.setdefault(self.vertexindex_data_dict[blender_lvertex.index], len(indexed_vertices))
                 for blender_lvertex in mesh_loops[poly.loop_start:poly.loop_start + poly.loop_total]
                     ]for poly in mesh.polygons]
+        
+        # 平展后方便使用
+        # index展开为list
+        flattened_ib = [item for sublist in ib for item in sublist]
+
+
         print("IndexedVertices Number: " + str(len(indexed_vertices)))
         # print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据，符合预期
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
         # (2) TODO 重计算TANGENT和重计算COLOR
-
-
         if "TANGENT" in self.d3d11GameType.OrderedFullElementList:
             if GenerateModConfig.recalculate_tangent():
-                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices)
+                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices,self.d3d11GameType)
             elif obj.get("3DMigoto:RecalculateTANGENT",False):
-                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices)
+                indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices,self.d3d11GameType)
 
         if "COLOR" in self.d3d11GameType.OrderedFullElementList:
             if GenerateModConfig.recalculate_color():
-                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices)
+                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices,self.d3d11GameType)
             elif obj.get("3DMigoto:RecalculateCOLOR",False):
-                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices)
-        
+                indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices,self.d3d11GameType)
+
 
 
         # TimerUtils.Start("ToBytes")
@@ -310,12 +357,13 @@ class BufferModel:
         for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
             category_buffer_dict[categoryname] = []
 
-        for indexed_vertex_data in indexed_vertices.keys():
-            flat_byte_list = [
-                byte_val for val in indexed_vertex_data
-                for byte_val in val.tobytes()
-            ]
+        # vertex展开为list的list
+        flat_vertex_bytes_list = [
+            [byte_val for val in indexed_vertex_data for byte_val in val.tobytes()]
+            for indexed_vertex_data in indexed_vertices.keys()
+        ]
 
+        for flat_byte_list in flat_vertex_bytes_list:
             stride_offset = 0
             for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
                 split_category_stride = category_stride
@@ -324,8 +372,7 @@ class BufferModel:
 
                 category_buffer_dict[categoryname].extend(flat_byte_list[stride_offset:stride_offset + split_category_stride])
                 stride_offset += split_category_stride
-
-        flattened_ib = [item for sublist in ib for item in sublist]
+        
         # TimerUtils.End("ToBytes") # 0:00:00.292768 
         return flattened_ib,category_buffer_dict
 

@@ -120,9 +120,12 @@ class VertexBuffer(object):
         normalized_result = self.vector_normalize(result)
         return normalized_result
     
+    # 辅助函数：计算两个向量的点积
+    def dot_product(self,v1, v2):
+        return sum(a * b for a, b in zip(v1, v2))
+    
     # Nico: 向量相加归一化法线 
     def get_position_normalizednormal_dict(self,vertices):
-        # TimerUtils.Start("get_position_normalizednormal_dict")
         position_normal_dict = {}
         for vertex in vertices:
             position = vertex["POSITION"]
@@ -135,40 +138,8 @@ class VertexBuffer(object):
             else:
                 position_normal_dict[position_str] = normal
 
-        # TimerUtils.End("get_position_normalizednormal_dict") 0.1s
         return position_normal_dict
     
-    # Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
-    def get_position_averagenormal_dict(self,vertices):
-        position_normal_sum_dict = {}
-        position_normal_number_dict = {}
-
-        for vertex in vertices:
-            position = vertex["POSITION"]
-            position_str = str(position[0]) + "_" + str(position[1]) + "_" + str(position[2])
-            normal = vertex["NORMAL"]
-            if position_str in position_normal_sum_dict:
-                normal_sum = [a + b for a, b in zip(normal, position_normal_sum_dict[position_str])]
-                position_normal_sum_dict[position_str] = normal_sum
-                position_normal_number_dict[position_str] = position_normal_number_dict[position_str] + 1
-            else:
-                position_normal_sum_dict[position_str] = normal
-                position_normal_number_dict[position_str] = 1
-
-        
-        position_normal_dict = {}
-        for k, v in position_normal_sum_dict.items():
-            number = float(position_normal_number_dict[k])
-            # Nico: 平均后的值+1后再除以2，就归一化到[0,1]了 这个归一化是逆向分析HI3 2.0新角色模型得到的。
-            average_normal = [((x / number) + 1 ) / 2 for x in v] 
-            position_normal_dict[k] = average_normal
-
-        return position_normal_dict
-
-    # 辅助函数：计算两个向量的点积
-    def dot_product(self,v1, v2):
-        return sum(a * b for a, b in zip(v1, v2))
-
     # Nico: 米游所有游戏都能用到这个，还有曾经的GPU-PreSkinning的GF2也会用到这个，崩坏三2.0新角色除外。
     # TODO 尽管这个可以起到相似的效果，但是仍然无法完美获取模型本身的TANGENT数据，只能做到99%近似。
     # 经过测试，头发部分并不是简单的向量归一化，也不是算术平均归一化。
@@ -207,6 +178,34 @@ class VertexBuffer(object):
 
         self.vertices = new_vertices
         # TimerUtils.End("Recalculate TANGENT") # 0.36s
+
+
+    # Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
+    def get_position_averagenormal_dict(self,vertices):
+        position_normal_sum_dict = {}
+        position_normal_number_dict = {}
+
+        for vertex in vertices:
+            position = vertex["POSITION"]
+            position_str = str(position[0]) + "_" + str(position[1]) + "_" + str(position[2])
+            normal = vertex["NORMAL"]
+            if position_str in position_normal_sum_dict:
+                normal_sum = [a + b for a, b in zip(normal, position_normal_sum_dict[position_str])]
+                position_normal_sum_dict[position_str] = normal_sum
+                position_normal_number_dict[position_str] = position_normal_number_dict[position_str] + 1
+            else:
+                position_normal_sum_dict[position_str] = normal
+                position_normal_number_dict[position_str] = 1
+
+        
+        position_normal_dict = {}
+        for k, v in position_normal_sum_dict.items():
+            number = float(position_normal_number_dict[k])
+            # Nico: 平均后的值+1后再除以2，就归一化到[0,1]了 这个归一化是逆向分析HI3 2.0新角色模型得到的。
+            average_normal = [((x / number) + 1 ) / 2 for x in v] 
+            position_normal_dict[k] = average_normal
+
+        return position_normal_dict
 
     def arithmetic_average_normal_to_attribute(self,attribute):
         position_normal_dict = self.get_position_averagenormal_dict(self.vertices)
