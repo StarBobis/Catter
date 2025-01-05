@@ -354,13 +354,11 @@ class BufferModel:
         ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
                 for blender_lvertex in mesh_loops[poly.loop_start:poly.loop_start + poly.loop_total]
                     ]for poly in mesh.polygons]
-        # TimerUtils.End("CalcIndexBuffer") # 3.5s
-        
         flattened_ib = [item for sublist in ib for item in sublist]
+        # TimerUtils.End("CalcIndexBuffer") # 3.5s
         # print("IndexedVertices Number: " + str(len(indexed_vertices)))
-        # TimerUtils.End("Flat IB")
 
-        TimerUtils.Start("ToBytes")
+        TimerUtils.Start("GetCategoryBufferDict")
         # (3)这里没办法，只能对CategoryBuf进行逐个顶点追加，是无法避免的开销。
         category_buffer_dict:dict[str,list] = {}
         for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
@@ -368,13 +366,13 @@ class BufferModel:
 
         category_stride_dict = self.d3d11GameType.get_real_category_stride_dict()
 
-        for flat_byte_list in indexed_vertices:
-            stride_offset = 0
-            for categoryname,category_stride in category_stride_dict.items():
+        stride_offset = 0
+        for categoryname,category_stride in category_stride_dict.items():
+            for flat_byte_list in indexed_vertices:
                 category_buffer_dict[categoryname].extend(flat_byte_list[stride_offset:stride_offset + category_stride])
-                stride_offset += category_stride
+            stride_offset += category_stride
         
-        TimerUtils.End("ToBytes") # 0:00:00.292768  5s
+        TimerUtils.End("GetCategoryBufferDict") # 0:00:00.292768  5s
         return flattened_ib,category_buffer_dict
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
