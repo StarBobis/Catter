@@ -14,7 +14,38 @@ from ..migoto.d3d11_game_type import D3D11GameType
 from ..migoto.migoto_utils import MigotoUtils
 
 
-class NumpyTypeConverter:
+class BufferDataConverter:
+    '''
+    各种格式转换
+    '''
+    @classmethod
+    def average_normal_tangent(cls):
+        '''
+        TODO
+        重计算TANGENT
+
+        # 含有这个属性的情况下才能计算这个属性。
+        # if layout.contains("TANGENT"):
+        #     if GenerateModConfig.recalculate_tangent():
+        #         vb.vector_normalized_normal_to_tangent()
+        #     elif obj.get("3DMigoto:RecalculateTANGENT",False):
+        #         vb.vector_normalized_normal_to_tangent()
+        '''
+        pass
+
+    @classmethod
+    def average_normal_color(cls):
+        '''
+        TODO
+        重计算COLOR
+
+        # if layout.contains("COLOR"):
+        #     if GenerateModConfig.recalculate_color():
+        #         vb.arithmetic_average_normal_to_color()
+        #     elif obj.get("3DMigoto:RecalculateCOLOR",False):
+        #         vb.arithmetic_average_normal_to_color()
+        '''
+        pass
 
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_snorm(cls, input_array):
@@ -69,31 +100,6 @@ class BufferModel:
                     else:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
-
-
-    def split_array_into_chunks(array, n):
-        """
-        将 NumPy 数组平均分成若干份，每份包含 n 个元素，并存入新的字典中返回。
-        
-        参数:
-            array (numpy.ndarray): 要分割的一维 NumPy 数组。
-            n (int): 每份的元素数量。
-            
-        返回:
-            dict: 键是每个分割出来的元素的顺序索引，值是分割的份的内容。
-        """
-        # 创建一个空字典用于存储分块结果
-        chunks_dict = {}
-        
-        # 确保数组长度是n的倍数，如果不是，则忽略剩余不足n的部分
-        num_chunks = len(array) // n
-        
-        # 使用for循环生成子数组并存入字典中
-        for i in range(num_chunks):
-            chunk = array[i * n : (i + 1) * n]
-            chunks_dict[i] = chunk
-
-        return chunks_dict
     
     def split_array_into_chunks_of_n_and_append(self,ndarray, n):
         # 将所有元素直接追加到一个列表中
@@ -101,7 +107,6 @@ class BufferModel:
             chunk_index = i // n
             self.vertexindex_data_dict.setdefault(chunk_index, []).append(element)
         
-
     def parse_elementname_ravel_ndarray_dict(self,mesh:bpy.types.Mesh) -> dict:
         '''
         注意这里是从mesh.loops中获取数据，而不是从mesh.vertices中获取数据
@@ -168,16 +173,20 @@ class BufferModel:
                 positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
 
                 # TODO 测试astype能用吗？
+                split_num = 3
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                     positions = positions.astype(numpy.float16)
                     new_array = numpy.zeros((positions.shape[0], 4))
                     new_array[:, :3] = positions
                     positions = new_array
+                    
+                    # 四等分
+                    split_num = 4
 
                 positions_bytes = positions.ravel()
 
                 # 将位置数据存入字典
-                self.split_array_into_chunks_of_n_and_append(positions_bytes, 3)
+                self.split_array_into_chunks_of_n_and_append(positions_bytes, split_num)
 
                 # TimerUtils.End("Position Get") # 0:00:00.057535 
 
@@ -189,14 +198,16 @@ class BufferModel:
 
 
                 # TODO 测试astype能用吗？
+                split_num = 3
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                     loop_normals = loop_normals.astype(numpy.float16)
                     new_array = numpy.zeros((loop_normals.shape[0], 4))
                     new_array[:, :3] = loop_normals
                     loop_normals = new_array
+                    split_num = 4
 
                 loop_normals_bytes = loop_normals.ravel()
-                self.split_array_into_chunks_of_n_and_append(loop_normals_bytes, 3)
+                self.split_array_into_chunks_of_n_and_append(loop_normals_bytes, split_num)
 
                 # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
 
@@ -239,7 +250,7 @@ class BufferModel:
                     if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                         result = result.astype(numpy.float16)
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-                        result = NumpyTypeConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
+                        result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
                     color_data = result.ravel()
 
@@ -275,35 +286,6 @@ class BufferModel:
             self.vertexindex_data_dict[key] = tuple(arrays)
         # TimerUtils.End("ConvertToBytes") # 0:00:00.014523
 
-
-    def average_normal_tangent(self):
-        '''
-        TODO
-        重计算TANGENT
-
-        # 含有这个属性的情况下才能计算这个属性。
-        # if layout.contains("TANGENT"):
-        #     if GenerateModConfig.recalculate_tangent():
-        #         vb.vector_normalized_normal_to_tangent()
-        #     elif obj.get("3DMigoto:RecalculateTANGENT",False):
-        #         vb.vector_normalized_normal_to_tangent()
-        '''
-        pass
-
-    def average_normal_color(self):
-        '''
-        TODO
-        重计算COLOR
-
-        # if layout.contains("COLOR"):
-        #     if GenerateModConfig.recalculate_color():
-        #         vb.arithmetic_average_normal_to_color()
-        #     elif obj.get("3DMigoto:RecalculateCOLOR",False):
-        #         vb.arithmetic_average_normal_to_color()
-        '''
-        pass
-
-
     def calc_index_vertex_buffer(self,mesh:bpy.types.Mesh):
         '''
         This saves me a lot of time to make another wheel,it's already optimized very good.
@@ -312,6 +294,7 @@ class BufferModel:
         Special Thanks for @leotorrez 
         '''
         # TimerUtils.Start("CalcIndexBuffer")
+        # (1) 统计模型的索引和唯一顶点
         mesh_loops = mesh.loops
         indexed_vertices = collections.OrderedDict()
         ib = [[indexed_vertices.setdefault(self.vertexindex_data_dict[blender_lvertex.index], len(indexed_vertices))
@@ -321,8 +304,11 @@ class BufferModel:
         # print(len(ib)) # 这里ib的长度是三角形的个数，每个三角形有三个顶点索引，所以一共1014个数据，符合预期
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
+        # (2) TODO 重计算TANGENT和重计算COLOR
+
+
         # TimerUtils.Start("ToBytes")
-        # 这里没办法，只能对CategoryBuf进行逐个顶点追加，是无法避免的开销。
+        # (3)这里没办法，只能对CategoryBuf进行逐个顶点追加，是无法避免的开销。
         category_buffer_dict:dict[str,list] = {}
         for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
             category_buffer_dict[categoryname] = []
@@ -345,8 +331,6 @@ class BufferModel:
         flattened_ib = [item for sublist in ib for item in sublist]
         # TimerUtils.End("ToBytes") # 0:00:00.292768 
         return flattened_ib,category_buffer_dict
-
-    
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     '''
