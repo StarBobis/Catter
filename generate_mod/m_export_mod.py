@@ -120,15 +120,15 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
 
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModelFast(draw_ib_collection)
-            # M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        # M_UnityIniModel.export_buffer_files()
-        # M_UnityIniModel.generate_unity_vs_config_ini()
+        M_UnityIniModel.export_buffer_files()
+        M_UnityIniModel.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
-        # CommandUtils.OpenGeneratedModFolder()
+        CommandUtils.OpenGeneratedModFolder()
 
         TimerUtils.End("GenerateMod UnityVS Fast")
         return {'FINISHED'}

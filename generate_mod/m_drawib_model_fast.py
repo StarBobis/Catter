@@ -32,8 +32,8 @@ class ModelCollection:
 class DrawIBModelFast:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
     def __init__(self,draw_ib_collection):
-        self.__obj_name_ib_dict:dict[str,IndexBuffer] = {} 
-        self.__obj_name_vb_dict:dict[str,VertexBuffer] =  {} 
+        self.__obj_name_ib_dict:dict[str,list] = {} 
+        self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
         self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
         # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
@@ -60,11 +60,11 @@ class DrawIBModelFast:
         self.__read_gametype_from_import_json()
         self.__parse_drawib_collection_architecture(draw_ib_collection=draw_ib_collection)
         self.__parse_key_number()
-        self.__parse_obj_name_ib_vb_dict()
+        self.__parse_obj_name_ib_category_buffer_dict()
 
-        # self.__read_component_ib_buf_dict()
-        # self.__read_categoryname_bytelist_dict()
-        # self.__read_tmp_json()
+        self.__read_component_ib_buf_dict()
+        self.__read_categoryname_bytelist_dict()
+        self.__read_tmp_json()
 
 
     def __read_gametype_from_import_json(self):
@@ -142,22 +142,22 @@ class DrawIBModelFast:
                 tmp_number = tmp_number + 1
         self.key_number = tmp_number
 
-    def __parse_obj_name_ib_vb_dict(self):
-        # TimerUtils.Start("__parse_obj_name_ib_vb_dict")
+    def __parse_obj_name_ib_category_buffer_dict(self):
+        TimerUtils.Start("__parse_obj_name_ib_vb_dict")
         '''
-        把之前统计的所有obj都转为ib和vb格式备用
+        把之前统计的所有obj都转为ib和category_buffer_dict格式备用
         '''
         for model_collection_list in self.componentname_modelcollection_list_dict.values():
             for model_collection in model_collection_list:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
                     bpy.context.view_layer.objects.active = obj
-                    get_buffer_ib_vb_fast(self.d3d11GameType)
+                    ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 
-                    # self.__obj_name_ib_dict[obj.name] = ib
-                    # self.__obj_name_vb_dict[obj.name] = vb
+                    self.__obj_name_ib_dict[obj.name] = ib
+                    self.__obj_name_category_buffer_list_dict[obj.name] = category_buffer_dict
         
-        # TimerUtils.End("__parse_obj_name_ib_vb_dict")
+        TimerUtils.End("__parse_obj_name_ib_vb_dict")
 
     def __read_component_ib_buf_dict(self):
         vertex_number_ib_offset = 0
@@ -168,19 +168,25 @@ class DrawIBModelFast:
                 for obj_name in model_collection.obj_name_list:
                     print("processing: " + obj_name)
                     ib = self.__obj_name_ib_dict.get(obj_name,None)
-                    unique_vertex_number = ib.get_unique_vertex_number()
+
+                    # ib的数据类型是list[int]
+                    unique_vertex_number_set = set(ib)
+                    unique_vertex_number = len(unique_vertex_number_set)
 
                     if ib is None:
                         print("Can't find ib object for " + obj_name +",skip this obj process.")
                         continue
+
+                    offset_ib = []
+                    for ib_number in ib:
+                        offset_ib.append(ib_number + vertex_number_ib_offset)
                     
                     print("component name: " + component_name)
                     print("vertex_number_ib_offset: " + str(vertex_number_ib_offset))
-                    obj_ib_buf = ib.get_index_buffer(vertex_number_ib_offset)
-                    ib_buf.extend(obj_ib_buf)
+                    ib_buf.extend(offset_ib)
 
                     drawindexed_obj = M_DrawIndexed()
-                    draw_number = len(obj_ib_buf) * 3
+                    draw_number = len(offset_ib)
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(offset)
                     drawindexed_obj.UniqueVertexCount = unique_vertex_number
@@ -189,7 +195,7 @@ class DrawIBModelFast:
                     offset = offset + draw_number
 
                     # Add UniqueVertexNumber to show vertex count in mod ini.
-                    print(unique_vertex_number)
+                    print("draw number: " + str(unique_vertex_number))
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
             
             # Only export if it's not empty.
@@ -204,78 +210,19 @@ class DrawIBModelFast:
         for component_name, model_collection_list in self.componentname_modelcollection_list_dict.items():
             for model_collection in model_collection_list:
                 for obj_name in model_collection.obj_name_list:
-                    vb = self.__obj_name_vb_dict.get(obj_name,None)
-                    if vb is None:
+                    category_buffer_list = self.__obj_name_category_buffer_list_dict.get(obj_name,None)
+
+                    if category_buffer_list is None:
                         print("Can't find vb object for " + obj_name +",skip this obj process.")
                         continue
 
-                    vb_elementname_bytelist_dict = vb.convert_to_elementname_byteslist_dict()
-
-                    # 如果patchBLENDWEIGHTS则移除BLENWEIGHTS
-                    # TODO 检查BLENDWEIGHT和BLENDWEIGHTS读取到Blender的处理方式是否相同，如果相同则全部变为BLENDWEIGHTS
-                    # 数据类型里面也得改
-                    blendweights_name = ""
-                    if self.d3d11GameType.PatchBLENDWEIGHTS:
-                        if "BLENDWEIGHTS" in vb_elementname_bytelist_dict:
-                            del vb_elementname_bytelist_dict["BLENDWEIGHTS"]
-                            blendweights_name = "BLENDWEIGHTS"
-                        elif "BLENDWEIGHT" in vb_elementname_bytelist_dict:
-                            del vb_elementname_bytelist_dict["BLENDWEIGHT"]
-                            blendweights_name = "BLENDWEIGHT"
-
-                    tmp_categoryname_bytelist_dict:dict[str,list] = {}
-                    for element_name in self.d3d11GameType.OrderedFullElementList:
-                        
-                        # process PatchBLENDWEIGHTS
-                        if self.d3d11GameType.PatchBLENDWEIGHTS and element_name == blendweights_name:
-                            continue
-
-                        d3d11Element = self.d3d11GameType.ElementNameD3D11ElementDict[element_name]
-                        category_name = d3d11Element.Category
-                        element_stride = d3d11Element.ByteWidth
-
-                        add_byte_list = vb_elementname_bytelist_dict[element_name]
-                        vertex_number = int(len(add_byte_list) / element_stride)
-                        # LOG.newline()
-                        # print("add_byte_list length:" + str(len(add_byte_list)))
-                        # print("element_name:" + element_name)
-                        # print("element_stride:" + str(element_stride))
-                        # print("vertex_number:" + str(vertex_number))
-
-                        # 防止没被初始化
-                        if category_name not in tmp_categoryname_bytelist_dict:
-                            tmp_categoryname_bytelist_dict[category_name] = []
-
-                        old_byte_list = tmp_categoryname_bytelist_dict[category_name]
-                        old_stride = int(len(old_byte_list) / vertex_number)
-
-                        category_new_bytelist = []
-                        
-                        for i in range(vertex_number):
-                            old_start_index = i * old_stride
-                            old_end_index = old_start_index + old_stride
-                            # print(old_start_index)
-
-                            already_byte_list_some = old_byte_list[old_start_index:old_end_index]
-
-                            add_start_index = i * element_stride
-                            add_end_index = add_start_index + element_stride
-                            add_byte_list_some = add_byte_list[add_start_index:add_end_index]
-
-                            already_byte_list_some.extend(add_byte_list_some)
-                            category_new_bytelist.extend(already_byte_list_some)
-
-                        
-                        tmp_categoryname_bytelist_dict[category_name] = category_new_bytelist
-                    
-                    # 获取完临时的，就拼接到完整的
                     for category_name in self.d3d11GameType.OrderedCategoryNameList:
                         # 防止空的
                         if category_name not in self.__categoryname_bytelist_dict:
                             self.__categoryname_bytelist_dict[category_name] = []
                         
                         # 追加数据
-                        self.__categoryname_bytelist_dict[category_name].extend(tmp_categoryname_bytelist_dict[category_name])
+                        self.__categoryname_bytelist_dict[category_name].extend(category_buffer_list[category_name])
         
         # 顺便计算一下步长得到总顶点数
         position_stride = self.d3d11GameType.CategoryStrideDict["Position"]
@@ -369,9 +316,10 @@ class DrawIBModelFast:
                 print("Export Skip, Can't get ib buf for partname: " + partname)
             else:
                 ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
+
+                packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
                 with open(ib_path, 'wb') as ibf:
-                    for ib_byte_number in ib_buf:
-                        ibf.write(ib_byte_number) 
+                    ibf.write(packed_data) 
 
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():

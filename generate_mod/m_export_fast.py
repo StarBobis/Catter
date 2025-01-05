@@ -46,8 +46,8 @@ class BufferModel:
             print("key: " + element_name + " value: " + str(type(value)) + " data:" + str(type(value[0])) + " len:" + str(len(value))  + "  ByteWidth:" + str(d3d11Element.ByteWidth))
             
             # 这里写出来得到的结果是正确的，只不过没有得到正确的转换
-            if to_files:
-                self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
+            # if to_files:
+            #     self.write_to_file_test(obj.name + "-" + element_name + ".buf" ,value)
         LOG.newline()
 
     
@@ -295,8 +295,10 @@ class BufferModel:
                 self.split_array_into_chunks_of_n_and_append(blendindices_flat, 4)
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
-                elementname_data_dict[d3d11_element_name] = blendweights_flat
-                self.split_array_into_chunks_of_n_and_append(blendweights_flat, 4)
+                # patch时跳过生成数据
+                if not self.d3d11GameType.PatchBLENDWEIGHTS:
+                    elementname_data_dict[d3d11_element_name] = blendweights_flat
+                    self.split_array_into_chunks_of_n_and_append(blendweights_flat, 4)
 
             elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
                 # TimerUtils.Start("GET TEXCOORD")
@@ -367,19 +369,47 @@ class BufferModel:
         # TimerUtils.End("CalcIndexBuffer") # Very Fast in 0.1s
 
         # indexed_vertices 中key是tuple，value是顺序索引
-        # TODO 组装后，补全数据，然后将数据转换为list[bytes]
-       
-        # Step 1: Flatten the list of lists into a single list.
-        flattened_ib = [item for sublist in ib for item in sublist]
+        # TODO 将数据转换为list[bytes]
+        # TimerUtils.Start("ToBytes")
 
+        # 这里没办法，只能对每个顶点进行逐个顶点的追加，是无法避免的开销。
+        category_buffer_dict:dict[str,list] = {}
+        for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
+            category_buffer_dict[categoryname] = []
+
+        for indexed_vertex_data in indexed_vertices.keys():
+            flat_byte_list = [
+                byte_val for val in indexed_vertex_data
+                for byte_val in val.tobytes()
+            ]
+
+            stride_offset = 0
+            for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
+                split_category_stride = category_stride
+                if categoryname == "Blend" and self.d3d11GameType.PatchBLENDWEIGHTS:
+                    split_category_stride = self.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
+
+                category_buffer_dict[categoryname].extend(flat_byte_list[stride_offset:stride_offset + split_category_stride])
+                stride_offset += split_category_stride
+
+        flattened_ib = [item for sublist in ib for item in sublist]
+        # TimerUtils.End("ToBytes") # 0:00:00.292768 
+        return flattened_ib,category_buffer_dict
+    
+        # 输出测试  已通过
+        # Step 1: Flatten the list of lists into a single list.
         # Step 2: Pack the integers directly using the flattened list.
         # '<' means little-endian, 'I' means unsigned int (32 bits).
-        packed_data = struct.pack(f'<{len(flattened_ib)}I', *flattened_ib)
 
-        # Write to a binary file.
         
-        with open(self.test_output_path + mesh.name + "-IB.buf", 'wb') as f:
-            f.write(packed_data)
+        # packed_data = struct.pack(f'<{len(flattened_ib)}I', *flattened_ib)
+        # with open(self.test_output_path + mesh.name + "-IB.buf", 'wb') as f:
+        #     f.write(packed_data)
+        
+        # for categoryname, category_buffer_list in category_buffer_dict.items():
+        #     print("output categoryname: " + categoryname)
+        #     with open(self.test_output_path + mesh.name + "-" + categoryname + ".buf", 'wb') as f:
+        #         f.write(bytes(category_buffer_list))
     
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
@@ -389,7 +419,7 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     TODO 完成此功能并全流程测试通过后删除上面的get_export_ib_vb函数
     并移除IndexBuffer和VertexBuffer中的部分方法例如encode、pad等，进一步减少复杂度。
     '''
-    TimerUtils.Start("GetExportIBVB Fast")
+    # TimerUtils.Start("GetExportIBVB Fast")
     # 获取Mesh
     obj = ObjUtils.get_bpy_context_object()
 
@@ -407,11 +437,10 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
 
     # 读取并解析数据到ndarray中，全部都是ravel()过的
     buffer_model.parse_elementname_ravel_ndarray_dict(mesh)
-    buffer_model.calc_index_vertex_buffer(mesh)
+    # buffer_model.show(obj,to_files=True)
 
-    buffer_model.show(obj,to_files=True)
-
-    TimerUtils.End("GetExportIBVB Fast")
+    # TimerUtils.End("GetExportIBVB Fast")
+    return buffer_model.calc_index_vertex_buffer(mesh)
 
 
 
