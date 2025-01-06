@@ -73,9 +73,6 @@ class CatterConfigUI(bpy.types.Panel):
         row.label(text="Current Game: " + MainConfig.gamename)
 
         draw_seperator(self)
-
-
-        
       
         layout.prop(dbmt_config,"import_merged_vgmap")
         
@@ -137,10 +134,10 @@ class PanelGenerateMod(bpy.types.Panel):
         #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_a")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
-            layout.operator("dbmt.export_unity_vs_mod_to_workspace")
+            # layout.operator("dbmt.export_unity_vs_mod_to_workspace")
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
-            layout.operator("dbmt.export_unity_cs_mod_to_workspace")
+            # layout.operator("dbmt.export_unity_cs_mod_to_workspace")
             layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")

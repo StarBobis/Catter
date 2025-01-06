@@ -452,10 +452,52 @@ class BufferModel:
         '''
         # TimerUtils.Start("Calc IB VB")
         # (1) 统计模型的索引和唯一顶点
-        indexed_vertices = collections.OrderedDict()
-        ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
-                for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
-                    ]for poly in mesh.polygons]
+        if GenerateModConfig.export_same_number() and "TANGENT" in self.d3d11GameType.OrderedFullElementList:
+            '''
+            保持相同顶点数时，让相同顶点使用相同的TANGENT值来避免增加索引数和顶点数。
+            这里我们使用每个顶点第一次出现的TANGENT值。
+            效率比下面的低50%，不过能使用这个选项的场景只有导入直接导出原模型，所以总运行时间基本都在0.4秒以内，用户感觉不到差距的，没问题。
+            '''
+            # 创建一个空列表用于存储最终的结果
+            ib = []
+            indexed_vertices = collections.OrderedDict()
+            # 一个字典确保每个符合条件的position只出现过一次
+            position_normal_sharedtangent_dict = {}
+            # 遍历每个多边形（polygon）
+            for poly in mesh.polygons:
+                # 创建一个临时列表用于存储当前多边形的索引
+                vertex_indices = []
+                
+                # 遍历当前多边形中的每一个环（loop），根据多边形的起始环和环总数
+                for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
+                    vertex_data_get = self.element_vertex_ndarray[blender_lvertex.index].copy()
+                    poskey = tuple(vertex_data_get['POSITION'] + vertex_data_get['NORMAL'])
+                    if poskey in position_normal_sharedtangent_dict:
+                        tangent_var = position_normal_sharedtangent_dict[poskey]
+                        vertex_data_get['TANGENT'] = tangent_var
+                    else:
+                        tangent_var = vertex_data_get['TANGENT']
+                        position_normal_sharedtangent_dict[poskey] = tangent_var
+                    
+                    vertex_data = vertex_data_get.tobytes()
+                    index = indexed_vertices.setdefault(vertex_data, len(indexed_vertices))
+                    vertex_indices.append(index)
+                
+                # 将当前多边形的顶点索引列表添加到最终结果列表中
+                ib.append(vertex_indices)
+
+            # print("长度：")
+            # print(len(position_normal_sharedtangent_dict))
+        else:
+            '''
+            不保持相同顶点时，仍然使用我们经典而又快速的方法
+            '''
+            indexed_vertices = collections.OrderedDict()
+            ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
+                    for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
+                        ]for poly in mesh.polygons]    
+
+
         flattened_ib = [item for sublist in ib for item in sublist]
         # TimerUtils.End("Calc IB VB")
 
