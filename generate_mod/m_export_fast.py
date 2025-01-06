@@ -317,26 +317,36 @@ class BufferModel:
 
             elif d3d11_element_name == 'NORMAL':
                 # TimerUtils.Start("Get NORMAL")
-                loop_normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
-                mesh_loops.foreach_get('normal', loop_normals)
+                result = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                mesh_loops.foreach_get('normal', result)
 
                 # 将一维数组 reshape 成 (mesh_loops_length, 3) 形状的二维数组
-                loop_normals = loop_normals.reshape(-1, 3)
+                result = result.reshape(-1, 3)
 
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                      # 转换数据类型并添加第四列，默认填充为1
-                    loop_normals = loop_normals.astype(numpy.float16)
-                    new_array = numpy.ones((loop_normals.shape[0], 4), dtype=numpy.float16)
-                    new_array[:, :3] = loop_normals
-                    loop_normals = new_array
+                    result = result.astype(numpy.float16)
+                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float16)
+                    new_array[:, :3] = result
+                    result = new_array
+                elif d3d11_element.Format == 'R8G8B8A8_SNORM':
+                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float32)
+                    new_array[:, :3] = result
+                    result = new_array
+                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(result)
+                elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float32)
+                    new_array[:, :3] = result
+                    result = new_array
+                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
-                self.element_vertex_ndarray[d3d11_element_name] = loop_normals
+                self.element_vertex_ndarray[d3d11_element_name] = result
 
                 # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
 
             elif d3d11_element_name == 'TANGENT':
                 # TimerUtils.Start("Get TANGENT")
-                output_tangents = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
+                result = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
 
                 # 使用 foreach_get 批量获取切线和副切线符号数据
                 tangents = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
@@ -349,20 +359,25 @@ class BufferModel:
                 bitangent_signs *= -1
 
                 # 将切线分量放置到输出数组中
-                output_tangents[0::4] = tangents[0::3]  # x 分量
-                output_tangents[1::4] = tangents[1::3]  # y 分量
-                output_tangents[2::4] = tangents[2::3]  # z 分量
-                output_tangents[3::4] = bitangent_signs  # w 分量 (副切线符号)
+                result[0::4] = tangents[0::3]  # x 分量
+                result[1::4] = tangents[1::3]  # y 分量
+                result[2::4] = tangents[2::3]  # z 分量
+                result[3::4] = bitangent_signs  # w 分量 (副切线符号)
 
                 
                 # 重塑 output_tangents 成 (mesh_loops_length, 4) 形状的二维数组
-                output_tangents = output_tangents.reshape(-1, 4)
+                result = result.reshape(-1, 4)
 
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                    output_tangents = output_tangents.astype(numpy.float16)
-                    
+                    result = result.astype(numpy.float16)
+                elif d3d11_element.Format == 'R8G8B8A8_SNORM':
+               
+                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(result)
+                elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+              
+                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
-                self.element_vertex_ndarray[d3d11_element_name] = output_tangents
+                self.element_vertex_ndarray[d3d11_element_name] = result
 
                 # TimerUtils.End("Get TANGENT") # 0:00:00.030449
             elif d3d11_element_name.startswith('COLOR'):
@@ -405,6 +420,10 @@ class BufferModel:
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices[:, :2]
                 elif d3d11_element.Format == "R32_UINT":
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices[:, :1]
+                elif d3d11_element.Format == 'R8G8B8A8_SNORM':
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendindices)
+                elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendindices)
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
@@ -413,6 +432,10 @@ class BufferModel:
                         self.element_vertex_ndarray[d3d11_element_name] = blendweights
                     elif d3d11_element.Format == "R32G32_FLOAT":
                         self.element_vertex_ndarray[d3d11_element_name] = blendweights[:, :2]
+                    elif d3d11_element.Format == 'R8G8B8A8_SNORM':
+                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
+                    elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
