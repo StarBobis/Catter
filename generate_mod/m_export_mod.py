@@ -119,8 +119,10 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
+            TimerUtils.Start("DrawIB Combine")
             draw_ib_model = DrawIBModelFast(draw_ib_collection)
             M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            TimerUtils.End("DrawIB Combine")
 
         # ModModel填充完毕后，开始输出Mod
         M_UnityIniModel.export_buffer_files()

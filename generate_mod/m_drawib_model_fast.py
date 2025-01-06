@@ -143,7 +143,7 @@ class DrawIBModelFast:
         self.key_number = tmp_number
 
     def __parse_obj_name_ib_category_buffer_dict(self):
-        TimerUtils.Start("__parse_obj_name_ib_vb_dict")
+        # TimerUtils.Start("__parse_obj_name_ib_vb_dict")
         '''
         把之前统计的所有obj都转为ib和category_buffer_dict格式备用
         '''
@@ -157,7 +157,7 @@ class DrawIBModelFast:
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_category_buffer_list_dict[obj.name] = category_buffer_dict
         
-        TimerUtils.End("__parse_obj_name_ib_vb_dict")
+        # TimerUtils.End("__parse_obj_name_ib_vb_dict")
 
     def __read_component_ib_buf_dict(self):
         vertex_number_ib_offset = 0
@@ -218,12 +218,10 @@ class DrawIBModelFast:
                         continue
 
                     for category_name in self.d3d11GameType.OrderedCategoryNameList:
-                        # 防止空的
                         if category_name not in self.__categoryname_bytelist_dict:
-                            self.__categoryname_bytelist_dict[category_name] = []
-                        
-                        # 追加数据
-                        self.__categoryname_bytelist_dict[category_name].extend(category_buffer_list[category_name])
+                            self.__categoryname_bytelist_dict[category_name] =  category_buffer_list[category_name]
+                        else:
+                            self.__categoryname_bytelist_dict[category_name] = numpy.concatenate(self.__categoryname_bytelist_dict[category_name],category_buffer_list[category_name])
         
         # 顺便计算一下步长得到总顶点数
         position_stride = self.d3d11GameType.CategoryStrideDict["Position"]
@@ -301,10 +299,12 @@ class DrawIBModelFast:
 
     def write_buffer_files(self):
         '''
-        用于导出IndexBuffer文件和CategoryBuffer文件
+        - 用于导出IndexBuffer文件和CategoryBuffer文件
+        - 这里几乎不消耗性能，无需关注
         TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
         '''
         # Export IndexBuffer files.
+        # TimerUtils.Start("Write Index Buffer")
         for partname in self.part_name_list:
             component_name = "Component " + partname
             ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
@@ -316,10 +316,17 @@ class DrawIBModelFast:
                 packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
                 with open(ib_path, 'wb') as ibf:
                     ibf.write(packed_data) 
+        # TimerUtils.End("Write Index Buffer")
 
+        # TimerUtils.Start("Write Category Buffer")
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
             buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + category_name + ".buf"
-            buf_bytearray = bytearray(category_buf)
+            # print(type(category_buf[0]))
+             # 将 list 转换为 numpy 数组
+            # category_array = numpy.array(category_buf, dtype=numpy.uint8)
             with open(buf_path, 'wb') as ibf:
-                ibf.write(buf_bytearray)
+                category_buf.tofile(ibf)
+                # ibf.write(bytearray(category_buf))
+
+        # TimerUtils.End("Write Category Buffer")

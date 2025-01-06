@@ -356,6 +356,7 @@ class DrawIBModel:
         用于导出IndexBuffer文件和CategoryBuffer文件
         TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
         '''
+        
         # Export IndexBuffer files.
         for partname in self.part_name_list:
             component_name = "Component " + partname

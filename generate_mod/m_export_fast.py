@@ -346,33 +346,32 @@ class BufferModel:
         Credit to XXMITools for learn the design and copy the original code and modified for our needs.
         https://github.com/leotorrez/XXMITools
         Special Thanks for @leotorrez 
+
+        这里已经过测试，Calc IB VB是不可缺少的必要开销
+        Calc CategoryBuffer 不管怎么优化都会占用1/10 运行时间
         '''
-        # TimerUtils.Start("CalcIndexBuffer")
+        # TimerUtils.Start("Calc IB VB")
         # (1) 统计模型的索引和唯一顶点
-        mesh_loops = mesh.loops
         indexed_vertices = collections.OrderedDict()
         ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
-                for blender_lvertex in mesh_loops[poly.loop_start:poly.loop_start + poly.loop_total]
+                for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
                     ]for poly in mesh.polygons]
         flattened_ib = [item for sublist in ib for item in sublist]
-        # TimerUtils.End("CalcIndexBuffer") # 3.5s
-        # print("IndexedVertices Number: " + str(len(indexed_vertices)))
+        # TimerUtils.End("Calc IB VB")
 
-        TimerUtils.Start("GetCategoryBufferDict")
-        # (3)这里没办法，只能对CategoryBuf进行逐个顶点追加，是无法避免的开销。
+        # (2) 转换为CategoryBufferDict
+        # TimerUtils.Start("Calc CategoryBuffer")
+        category_stride_dict = self.d3d11GameType.get_real_category_stride_dict()
         category_buffer_dict:dict[str,list] = {}
         for categoryname,category_stride in self.d3d11GameType.CategoryStrideDict.items():
             category_buffer_dict[categoryname] = []
 
-        category_stride_dict = self.d3d11GameType.get_real_category_stride_dict()
-
+        data_matrix = numpy.array([numpy.frombuffer(byte_data,dtype=numpy.uint8) for byte_data in indexed_vertices])
         stride_offset = 0
         for categoryname,category_stride in category_stride_dict.items():
-            for flat_byte_list in indexed_vertices:
-                category_buffer_dict[categoryname].extend(flat_byte_list[stride_offset:stride_offset + category_stride])
+            category_buffer_dict[categoryname] = data_matrix[:,stride_offset:stride_offset + category_stride].flatten()
             stride_offset += category_stride
-        
-        TimerUtils.End("GetCategoryBufferDict") # 0:00:00.292768  5s
+        # TimerUtils.End("Calc CategoryBuffer")
         return flattened_ib,category_buffer_dict
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
