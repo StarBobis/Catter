@@ -109,8 +109,6 @@ class BufferModel:
         self.dtype = None
         self.element_vertex_ndarray  = None
         
-
-    
     def check_and_verify_attributes(self,obj:bpy.types.Object):
         '''
         校验并补全部分元素
@@ -134,24 +132,13 @@ class BufferModel:
                     else:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
-    
-    # def split_array_into_chunks_of_n_and_append(self,ndarray, n):
-    #     # TODO 必须去掉这个方法，占用时间太长了。架构设计的还是有问题
-    #     TimerUtils.Start("Append Data")
-    #     # 将所有元素直接追加到一个列表中
-    #     for i, element in enumerate(ndarray):
-    #         chunk_index = i // n
-    #         self.vertexindex_data_dict.setdefault(chunk_index, []).append(element)
-    #     TimerUtils.End("Append Data")
-        
+
     def parse_elementname_ravel_ndarray_dict(self,mesh:bpy.types.Mesh) -> dict:
         '''
-        注意这里是从mesh.loops中获取数据，而不是从mesh.vertices中获取数据
-        所以后续使用的时候要用mesh.loop里的索引来进行获取数据
+        - 注意这里是从mesh.loops中获取数据，而不是从mesh.vertices中获取数据
+        - 所以后续使用的时候要用mesh.loop里的索引来进行获取数据
         '''
         TimerUtils.Start("Parse MeshData")
-
-
 
         mesh_loops = mesh.loops
         mesh_loops_length = len(mesh_loops)
@@ -171,7 +158,7 @@ class BufferModel:
         loop_vertex_indices = numpy.empty(mesh_loops_length, dtype=int)
         mesh_loops.foreach_get("vertex_index", loop_vertex_indices)
 
-        # TimerUtils.Start("GET BLEND") # 0:00:00.141898 
+        TimerUtils.Start("GET BLEND") # 0:00:00.141898 
         # 准备一个空数组用于存储结果，形状为(mesh_loops_length, 4)
         blendindices = numpy.zeros((mesh_loops_length, 4), dtype=int)
         blendweights = numpy.zeros((mesh_loops_length, 4), dtype=numpy.float32)
@@ -193,30 +180,30 @@ class BufferModel:
             blendindices[i, :len(groups)] = groups[:4]
             blendweights[i, :len(weights)] = weights[:4]
 
-        # 展平为一维数组
-        # blendindices_flat = blendindices.reshape(-1)
-        # blendweights_flat = blendweights.reshape(-1)
+        TimerUtils.End("GET BLEND")
 
-        # TimerUtils.End("GET BLEND")
+        # TimerUtils.Start("GET UV") # TODO 这里计算了整整7秒，逆天
+        # # Nico: 提前拼凑texcoord层级，有几个UVMap就拼出几个来，略微提升速度(虽然只提升几十毫秒。。)
+        # texcoord_layers = {}
+        # for uv_layer in mesh.uv_layers:
+        #     texcoords = {}
+        #     flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
+        #     for l in mesh_loops:
+        #         uv = flip_uv(uv_layer.data[l.index].uv)
+        #         texcoords[l.index] = uv
+        #     texcoord_layers[uv_layer.name] = texcoords
+        # TimerUtils.End("GET UV")
 
-        # Nico: 提前拼凑texcoord层级，有几个UVMap就拼出几个来，略微提升速度(虽然只提升几十毫秒。。)
-        texcoord_layers = {}
-        for uv_layer in mesh.uv_layers:
-            texcoords = {}
-            flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
-            for l in mesh_loops:
-                uv = flip_uv(uv_layer.data[l.index].uv)
-                texcoords[l.index] = uv
-            texcoord_layers[uv_layer.name] = texcoords
-        
         # 对每一种Element都获取对应的数据
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
 
             if d3d11_element_name == 'POSITION':
-                # TimerUtils.Start("Position Get")
+                TimerUtils.Start("Position Get")
                 vertex_coords = numpy.empty(mesh_vertices_length * 3, dtype=numpy.float32)
-                mesh_vertices.foreach_get('co', vertex_coords)
+                # Notice: 'undeformed_co' is static, don't need dynamic calculate like 'co' so it is faster.
+                mesh_vertices.foreach_get('undeformed_co', vertex_coords)
+
                 positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
                 # TODO 测试astype能用吗？
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
@@ -226,10 +213,10 @@ class BufferModel:
                     positions = new_array
 
                 self.element_vertex_ndarray[d3d11_element_name] = positions
-                # TimerUtils.End("Position Get") # 0:00:00.057535 
+                TimerUtils.End("Position Get") # 0:00:00.057535 
 
             elif d3d11_element_name == 'NORMAL':
-                # TimerUtils.Start("Get NORMAL")
+                TimerUtils.Start("Get NORMAL")
                 loop_normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
                 mesh_loops.foreach_get('normal', loop_normals)
 
@@ -246,10 +233,10 @@ class BufferModel:
 
                 self.element_vertex_ndarray[d3d11_element_name] = loop_normals
 
-                # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
+                TimerUtils.End("Get NORMAL") # 0:00:00.029400 
 
             elif d3d11_element_name == 'TANGENT':
-                # TimerUtils.Start("Get TANGENT")
+                TimerUtils.Start("Get TANGENT")
                 output_tangents = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
 
                 # 使用 foreach_get 批量获取切线和副切线符号数据
@@ -278,7 +265,7 @@ class BufferModel:
 
                 self.element_vertex_ndarray[d3d11_element_name] = output_tangents
 
-                # TimerUtils.End("Get TANGENT") # 0:00:00.030449
+                TimerUtils.End("Get TANGENT") # 0:00:00.030449
             elif d3d11_element_name.startswith('COLOR'):
                 # TimerUtils.Start("Get COLOR")
 
@@ -296,18 +283,21 @@ class BufferModel:
 
                 # TimerUtils.End("Get COLOR") # 0:00:00.030605 
             elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
-                # TimerUtils.Start("GET TEXCOORD")
+                TimerUtils.Start("GET TEXCOORD")
                 for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
-                    if uv_name in texcoord_layers:
-                        uvs_array = numpy.array(list(texcoord_layers[uv_name].values()),dtype=numpy.float32).flatten()
+                    if uv_name in mesh.uv_layers:
+                        uvs_array = numpy.empty(mesh_loops_length ,dtype=(numpy.float32,2))
+                        mesh.uv_layers[uv_name].data.foreach_get("uv",uvs_array.ravel())
+                        uvs_array[:,1] = 1.0 - uvs_array[:,1]
 
                         if d3d11_element.Format == 'R16G16_FLOAT':
                             uvs_array = uvs_array.astype(numpy.float16)
                         
                         # 重塑 uvs_array 成 (mesh_loops_length, 2) 形状的二维数组
-                        uvs_array = uvs_array.reshape(-1, 2)
+                        # uvs_array = uvs_array.reshape(-1, 2)
 
                         self.element_vertex_ndarray[d3d11_element_name] = uvs_array 
+                TimerUtils.End("GET TEXCOORD")
                         
             elif d3d11_element_name.startswith('BLENDINDICES'):
                 # TODO 处理R32_UINT类型 R32G32_FLOAT类型
