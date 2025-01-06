@@ -331,10 +331,11 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     obj["3DMigoto:RecalculateTANGENT"] = False
     obj["3DMigoto:RecalculateCOLOR"] = False
 
-    # Nico: GI,HSR,ZZZ必须重计算TANGENT, 直接在导入时设置。
-    # 不重计算时薄的双面模型会直接露出里面黑色的部分，以及轮廓线也会有问题。
-    if MainConfig.gamename in ["GI","HSR","ZZZ"]:
-        obj["3DMigoto:RecalculateTANGENT"] = True
+    # # Nico: GI,HSR,ZZZ必须重计算TANGENT, 直接在导入时设置。
+    # # 不重计算时薄的双面模型会直接露出里面黑色的部分，以及轮廓线也会有问题。
+    # 直接在导入时设置不符合用户操作习惯，会让这个计算出乎用户意料，所以不再默认计算
+    # if MainConfig.gamename in ["GI","HSR","ZZZ"]:
+    #     obj["3DMigoto:RecalculateTANGENT"] = True
 
     # post process for import data.
     import_faces_from_ib(mesh, ib)

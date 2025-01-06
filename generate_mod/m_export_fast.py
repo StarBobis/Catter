@@ -22,80 +22,185 @@ class BufferDataConverter:
     各种格式转换
     '''
     # 向量归一化
-    def vector_normalize(self,v):
+    @classmethod
+    def vector_normalize(cls,v):
         """归一化向量"""
         length = math.sqrt(sum(x * x for x in v))
         if length == 0:
             return v  # 避免除以零
         return [x / length for x in v]
     
-    def add_and_normalize_vectors(self,v1, v2):
+    @classmethod
+    def add_and_normalize_vectors(cls,v1, v2):
         """将两个向量相加并规范化(normalize)"""
         # 相加
         result = [a + b for a, b in zip(v1, v2)]
         # 归一化
-        normalized_result = self.vector_normalize(result)
+        normalized_result = cls.vector_normalize(result)
         return normalized_result
     
     # 辅助函数：计算两个向量的点积
-    def dot_product(self,v1, v2):
+    @classmethod
+    def dot_product(cls,v1, v2):
         return sum(a * b for a, b in zip(v1, v2))
-    
-    @classmethod
-    def average_normal_tangent(cls,indexed_vertices,d3d11GameType:D3D11GameType):
-        '''
-        Nico: 米游所有游戏都能用到这个，还有曾经的GPU-PreSkinning的GF2也会用到这个，崩坏三2.0新角色除外。
-        
-        尽管这个可以起到相似的效果，但是仍然无法完美获取模型本身的TANGENT数据，只能做到身体轮廓线99%近似。
-        经过测试，头发轮廓线部分并不是简单的向量归一化，也不是算术平均归一化。
 
-        TODO 这里可能有格式兼容性问题
-
-        TODO 在这里还需要考虑POSITION，NORMAL是长度为3还是4来进行分割的问题
-        如果移动到上一步，在收集数据的时候，就直接去计算，就能避免考虑这个长度问题，直接按照elementname获取所有的元素
-        而且TANGENT和COLOR如果确定要计算，甚至可以不获取，直接进行计算得出，又能节省部分性能开销。
-        '''
-        # TODO 有空再实现吧。
-
-        # position_element = d3d11GameType.ElementNameD3D11ElementDict["POSITION"]
-        # normal_element = d3d11GameType.ElementNameD3D11ElementDict["NORMAL"]
-        # tangent_element = d3d11GameType.ElementNameD3D11ElementDict["TANGENT"]
-        
-
-        # for vertex_byte_list in indexed_vertices.keys():
-        #     break
-        
-        return indexed_vertices
-
-    @classmethod
-    def average_normal_color(cls,indexed_vertices,d3d11GameType:D3D11GameType):
-        '''
-        Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
-
-        TODO 这里可能有格式兼容性问题
-        '''
-        
-        return indexed_vertices
-
+    '''
+    这四个UNORM和SNORM比较特殊需要这样处理，其它float类型转换直接astype就行
+    '''
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_snorm(cls, input_array):
-        # 确保数据在 [-1, 1] 范围内（如果已经是则可以跳过这一步）
-        normalized = numpy.clip(input_array, -1.0, 1.0)
-
-        # 将 [-1, 1] 范围内的浮点数缩放到 [-128, 127]
-        scaled = (normalized * 127).round()
-
-        return scaled.astype(numpy.int8)
-     
+        return numpy.round(input_array * 127).astype(numpy.int8)
+    
     @classmethod
     def convert_4x_float32_to_r8g8b8a8_unorm(cls,input_array):
-        # 确保数据在 [0, 1] 范围内（如果已经是则可以跳过这一步）
-        normalized = numpy.clip(input_array, 0.0, 1.0)
+        return numpy.round(input_array * 255).astype(numpy.uint8)
+    
+    @classmethod
+    def convert_4x_float32_to_r16g16b16a16_unorm(cls, input_array):
+        return numpy.round(input_array * 65535).astype(numpy.uint16)
+    
+    @classmethod
+    def convert_4x_float32_to_r16g16b16a16_snorm(cls, input_array):
+        return numpy.round(input_array * 32767).astype(numpy.uint16)
+    
+    @classmethod
+    def average_normal_tangent(cls,obj,indexed_vertices,d3d11GameType,dtype):
+        '''
+        Nico: 米游所有游戏都能用到这个，还有曾经的GPU-PreSkinning的GF2也会用到这个，崩坏三2.0新角色除外。
+        尽管这个可以起到相似的效果，但是仍然无法完美获取模型本身的TANGENT数据，只能做到身体轮廓线99%近似。
+        经过测试，头发轮廓线部分并不是简单的向量归一化，也不是算术平均归一化。
+        '''
+        # TimerUtils.Start("Recalculate TANGENT")
 
-        # 将 [0, 1] 范围内的浮点数缩放到 [0, 255]
-        scaled = (normalized * 255).round()
+        if "TANGENT" not in d3d11GameType.OrderedFullElementList:
+            return indexed_vertices
+        allow_calc = False
+        if GenerateModConfig.recalculate_tangent():
+            allow_calc = True
+        elif obj.get("3DMigoto:RecalculateTANGENT",False): 
+            allow_calc = True
+        
+        if not allow_calc:
+            return indexed_vertices
+        
+        # 不用担心这个转换的效率，速度非常快
+        vb = bytearray()
+        for vertex in indexed_vertices:
+            vb += bytes(vertex)
+        vb = numpy.frombuffer(vb, dtype = dtype)
 
-        return scaled.astype(numpy.uint8)
+        # 开始重计算TANGENT
+        positions = numpy.array([val['POSITION'] for val in vb])
+        normals = numpy.array([val['NORMAL'] for val in vb], dtype=float)
+
+        # 对位置进行排序，以便相同的位置会相邻
+        sort_indices = numpy.lexsort(positions.T)
+        sorted_positions = positions[sort_indices]
+        sorted_normals = normals[sort_indices]
+
+        # 找出位置变化的地方，即我们需要分组的地方
+        group_indices = numpy.flatnonzero(numpy.any(sorted_positions[:-1] != sorted_positions[1:], axis=1))
+        group_indices = numpy.r_[0, group_indices + 1, len(sorted_positions)]
+
+        # 累加法线和计算计数
+        unique_positions = sorted_positions[group_indices[:-1]]
+        accumulated_normals = numpy.add.reduceat(sorted_normals, group_indices[:-1], axis=0)
+        counts = numpy.diff(group_indices)
+
+        # 归一化累积法线向量
+        normalized_normals = accumulated_normals / numpy.linalg.norm(accumulated_normals, axis=1)[:, numpy.newaxis]
+        normalized_normals[numpy.isnan(normalized_normals)] = 0  # 处理任何可能出现的零向量导致的除零错误
+
+        # 构建结果字典
+        position_normal_dict = dict(zip(map(tuple, unique_positions), normalized_normals))
+
+        # TimerUtils.End("Recalculate TANGENT")
+
+        # 获取所有位置并转换为元组，用于查找字典
+        positions = [tuple(pos) for pos in vb['POSITION']]
+
+        # 从字典中获取对应的标准化法线
+        normalized_normals = numpy.array([position_normal_dict[pos] for pos in positions])
+
+        # 计算 w 并调整 tangent 的第四个分量
+        w = numpy.where(vb['TANGENT'][:, 3] >= 0, -1.0, 1.0)
+
+        # 更新 TANGENT 分量，注意这里的切片操作假设 TANGENT 有四个分量
+        vb['TANGENT'][:, :3] = normalized_normals
+        vb['TANGENT'][:, 3] = w
+
+        # TimerUtils.End("Recalculate TANGENT")
+
+        return vb
+
+    @classmethod
+    def average_normal_color(cls,obj,indexed_vertices,d3d11GameType,dtype):
+        '''
+        Nico: 算数平均归一化法线，HI3 2.0角色使用的方法
+        '''
+        if "COLOR" not in d3d11GameType.OrderedFullElementList:
+            return indexed_vertices
+        allow_calc = False
+        if GenerateModConfig.recalculate_color():
+            allow_calc = True
+        elif obj.get("3DMigoto:RecalculateCOLOR",False): 
+            allow_calc = True
+        if not allow_calc:
+            return indexed_vertices
+
+        # 开始重计算COLOR
+        TimerUtils.Start("Recalculate COLOR")
+
+        # 不用担心这个转换的效率，速度非常快
+        vb = bytearray()
+        for vertex in indexed_vertices:
+            vb += bytes(vertex)
+        vb = numpy.frombuffer(vb, dtype = dtype)
+
+        # 首先提取所有唯一的位置，并创建一个索引映射
+        unique_positions, position_indices = numpy.unique(
+            [tuple(val['POSITION']) for val in vb], 
+            return_inverse=True, 
+            axis=0
+        )
+
+        # 初始化累积法线和计数器为零
+        accumulated_normals = numpy.zeros((len(unique_positions), 3), dtype=float)
+        counts = numpy.zeros(len(unique_positions), dtype=int)
+
+        # 累加法线并增加计数（这里假设vb是一个list）
+        for i, val in enumerate(vb):
+            accumulated_normals[position_indices[i]] += numpy.array(val['NORMAL'], dtype=float)
+            counts[position_indices[i]] += 1
+
+        # 对所有位置的法线进行一次性规范化处理
+        mask = counts > 0
+        average_normals = numpy.zeros_like(accumulated_normals)
+        average_normals[mask] = (accumulated_normals[mask] / counts[mask][:, None])
+
+        # 归一化到[0,1]，然后映射到颜色值
+        normalized_normals = ((average_normals + 1) / 2 * 255).astype(numpy.uint8)
+
+        # 更新颜色信息
+        new_color = []
+        for i, val in enumerate(vb):
+            color = [0, 0, 0, val['COLOR'][3]]  # 保留原来的Alpha通道
+            
+            if mask[position_indices[i]]:
+                color[:3] = normalized_normals[position_indices[i]]
+
+            new_color.append(color)
+
+        # 将新的颜色列表转换为NumPy数组
+        new_color_array = numpy.array(new_color, dtype=numpy.uint8)
+
+        # 更新vb中的颜色信息
+        for i, val in enumerate(vb):
+            val['COLOR'] = new_color_array[i]
+
+        TimerUtils.End("Recalculate COLOR")
+        return vb
+
 
 
 class BufferModel:
@@ -138,7 +243,7 @@ class BufferModel:
         - 注意这里是从mesh.loops中获取数据，而不是从mesh.vertices中获取数据
         - 所以后续使用的时候要用mesh.loop里的索引来进行获取数据
         '''
-        TimerUtils.Start("Parse MeshData")
+        # TimerUtils.Start("Parse MeshData")
 
         mesh_loops = mesh.loops
         mesh_loops_length = len(mesh_loops)
@@ -158,48 +263,44 @@ class BufferModel:
         loop_vertex_indices = numpy.empty(mesh_loops_length, dtype=int)
         mesh_loops.foreach_get("vertex_index", loop_vertex_indices)
 
-        TimerUtils.Start("GET BLEND") # 0:00:00.141898 
-        # 准备一个空数组用于存储结果，形状为(mesh_loops_length, 4)
-        blendindices = numpy.zeros((mesh_loops_length, 4), dtype=int)
-        blendweights = numpy.zeros((mesh_loops_length, 4), dtype=numpy.float32)
+        # TimerUtils.Start("GET BLEND") # 0:00:00.141898 
+        max_groups = 4
 
-        # 提取所有顶点的骨骼权重索引和权重，并限制每个顶点最多4个非零权重
-        vertex_info = {}
-        for v in mesh_vertices:
-            sorted_groups = sorted(v.groups, key=lambda x: x.weight, reverse=True)[:4]
-            vertex_info[v.index] = {
-                'groups': [g.group for g in sorted_groups],
-                'weights': [g.weight for g in sorted_groups]
-            }
+        # Extract and sort the top 4 groups by weight for each vertex.
+        sorted_groups = [
+            sorted(v.groups, key=lambda x: x.weight, reverse=True)[:max_groups]
+            for v in mesh_vertices
+        ]
 
-        # 填充blendindices和blendweights数组
-        for i, vertex_index in enumerate(loop_vertex_indices):
-            info = vertex_info.get(vertex_index, {'groups': [], 'weights': []})
-            groups = info['groups']
-            weights = info['weights']
-            blendindices[i, :len(groups)] = groups[:4]
-            blendweights[i, :len(weights)] = weights[:4]
+        # Initialize arrays to hold all groups and weights with zeros.
+        all_groups = numpy.zeros((len(mesh_vertices), max_groups), dtype=int)
+        all_weights = numpy.zeros((len(mesh_vertices), max_groups), dtype=numpy.float32)
 
-        TimerUtils.End("GET BLEND")
+        # Fill the pre-allocated arrays with group indices and weights.
+        for v_index, groups in enumerate(sorted_groups):
+            num_groups = min(len(groups), max_groups)
+            all_groups[v_index, :num_groups] = [g.group for g in groups][:num_groups]
+            all_weights[v_index, :num_groups] = [g.weight for g in groups][:num_groups]
 
-        # TimerUtils.Start("GET UV") # TODO 这里计算了整整7秒，逆天
-        # # Nico: 提前拼凑texcoord层级，有几个UVMap就拼出几个来，略微提升速度(虽然只提升几十毫秒。。)
-        # texcoord_layers = {}
-        # for uv_layer in mesh.uv_layers:
-        #     texcoords = {}
-        #     flip_uv = lambda uv: (uv[0], 1.0 - uv[1])
-        #     for l in mesh_loops:
-        #         uv = flip_uv(uv_layer.data[l.index].uv)
-        #         texcoords[l.index] = uv
-        #     texcoord_layers[uv_layer.name] = texcoords
-        # TimerUtils.End("GET UV")
+        # Initialize the blendindices and blendweights with zeros.
+        blendindices = numpy.zeros((mesh_loops_length, max_groups), dtype=int)
+        blendweights = numpy.zeros((mesh_loops_length, max_groups), dtype=numpy.float32)
+
+        # Map from loop_vertex_indices to precomputed data using advanced indexing.
+        valid_mask = (0 <= numpy.array(loop_vertex_indices)) & (numpy.array(loop_vertex_indices) < len(mesh_vertices))
+        valid_indices = loop_vertex_indices[valid_mask]
+
+        blendindices[valid_mask] = all_groups[valid_indices]
+        blendweights[valid_mask] = all_weights[valid_indices]
+
+        # TimerUtils.End("GET BLEND")
 
         # 对每一种Element都获取对应的数据
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
 
             if d3d11_element_name == 'POSITION':
-                TimerUtils.Start("Position Get")
+                # TimerUtils.Start("Position Get")
                 vertex_coords = numpy.empty(mesh_vertices_length * 3, dtype=numpy.float32)
                 # Notice: 'undeformed_co' is static, don't need dynamic calculate like 'co' so it is faster.
                 mesh_vertices.foreach_get('undeformed_co', vertex_coords)
@@ -213,10 +314,10 @@ class BufferModel:
                     positions = new_array
 
                 self.element_vertex_ndarray[d3d11_element_name] = positions
-                TimerUtils.End("Position Get") # 0:00:00.057535 
+                # TimerUtils.End("Position Get") # 0:00:00.057535 
 
             elif d3d11_element_name == 'NORMAL':
-                TimerUtils.Start("Get NORMAL")
+                # TimerUtils.Start("Get NORMAL")
                 loop_normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
                 mesh_loops.foreach_get('normal', loop_normals)
 
@@ -233,10 +334,10 @@ class BufferModel:
 
                 self.element_vertex_ndarray[d3d11_element_name] = loop_normals
 
-                TimerUtils.End("Get NORMAL") # 0:00:00.029400 
+                # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
 
             elif d3d11_element_name == 'TANGENT':
-                TimerUtils.Start("Get TANGENT")
+                # TimerUtils.Start("Get TANGENT")
                 output_tangents = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
 
                 # 使用 foreach_get 批量获取切线和副切线符号数据
@@ -265,7 +366,7 @@ class BufferModel:
 
                 self.element_vertex_ndarray[d3d11_element_name] = output_tangents
 
-                TimerUtils.End("Get TANGENT") # 0:00:00.030449
+                # TimerUtils.End("Get TANGENT") # 0:00:00.030449
             elif d3d11_element_name.startswith('COLOR'):
                 # TimerUtils.Start("Get COLOR")
 
@@ -283,7 +384,7 @@ class BufferModel:
 
                 # TimerUtils.End("Get COLOR") # 0:00:00.030605 
             elif d3d11_element_name.startswith('TEXCOORD') and d3d11_element.Format.endswith('FLOAT'):
-                TimerUtils.Start("GET TEXCOORD")
+                # TimerUtils.Start("GET TEXCOORD")
                 for uv_name in ('%s.xy' % d3d11_element_name, '%s.zw' % d3d11_element_name):
                     if uv_name in mesh.uv_layers:
                         uvs_array = numpy.empty(mesh_loops_length ,dtype=(numpy.float32,2))
@@ -297,7 +398,7 @@ class BufferModel:
                         # uvs_array = uvs_array.reshape(-1, 2)
 
                         self.element_vertex_ndarray[d3d11_element_name] = uvs_array 
-                TimerUtils.End("GET TEXCOORD")
+                # TimerUtils.End("GET TEXCOORD")
                         
             elif d3d11_element_name.startswith('BLENDINDICES'):
                 # TODO 处理R32_UINT类型 R32G32_FLOAT类型
@@ -311,24 +412,8 @@ class BufferModel:
 
 
 
-                # TimerUtils.End("GET TEXCOORD") # 0:00:00.034990
-        
 
-        # (2) TODO 重计算TANGENT和重计算COLOR
-        # if "TANGENT" in self.d3d11GameType.OrderedFullElementList:
-        #     if GenerateModConfig.recalculate_tangent():
-        #         indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices,self.d3d11GameType)
-        #     elif obj.get("3DMigoto:RecalculateTANGENT",False):
-        #         indexed_vertices = BufferDataConverter.average_normal_tangent(indexed_vertices,self.d3d11GameType)
-
-        # if "COLOR" in self.d3d11GameType.OrderedFullElementList:
-        #     if GenerateModConfig.recalculate_color():
-        #         indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices,self.d3d11GameType)
-        #     elif obj.get("3DMigoto:RecalculateCOLOR",False):
-        #         indexed_vertices = BufferDataConverter.average_normal_color(indexed_vertices,self.d3d11GameType)
-        TimerUtils.End("Parse MeshData") # 15s
-
-    def calc_index_vertex_buffer(self,mesh:bpy.types.Mesh):
+    def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
         计算IndexBuffer和CategoryBufferDict并返回
 
@@ -337,8 +422,9 @@ class BufferModel:
         https://github.com/leotorrez/XXMITools
         Special Thanks for @leotorrez 
 
-        这里已经过测试，Calc IB VB是不可缺少的必要开销
-        Calc CategoryBuffer 不管怎么优化都会占用1/10 运行时间
+        TODO 这里是速度瓶颈，23万顶点情况下测试，前面的获取mesh数据只用了1.5秒
+        但是这里两个步骤加起来用了6秒，占了4/5运行时间。
+        不过暂时也够用了，先不管了。
         '''
         # TimerUtils.Start("Calc IB VB")
         # (1) 统计模型的索引和唯一顶点
@@ -348,6 +434,11 @@ class BufferModel:
                     ]for poly in mesh.polygons]
         flattened_ib = [item for sublist in ib for item in sublist]
         # TimerUtils.End("Calc IB VB")
+
+
+
+        indexed_vertices = BufferDataConverter.average_normal_tangent(obj=obj, indexed_vertices=indexed_vertices, d3d11GameType=self.d3d11GameType,dtype=self.dtype)
+        indexed_vertices = BufferDataConverter.average_normal_color(obj=obj, indexed_vertices=indexed_vertices, d3d11GameType=self.d3d11GameType,dtype=self.dtype)
 
         # (2) 转换为CategoryBufferDict
         # TimerUtils.Start("Calc CategoryBuffer")
@@ -388,7 +479,7 @@ def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     # 读取并解析数据
     buffer_model.parse_elementname_ravel_ndarray_dict(mesh)
 
-    return buffer_model.calc_index_vertex_buffer(mesh)
+    return buffer_model.calc_index_vertex_buffer(obj, mesh)
 
 
 

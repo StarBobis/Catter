@@ -212,16 +212,32 @@ class DrawIBModelFast:
             for model_collection in model_collection_list:
                 for obj_name in model_collection.obj_name_list:
                     category_buffer_list = self.__obj_name_category_buffer_list_dict.get(obj_name,None)
-
+                    
                     if category_buffer_list is None:
                         print("Can't find vb object for " + obj_name +",skip this obj process.")
                         continue
 
                     for category_name in self.d3d11GameType.OrderedCategoryNameList:
+                        
+
                         if category_name not in self.__categoryname_bytelist_dict:
                             self.__categoryname_bytelist_dict[category_name] =  category_buffer_list[category_name]
                         else:
-                            self.__categoryname_bytelist_dict[category_name] = numpy.concatenate(self.__categoryname_bytelist_dict[category_name],category_buffer_list[category_name])
+                            existing_array = self.__categoryname_bytelist_dict[category_name]
+                            buffer_array = category_buffer_list[category_name]
+
+                            # 确保两个数组都是NumPy数组
+                            existing_array = numpy.asarray(existing_array)
+                            buffer_array = numpy.asarray(buffer_array)
+
+                            # 使用 concatenate 连接两个数组，确保传递的是一个序列（如列表或元组）
+                            concatenated_array = numpy.concatenate((existing_array, buffer_array))
+
+                            # 更新字典中的值
+                            self.__categoryname_bytelist_dict[category_name] = concatenated_array
+
+
+                            # self.__categoryname_bytelist_dict[category_name] = numpy.concatenate(self.__categoryname_bytelist_dict[category_name],category_buffer_list[category_name])
         
         # 顺便计算一下步长得到总顶点数
         position_stride = self.d3d11GameType.CategoryStrideDict["Position"]

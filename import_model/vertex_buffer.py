@@ -129,9 +129,10 @@ class VertexBuffer(object):
         position_normal_dict = {}
         for vertex in vertices:
             position = vertex["POSITION"]
+            normal = vertex["NORMAL"]
+
             position_str = str(position[0]) + "_" + str(position[1]) + "_" + str(position[2])
 
-            normal = vertex["NORMAL"]
             if position_str in position_normal_dict:
                 normalized_normal = self.add_and_normalize_vectors(normal,position_normal_dict[position_str])
                 position_normal_dict[position_str] = normalized_normal
