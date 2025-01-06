@@ -6,7 +6,7 @@ from .m_drawib_model_fast import DrawIBModelFast
 
 class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace"
-    bl_label = "生成二创模型"
+    bl_label = "Generate Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -49,7 +49,7 @@ class DBMTExportUnityVSModToWorkSpace(bpy.types.Operator):
 
 class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_cs_mod_to_workspace"
-    bl_label = "生成二创模型"
+    bl_label = "Generate Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -93,7 +93,7 @@ class DBMTExportUnityCSModToWorkSpace(bpy.types.Operator):
 
 class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace_fast"
-    bl_label = "生成二创模型(快速)"
+    bl_label = "Generate Mod(Fast)"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -139,7 +139,7 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
 
 class DBMTExportUnityCSModToWorkSpaceFast(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_cs_mod_to_workspace_fast"
-    bl_label = "生成二创模型(快速)"
+    bl_label = "Generate Mod(Fast)"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):

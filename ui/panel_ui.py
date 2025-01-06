@@ -50,7 +50,7 @@ class OBJECT_OT_select_dbmt_folder(bpy.types.Operator):
     
 
 class CatterConfigUI(bpy.types.Panel):
-    bl_label = "基础配置"
+    bl_label = "Config"
     bl_idname = "CATTER_PT_CONFIG_UI"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -66,18 +66,18 @@ class CatterConfigUI(bpy.types.Panel):
         # 获取DBMT.exe的路径
         dbmt_gui_exe_path = os.path.join(context.scene.dbmt.path, "DBMT.exe")
         if not os.path.exists(dbmt_gui_exe_path):
-            layout.label(text="错误:请选择DBMT所在路径 ", icon='ERROR')
+            layout.label(text="Error:Please select DBMT.exe location ", icon='ERROR')
         
         row = layout.row()
         MainConfig.read_from_main_json()
-        row.label(text="当前游戏: " + MainConfig.gamename)
+        row.label(text="Current Game: " + MainConfig.gamename)
 
         draw_seperator(self)
 
 
         
       
-        layout.prop(dbmt_config,"import_merged_vgmap",text="使用重映射的全局顶点组")
+        layout.prop(dbmt_config,"import_merged_vgmap")
         
         
 
@@ -85,7 +85,7 @@ class CatterConfigUI(bpy.types.Panel):
 
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
-    bl_label = "导入模型" 
+    bl_label = "Import Model" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -95,21 +95,21 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
         layout = self.layout
         dbmt_config = context.scene.dbmt
         MainConfig.read_from_main_json()
-        layout.label(text="当前工作空间: " + MainConfig.workspacename)
+        layout.label(text="Current WorkSpace: " + MainConfig.workspacename)
         layout.prop(dbmt_config,"model_scale")
         #import_flip_coordinate_x 
         layout.prop(dbmt_config,"import_flip_scale_x")
         layout.prop(dbmt_config,"import_delete_loose")
         
         draw_seperator(self)
-        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="手动导入 .ib & .vb 模型文件")
+        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="Import .ib.vb.fmt Model Manually")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
 
-        layout.operator("dbmt.import_all_from_workspace", text="一键导入当前工作空间内容")
+        layout.operator("dbmt.import_all_from_workspace", text="Import All From WorkSpace")
 
 
 class PanelGenerateMod(bpy.types.Panel):
-    bl_label = "生成二创模型" 
+    bl_label = "Generate Mod" 
     bl_idname = "VIEW3D_PT_CATTER_GenerateMod_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -176,22 +176,16 @@ class MigotoAttributePanel(bpy.types.Panel):
             recalculate_tangent = selected_obj.get("3DMigoto:RecalculateTANGENT",None)
             if recalculate_tangent is not None:
                 row = layout.row()
-                row.label(text=f"导出时重计算TANGENT:" + str(recalculate_tangent))
+                row.label(text=f"Recalculate TANGENT:" + str(recalculate_tangent))
 
             recalculate_color = selected_obj.get("3DMigoto:RecalculateCOLOR",None)
             if recalculate_color is not None:
                 row = layout.row()
-                row.label(text=f"导出时重计算COLOR:" + str(recalculate_color))
-
-
-
-
-
-
+                row.label(text=f"Recalculate COLOR:" + str(recalculate_color))
 
         else:
             # 如果没有选中的对象，则显示提示信息
             row = layout.row()
-            row.label(text="未选中mesh对象")
+            row.label(text="doesn't select any object.")
 
 
