@@ -306,7 +306,6 @@ class BufferModel:
                 mesh_vertices.foreach_get('undeformed_co', vertex_coords)
 
                 positions = vertex_coords.reshape(-1, 3)[loop_vertex_indices]
-                # TODO 测试astype能用吗？
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                     positions = positions.astype(numpy.float16)
                     new_array = numpy.zeros((positions.shape[0], 4))
@@ -324,7 +323,6 @@ class BufferModel:
                 # 将一维数组 reshape 成 (mesh_loops_length, 3) 形状的二维数组
                 loop_normals = loop_normals.reshape(-1, 3)
 
-                # TODO 测试astype能用吗？
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                      # 转换数据类型并添加第四列，默认填充为1
                     loop_normals = loop_normals.astype(numpy.float16)
@@ -401,17 +399,20 @@ class BufferModel:
                 # TimerUtils.End("GET TEXCOORD")
                         
             elif d3d11_element_name.startswith('BLENDINDICES'):
-                # TODO 处理R32_UINT类型 R32G32_FLOAT类型
-                self.element_vertex_ndarray[d3d11_element_name] = blendindices
+                if d3d11_element.Format == "R32G32B32A32_UINT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendindices
+                elif d3d11_element.Format == "R32G32_UINT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendindices[:, :2]
+                elif d3d11_element.Format == "R32_UINT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendindices[:, :1]
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
-                # TODO 处理R32G32_FLOAT类型
                 if not self.d3d11GameType.PatchBLENDWEIGHTS:
-                    self.element_vertex_ndarray[d3d11_element_name] = blendweights
-
-
-
+                    if d3d11_element.Format == "R32G32B32A32_FLOAT":
+                        self.element_vertex_ndarray[d3d11_element_name] = blendweights
+                    elif d3d11_element.Format == "R32G32_FLOAT":
+                        self.element_vertex_ndarray[d3d11_element_name] = blendweights[:, :2]
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
@@ -422,7 +423,7 @@ class BufferModel:
         https://github.com/leotorrez/XXMITools
         Special Thanks for @leotorrez 
 
-        TODO 这里是速度瓶颈，23万顶点情况下测试，前面的获取mesh数据只用了1.5秒
+        这里是速度瓶颈，23万顶点情况下测试，前面的获取mesh数据只用了1.5秒
         但是这里两个步骤加起来用了6秒，占了4/5运行时间。
         不过暂时也够用了，先不管了。
         '''
