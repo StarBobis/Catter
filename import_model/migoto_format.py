@@ -1,16 +1,16 @@
 import json
 import io
 
-from ..migoto.migoto_utils import *
+from ..utils.migoto_utils import *
 
-from ..migoto.migoto_utils import *
+from ..utils.migoto_utils import *
 from ..config.generate_mod_config import *
 from ..utils.timer_utils import *
 
 from typing import List, Dict, Union
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
-from ..migoto.migoto_utils import *
+from ..utils.migoto_utils import *
 
 import io
 import textwrap
@@ -60,10 +60,6 @@ def read_metadata(metadata_path: str) -> ExtractedObject:
     with open(metadata_path) as f:
         return ExtractedObject(**json.load(f))
     
-
-
-
-
 
 class InputLayoutElement(object):
     SemanticName = ""

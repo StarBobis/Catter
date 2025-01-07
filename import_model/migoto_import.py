@@ -19,7 +19,6 @@ from bpy.props import BoolProperty, StringProperty, CollectionProperty
 from bpy_extras.io_utils import orientation_helper
 
 
-
 def import_shapekeys(mesh, obj, shapekeys):
     if len(shapekeys.keys()) == 0:
         return
@@ -93,7 +92,7 @@ def import_uv_layers(mesh, obj, texcoords):
     for (texcoord, data) in sorted(texcoords.items()):
         '''
         Nico: 在我们的游戏Mod设计中，TEXCOORD只能有两个分量
-        如果出现两个以上，则是自定义数据存储到TEXCOORD使用，所以这里我们只考虑两个分量的清空。
+        如果出现两个以上，则是自定义数据存储到TEXCOORD使用，所以这里我们只考虑两个分量的情况。
 
         TEXCOORDS can have up to four components, but UVs can only have two
         dimensions. Not positive of the best way to handle this in general,

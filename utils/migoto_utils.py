@@ -1,11 +1,6 @@
 import re
 import numpy
-import operator  # to get function names for operators like @, +, -
 import struct
-import os
-import bpy
-import json
-import subprocess
 
 from glob import glob
 

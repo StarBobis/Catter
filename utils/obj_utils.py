@@ -7,7 +7,7 @@ from math import *
 import math
 import bmesh
 
-from ..migoto.migoto_utils import Fatal
+from .migoto_utils import Fatal
 
 class ObjUtils:
 

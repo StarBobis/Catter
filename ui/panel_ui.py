@@ -1,7 +1,7 @@
 import bpy
 import os
 
-from ..migoto.migoto_utils import *
+from ..utils.migoto_utils import *
 from ..config.main_config import * 
 from ..generate_mod.m_export_mod import *
 
