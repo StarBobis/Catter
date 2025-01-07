@@ -250,7 +250,6 @@ class BufferModel:
         mesh_vertices = mesh.vertices
         mesh_vertices_length = len(mesh.vertices)
 
-        # Learned from XXMI-Tools, Credit to @leotorrez
         self.dtype = numpy.dtype([])
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
@@ -440,11 +439,6 @@ class BufferModel:
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
         计算IndexBuffer和CategoryBufferDict并返回
-
-        This saves me a lot of time to make another wheel,it's already optimized very good.
-        Credit to XXMITools for learn the design and copy the original code and modified for our needs.
-        https://github.com/leotorrez/XXMITools
-        Special Thanks for @leotorrez 
 
         这里是速度瓶颈，23万顶点情况下测试，前面的获取mesh数据只用了1.5秒
         但是这里两个步骤加起来用了6秒，占了4/5运行时间。

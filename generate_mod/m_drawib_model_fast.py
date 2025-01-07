@@ -252,7 +252,7 @@ class DrawIBModelFast:
         for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
             obj = bpy.data.objects[obj_name]
 
-            # TODO 先完成WWMI一键导入，再完成这里的ShapeKey读取部分
+            # TODO 先完成WuWa一键导入，再完成这里的ShapeKey读取部分
             base_data = obj.data.shape_keys.key_blocks['Basis'].data
             shapekey_pattern = re.compile(r'.*(?:deform|custom)[_ -]*(\d+).*')
 

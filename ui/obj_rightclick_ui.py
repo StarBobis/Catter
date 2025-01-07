@@ -11,8 +11,6 @@ class RemoveAllVertexGroupOperator(bpy.types.Operator):
     bl_description = "移除当前选中obj的所有顶点组"
 
     def execute(self, context):
-            # Copied from WWMI-Tools 
-        # https://github.com/SpectrumQT/WWMI-TOOLS
         for obj in bpy.context.selected_objects:
             if obj.type == "MESH":
                 for x in obj.vertex_groups:
@@ -27,7 +25,6 @@ class RemoveUnusedVertexGroupOperator(bpy.types.Operator):
 
     def execute(self, context):
         # Originally design from https://blenderartists.org/t/batch-delete-vertex-groups-script/449881/23
-        # Copied from GIMI repository.
         for obj in bpy.context.selected_objects:
             if obj.type == "MESH":
                 # obj = bpy.context.active_object
@@ -415,9 +412,6 @@ class RecalculateCOLORWithVectorNormalizedNormal(bpy.types.Operator):
 
 
 class PropertyCollectionModifierItem(bpy.types.PropertyGroup):
-    # Code originally copied from WWMI to avoid make another wheel again and modified to better meet our needs.
-    # https://github.com/SpectrumQT/WWMI-TOOLS
-    # Credit to SpectrumQT and huge thanks for his hard work.
     checked: BoolProperty(
         name="", 
         default=False
@@ -425,9 +419,6 @@ class PropertyCollectionModifierItem(bpy.types.PropertyGroup):
 bpy.utils.register_class(PropertyCollectionModifierItem)
 
 class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
-    # Code originally copied from WWMI to avoid make another wheel again and modified to better meet our needs.
-    # https://github.com/SpectrumQT/WWMI-TOOLS
-    # Credit to SpectrumQT and huge thanks for his hard work.
     bl_idname = "wwmi_tools.apply_modifier_for_object_with_shape_keys"
     bl_label = "Apply Modifiers For Object With Shape Keys"
     bl_description = "Apply selected modifiers and remove from the stack for object with shape keys (Solves 'Modifier cannot be applied to a mesh with shape keys' error when pushing 'Apply' button in 'Object modifiers'). Sourced by Przemysław Bągard"

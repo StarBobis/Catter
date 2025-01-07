@@ -321,7 +321,7 @@ class M_UnityIniModel:
             vertexlimit_section.append("hash = " +draw_ib_model.vertex_limit_hash)
             
             if GenerateModConfig.vertex_limit_raise_add_filter_index():
-                # (为啥是3000？因为和WWMI学的，用户可能已经习惯了3000开头，用户体验的优先级最高)
+                # 用户可能已经习惯了3000
                 vertexlimit_section.append("filter_index = " + str(3000 + cls.global_generate_mod_number))
                 cls.vlr_filter_index_indent = "  "
 

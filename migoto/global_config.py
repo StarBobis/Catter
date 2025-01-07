@@ -9,8 +9,6 @@ from ..utils.file_utils import FileUtils
 from .d3d11_game_type import D3D11GameType,D3D11Element,D3D11GameTypeLv2
 from ..utils.log_utils import LOG
 
-# Nico: Thanks for SpectrumQT's WWMI project, I learned how to use @dataclass to save my time 
-# and lots of other python features so use python can works as good as C++ and better and faster.
 
 class HashType(Enum):
     Texture = "-ps-t"

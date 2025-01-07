@@ -1,7 +1,3 @@
-# Code originally copied from WWMI to avoid make another wheel again and modified to better meet our needs.
-# https://github.com/SpectrumQT/WWMI-TOOLS
-# Credit to SpectrumQT and huge thanks for his hard work.
-
 import json
 
 from typing import List, Dict, Union

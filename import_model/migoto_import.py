@@ -24,7 +24,6 @@ from bpy_extras.io_utils import orientation_helper
 
 
 def import_shapekeys(mesh, obj, shapekeys):
-    # Credit to SpectrumQT: https://github.com/SpectrumQT/WWMI-TOOLS
     if len(shapekeys.keys()) == 0:
         return
     
@@ -344,7 +343,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     import_uv_layers(mesh, obj, texcoords)
 
-    # WWMI metadata.json, if contains then we can import merged vgmap.
+    #  metadata.json, if contains then we can import merged vgmap.
     # TODO 这里每次导入都要读取一次，效率太低了
     metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
     component = None

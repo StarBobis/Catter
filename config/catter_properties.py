@@ -118,14 +118,14 @@ class CatterPropertiesImportModel(bpy.types.PropertyGroup):
     ) # type: ignore
 
     import_merged_vgmap:bpy.props.BoolProperty(
-        name="Use Remapped VGS (WWMI)",
-        description="导入时是否导入融合后的顶点组 (WWMI的合并顶点组技术会用到)",
+        name="Use Remapped VGS (WuWa)",
+        description="导入时是否导入融合后的顶点组 (Unreal的合并顶点组技术会用到)",
         default=False
     ) # type: ignore
 
     import_flip_scale_x :bpy.props.BoolProperty(
         name="Set Scale's X to -1 to avoid mirror",
-        description="勾选后在导入模型时把缩放的X分量乘以-1，实现镜像效果，还原游戏中原本的样子，解决导入后镜像对调的问题,与WWMI中mirror mesh选项相同，同样也会导致和部分插件不兼容问题",
+        description="勾选后在导入模型时把缩放的X分量乘以-1，实现镜像效果，还原游戏中原本的样子，解决导入后镜像对调的问题",
         default=False
     ) # type: ignore
 

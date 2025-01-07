@@ -1,6 +1,4 @@
 
-# Code originally copied from WWMI to avoid make another wheel again and modified to better meet our needs.
-# https://github.com/SpectrumQT/WWMI-TOOLS
 import bpy
 import time
 
