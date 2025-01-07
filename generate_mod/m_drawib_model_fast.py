@@ -319,7 +319,7 @@ class DrawIBModelFast:
         - 这里几乎不消耗性能，无需关注
         TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
         '''
-        # Export IndexBuffer files.
+        # Export IB files.
         # TimerUtils.Start("Write Index Buffer")
         for partname in self.part_name_list:
             component_name = "Component " + partname
@@ -343,6 +343,5 @@ class DrawIBModelFast:
             # category_array = numpy.array(category_buf, dtype=numpy.uint8)
             with open(buf_path, 'wb') as ibf:
                 category_buf.tofile(ibf)
-                # ibf.write(bytearray(category_buf))
 
         # TimerUtils.End("Write Category Buffer")

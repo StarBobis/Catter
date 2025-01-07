@@ -181,7 +181,6 @@ class InputLayout(object):
     def __getitem__(self, semantic):
         return self.elems[semantic]
 
-    # TODO 这个是把一个顶点的各个数据转换成Buf格式，但是我们需要的是每种Buf都单独导出。
     def encode(self, vertex) ->bytearray:
         buf = bytearray(self.stride)
 
@@ -195,19 +194,6 @@ class InputLayout(object):
         assert (len(buf) == self.stride)
         return buf
     
-    # 这个是按照element_name,buffer list的形式转换，组合并返回
-    def get_elementname_bytelist_dict_of_vertex(self, vertex) ->dict[str,list]:
-        # TODO if there can't get data from element_name, if data is empty
-        # we need to patch it with 0
-        elementname_buf_dict = {}
-        for element_name, data in vertex.items():
-            if element_name.startswith('~'):
-                continue
-            elem = self.elems[element_name]
-            data = elem.encode(data)
-            elementname_buf_dict[element_name] = data
-        return elementname_buf_dict
-
     # 这里decode是读取buf文件的时候用的，把二进制数据转换成置顶的类型
     def decode(self, buf):
         vertex = {}
