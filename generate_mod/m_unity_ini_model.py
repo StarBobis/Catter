@@ -2,7 +2,7 @@ import shutil
 
 from .m_draw_type import *
 from .m_ini_builder import *
-from .m_drawib_model import *
+from .m_drawib_model_fast import *
 
 
 class M_UnityIniModel:
@@ -11,7 +11,7 @@ class M_UnityIniModel:
     Unity ComputeShader PreSkinning
     Unity CPU PreSkinning
     '''
-    drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
+    drawib_drawibmodel_dict:dict[str,DrawIBModelFast] = {}
 
     global_key_index_constants = 0
     global_key_index_logic = 0
@@ -44,7 +44,7 @@ class M_UnityIniModel:
 
 
     @classmethod
-    def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         if draw_ib_model.key_number != 0:
             # 声明Constants变量
             constants_section = M_IniSection(M_SectionType.Constants)
@@ -113,7 +113,7 @@ class M_UnityIniModel:
                         cls.global_key_index_constants = cls.global_key_index_constants + 1
 
     @classmethod
-    def add_unity_vs_texture_override_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_vs_texture_override_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         # 声明TextureOverrideVB部分，只有使用GPU-PreSkinning时是直接替换hash对应槽位
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
@@ -173,7 +173,7 @@ class M_UnityIniModel:
             ini_builder.append_section(texture_override_vb_section)
 
     @classmethod
-    def add_unity_vs_texture_override_ib_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_vs_texture_override_ib_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
         draw_ib = draw_ib_model.draw_ib
         d3d11GameType = draw_ib_model.d3d11GameType
@@ -308,7 +308,7 @@ class M_UnityIniModel:
         ini_builder.append_section(texture_override_ib_section)
 
     @classmethod
-    def add_unity_vs_vlr_section(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_vs_vlr_section(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         '''
         Add VertexLimitRaise section, UnityVS style.
         Only Unity VertexShader GPU-PreSkinning use this.
@@ -392,7 +392,7 @@ class M_UnityIniModel:
             ini_builder.append_section(resource_ib_section)
 
     @classmethod
-    def add_resource_texture_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_resource_texture_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         '''
         Add texture resource.
         '''
@@ -413,7 +413,7 @@ class M_UnityIniModel:
         ini_builder.append_section(resource_texture_section)
 
     @classmethod
-    def move_slot_style_textures(cls,draw_ib_model:DrawIBModel):
+    def move_slot_style_textures(cls,draw_ib_model:DrawIBModelFast):
         '''
         Move all textures from extracted game type folder to generate mod Texture folder.
         Only works in default slot style texture.
@@ -500,7 +500,7 @@ class M_UnityIniModel:
 
 
     @classmethod
-    def add_unity_cs_texture_override_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_cs_texture_override_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         # 声明TextureOverrideVB部分，只有使用GPU-PreSkinning时是直接替换hash对应槽位
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
@@ -552,7 +552,7 @@ class M_UnityIniModel:
             ini_builder.append_section(texture_override_vb_section)
             
     @classmethod
-    def add_unity_cs_texture_override_ib_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_cs_texture_override_ib_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
         draw_ib = draw_ib_model.draw_ib
         d3d11GameType = draw_ib_model.d3d11GameType
@@ -676,7 +676,7 @@ class M_UnityIniModel:
         ini_builder.append_section(texture_override_ib_section)
 
     @classmethod
-    def add_unity_cs_resource_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_unity_cs_resource_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         '''
         Add Resource VB Section (UnityCS)
         '''
@@ -722,7 +722,7 @@ class M_UnityIniModel:
         ini_builder.append_section(resource_vb_section)
     
     @classmethod
-    def add_unity_cs_resource_vertexlimit(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+    def add_unity_cs_resource_vertexlimit(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModelFast):
         resource_vertex_limit_section = M_IniSection(M_SectionType.ResourceBuffer)
         resource_vertex_limit_section.append("[Resource_" + draw_ib_model.draw_ib + "_VertexLimit]")
         resource_vertex_limit_section.append("type = Buffer")

@@ -2,7 +2,7 @@ import shutil
 
 from .m_draw_type import *
 from .m_ini_builder import *
-from .m_drawib_model import *
+from .m_drawib_model_fast import *
 
 
 class M_UnrealIniModel:
@@ -11,7 +11,7 @@ class M_UnrealIniModel:
     Unreal Engine ComputeShader PreSkinning
     Unreal Engine CPU PreSkinning
     '''
-    drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
+    drawib_drawibmodel_dict:dict[str,DrawIBModelFast] = {}
     shapekeys = {}
 
     global_key_index_constants = 0
