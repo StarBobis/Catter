@@ -1,4 +1,5 @@
 import shutil
+import math
 
 from .m_draw_type import *
 from .m_ini_builder import *

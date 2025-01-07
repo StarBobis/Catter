@@ -1,5 +1,6 @@
-from ..import_model.vertex_buffer import *
-from ..import_model.index_buffer import *
+import numpy
+import struct
+
 from .m_export_fast import get_buffer_ib_vb_fast
 
 from ..migoto.global_config import *
@@ -10,6 +11,7 @@ from ..utils.collection_utils import *
 from ..config.main_config import *
 from ..utils.json_utils import *
 from ..utils.timer_utils import *
+from ..migoto.migoto_utils import Fatal
 
 from .m_ini_helper import *
 

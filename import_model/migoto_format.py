@@ -1,9 +1,68 @@
+import json
+import io
+
+from ..migoto.migoto_utils import *
+
+from ..migoto.migoto_utils import *
+from ..config.generate_mod_config import *
+from ..utils.timer_utils import *
+
+from typing import List, Dict, Union
+from pathlib import Path
+from dataclasses import dataclass, field, asdict
 from ..migoto.migoto_utils import *
 
 import io
 import textwrap
 import collections
 import math
+
+
+@dataclass
+class ExtractedObjectComponent:
+    vertex_offset: int
+    vertex_count: int
+    index_offset: int
+    index_count: int
+    vg_offset: int
+    vg_count: int
+    vg_map: Dict[int, int]
+
+
+@dataclass
+class ExtractedObjectShapeKeys:
+    offsets_hash: str = ''
+    scale_hash: str = ''
+    vertex_count: int = 0
+    dispatch_y: int = 0
+    checksum: int = 0
+
+
+@dataclass
+class ExtractedObject:
+    vb0_hash: str
+    cb4_hash: str
+    vertex_count: int
+    index_count: int
+    components: List[ExtractedObjectComponent]
+    shapekeys: ExtractedObjectShapeKeys
+
+    def __post_init__(self):
+        if isinstance(self.shapekeys, dict):
+            self.components = [ExtractedObjectComponent(**component) for component in self.components]
+            self.shapekeys = ExtractedObjectShapeKeys(**self.shapekeys)
+
+    def as_json(self):
+        return json.dumps(asdict(self), indent=4)
+
+
+def read_metadata(metadata_path: str) -> ExtractedObject:
+    with open(metadata_path) as f:
+        return ExtractedObject(**json.load(f))
+    
+
+
+
 
 
 class InputLayoutElement(object):
@@ -205,3 +264,156 @@ class InputLayout(object):
     def __eq__(self, other):
         return self.elems == other.elems
 
+
+
+class IndexBuffer(object):
+    def __init__(self, *args):
+        self.faces = []
+        self.first = 0
+        self.index_count = 0
+        self.format = 'DXGI_FORMAT_UNKNOWN'
+        self.gametypename = ""
+        self.offset = 0
+        self.topology = 'trianglelist'
+
+        # 如果是IOBase类型，说明是以文件名称初始化的，此时fmt要从文件中解析
+        if len(args) == 0:
+            # 如果不填写参数，则默认为DXGI_FORMAT_R32_UINT类型
+            self.format = "DXGI_FORMAT_R32_UINT"
+        elif isinstance(args[0], io.IOBase):
+            assert (len(args) == 1)
+            self.parse_fmt(args[0])
+        else:
+            self.format, = args
+
+        self.encoder, self.decoder = MigotoUtils.EncoderDecoder(self.format)
+
+    def append(self, face):
+        self.faces.append(face)
+        self.index_count += len(face)
+
+    def parse_fmt(self, f):
+        for line in map(str.strip, f):
+            if line.startswith('byte offset:'):
+                self.offset = int(line[13:])
+            if line.startswith('first index:'):
+                self.first = int(line[13:])
+            elif line.startswith('index count:'):
+                self.index_count = int(line[13:])
+            elif line.startswith('topology:'):
+                self.topology = line[10:]
+                if line != 'topology: trianglelist':
+                    raise Fatal('"%s" is not yet supported' % line)
+            elif line.startswith('format:'):
+                self.format = line[8:]
+            elif line.startswith('gametypename:'):
+                self.gametypename = line[14:]
+            elif line == '':
+                    return
+        assert (len(self.faces) * 3 == self.index_count)
+
+    def parse_ib_bin(self, f):
+        f.seek(self.offset)
+        stride = MigotoUtils.format_size(self.format)
+        # XXX: Should we respect the first index?
+        # f.seek(self.first * stride, whence=1)
+        self.first = 0
+
+        face = []
+        while True:
+            index = f.read(stride)
+            if not index:
+                break
+            face.append(*self.decoder(index))
+            if len(face) == 3:
+                self.faces.append(tuple(face))
+                face = []
+        assert (len(face) == 0)
+
+        # We intentionally disregard the index count when loading from a
+        # binary file, as we assume frame analysis might have only dumped a
+        # partial buffer to the .txt files (e.g. if this was from a dump where
+        # the draw call index count was overridden it may be cut short, or
+        # where the .txt files contain only sub-meshes from each draw call and
+        # we are loading the .buf file because it contains the entire mesh):
+        self.index_count = len(self.faces) * 3
+
+
+    def write(self, output, operator=None):
+        for face in self.faces:
+            output.write(self.encoder(face))
+
+        msg = 'Wrote %i indices to %s' % (len(self), output.name)
+        if operator:
+            operator.report({'INFO'}, msg)
+        else:
+            print(msg)
+    
+    def __len__(self):
+        return len(self.faces) * 3
+
+class VertexBuffer(object):
+    vb_elem_pattern = re.compile(r'''vb\d+\[\d*\]\+\d+ (?P<semantic>[^:]+): (?P<data>.*)$''')
+
+    # Python gotcha - do not set layout=InputLayout() in the default function
+    # parameters, as they would all share the *same* InputLayout since the
+    # default values are only evaluated once on file load
+    def __init__(self, f=None, layout=None):
+        # 这里的vertices是3Dmigoto顶点，不是Blender顶点。
+        self.vertices = []
+        self.layout = layout and layout or InputLayout()
+        self.first = 0
+        self.vertex_count = 0
+        self.offset = 0
+        self.topology = 'trianglelist'
+
+        if f is not None:
+            for line in map(str.strip, f):
+                # print(line)
+                if line.startswith('byte offset:'):
+                    self.offset = int(line[13:])
+                if line.startswith('first vertex:'):
+                    self.first = int(line[14:])
+                if line.startswith('vertex count:'):
+                    self.vertex_count = int(line[14:])
+                if line.startswith('stride:'):
+                    self.layout.stride = int(line[7:])
+                if line.startswith('element['):
+                    self.layout.parse_element(f)
+                if line.startswith('topology:'):
+                    self.topology = line[10:]
+                    if line != 'topology: trianglelist':
+                        raise Fatal('"%s" is not yet supported' % line)
+            assert (len(self.vertices) == self.vertex_count)
+
+    def parse_vb_bin(self, f):
+        f.seek(self.offset)
+        # XXX: Should we respect the first/base vertex?
+        # f.seek(self.first * self.layout.stride, whence=1)
+        self.first = 0
+        while True:
+            vertex = f.read(self.layout.stride)
+            if not vertex:
+                break
+            self.vertices.append(self.layout.decode(vertex))
+        self.vertex_count = len(self.vertices)
+
+    def append(self, vertex):
+        self.vertices.append(vertex)
+        self.vertex_count += 1
+
+    def write(self, output, operator=None):
+        for vertex in self.vertices:
+            output.write(self.layout.encode(vertex))
+
+        msg = 'Wrote %i vertices to %s' % (len(self), output.name)
+        if operator:
+            operator.report({'INFO'}, msg)
+        else:
+            print(msg)
+
+    def __len__(self):
+        return len(self.vertices)
+    
+
+    

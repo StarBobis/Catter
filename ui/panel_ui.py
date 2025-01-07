@@ -1,12 +1,8 @@
 import bpy
 import os
-import json
 
 from ..migoto.migoto_utils import *
-from ..import_model.input_layout import InputLayout
-
 from ..config.main_config import * 
-
 from ..generate_mod.m_export_mod import *
 
 # 用于绘制分割线，由于3.6和4.2行为不一样所以做了包装方法
