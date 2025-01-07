@@ -1,10 +1,10 @@
 import numpy
 import struct
+import re
 
 from .m_export_fast import get_buffer_ib_vb_fast
 
-from ..migoto.global_config import *
-
+from .d3d11_game_type import *
 from .m_draw_type import *
 
 from ..utils.collection_utils import *

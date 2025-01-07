@@ -11,7 +11,7 @@ from ..utils.obj_utils import ObjUtils
 from ..utils.timer_utils import TimerUtils
 from ..utils.log_utils import LOG
 
-from ..migoto.d3d11_game_type import D3D11GameType
+from .d3d11_game_type import D3D11GameType
 from ..utils.migoto_utils import MigotoUtils
 
 from ..config.generate_mod_config import GenerateModConfig

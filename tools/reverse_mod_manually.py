@@ -6,7 +6,7 @@ import os
 import shutil
 
 from .buffer_file import IndexBufferBufFile,FmtFile
-from ..migoto.global_config import GlobalConfig
+from .global_config import GlobalConfig
 from ..utils.log_utils import log_newline
 
 

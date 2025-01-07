@@ -3,7 +3,7 @@ import struct
 
 from dataclasses import dataclass, field
 
-from ..migoto.d3d11_game_type import D3D11GameType
+from ..generate_mod.d3d11_game_type import D3D11GameType
 
 @dataclass
 class IndexBufferBufFile:

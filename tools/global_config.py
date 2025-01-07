@@ -6,7 +6,7 @@ from typing import List,Dict
 from enum import Enum
 
 from ..utils.file_utils import FileUtils
-from .d3d11_game_type import D3D11GameType,D3D11Element,D3D11GameTypeLv2
+from ..generate_mod.d3d11_game_type import D3D11GameType,D3D11Element,D3D11GameTypeLv2
 from ..utils.log_utils import LOG
 
 
