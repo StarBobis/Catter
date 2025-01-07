@@ -413,7 +413,10 @@ class BufferModel:
                 # TimerUtils.End("GET TEXCOORD")
                         
             elif d3d11_element_name.startswith('BLENDINDICES'):
-                if d3d11_element.Format == "R32G32B32A32_UINT":
+                
+                if d3d11_element.Format == "R32G32B32A32_SINT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendindices
+                elif d3d11_element.Format == "R32G32B32A32_UINT":
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices
                 elif d3d11_element.Format == "R32G32_UINT":
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices[:, :2]
