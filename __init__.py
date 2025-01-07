@@ -6,7 +6,6 @@ from .config.catter_properties import *
 from .import_model.migoto_import import *
 from .generate_mod.m_export_mod import *
 
-
 # Compatible with all version start from Blender 3.6 LTS To 4.2LTS To Latest version.
 bl_info = {
     "name": "Catter",
@@ -18,18 +17,14 @@ bl_info = {
     "tracker_url":"https://github.com/StarBobis/Catter"
 }
 
-
 register_classes = (
-    # 全局属性
+    # Global Property Config
     CatterPropertiesImportModel,
     CatterPropertiesGenerateMod,
 
-    # 3Dmigoto ib和vb格式导入导出
+    # 3Dmigoto Import Model & Generate Mod
     Import3DMigotoRaw,
     DBMTImportAllFromCurrentWorkSpace,
-
-    DBMTExportUnityVSModToWorkSpace,
-    DBMTExportUnityCSModToWorkSpace,
     DBMTExportUnityVSModToWorkSpaceFast,
     DBMTExportUnityCSModToWorkSpaceFast,
 
@@ -65,7 +60,6 @@ register_classes = (
     OBJECT_OT_select_dbmt_folder
 )
 
-
 def register():
     for cls in register_classes:
         bpy.utils.register_class(cls)
@@ -76,15 +70,12 @@ def register():
     bpy.types.VIEW3D_MT_object_context_menu.append(menu_func_migoto_right_click)
     bpy.types.OUTLINER_MT_collection.append(menu_dbmt_mark_collection_switch)
 
-
-
 def unregister():
     for cls in reversed(register_classes):
         bpy.utils.unregister_class(cls)
 
     bpy.types.VIEW3D_MT_object_context_menu.remove(menu_func_migoto_right_click)
     bpy.types.OUTLINER_MT_collection.remove(menu_dbmt_mark_collection_switch)
-
 
 if __name__ == "__main__":
     register()

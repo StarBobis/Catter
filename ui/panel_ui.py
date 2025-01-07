@@ -76,10 +76,6 @@ class CatterConfigUI(bpy.types.Panel):
       
         layout.prop(dbmt_config,"import_merged_vgmap")
         
-        
-
-
-
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
     bl_label = "Import Model" 
@@ -124,25 +120,13 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
         layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
-
-        # layout.prop(context.scene.dbmt_generatemod, "use_fast_color_rgba")
-        # # 快速COLOR设置
-        # if GenerateModConfig.use_fast_color_rgba():
-        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_r")
-        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_g")
-        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_b")
-        #     layout.prop(context.scene.dbmt_generatemod, "fast_color_rgba_a")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
-            # layout.operator("dbmt.export_unity_vs_mod_to_workspace")
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
-            # layout.operator("dbmt.export_unity_cs_mod_to_workspace")
             layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
-
-
 
 
 class MigotoAttributePanel(bpy.types.Panel):
