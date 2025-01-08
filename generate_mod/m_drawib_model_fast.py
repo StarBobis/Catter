@@ -161,7 +161,6 @@ class DrawIBModelFast:
                     # 对当前obj对象执行权重规格化
                     if GenerateModConfig.export_normalize_all():
                         ObjUtils.normalize_all(obj)
-                    
 
                     ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 
