@@ -92,38 +92,11 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.slot_style_texture_add_filter_index
     
-
-    # @classmethod
-    # def fast_color_rgb_r(cls):
-    #     '''
-    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_r
-    #     '''
-    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_r
+    # export_normalize_all
+    @classmethod
+    def export_normalize_all(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.export_normalize_all
+        '''
+        return bpy.context.scene.dbmt_generatemod.export_normalize_all
     
-    # @classmethod
-    # def fast_color_rgb_g(cls):
-    #     '''
-    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_g
-    #     '''
-    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_g
-    
-    # @classmethod
-    # def fast_color_rgb_b(cls):
-    #     '''
-    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_b
-    #     '''
-    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_b
-    
-    # @classmethod
-    # def fast_color_rgb_a(cls):
-    #     '''
-    #     bpy.context.scene.dbmt_generatemod.fast_color_rgb_a
-    #     '''
-    #     return bpy.context.scene.dbmt_generatemod.fast_color_rgb_a
-    
-    # @classmethod
-    # def use_fast_color_rgba(cls):
-    #     '''
-    #     bpy.context.scene.dbmt_generatemod.use_fast_color_rgba
-    #     '''
-    #     return bpy.context.scene.dbmt_generatemod.use_fast_color_rgba

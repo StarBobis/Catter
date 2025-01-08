@@ -12,6 +12,29 @@ from .migoto_utils import Fatal
 class ObjUtils:
 
     @classmethod
+    def normalize_all(cls,obj):
+        '''
+        调用前需确保选中了这个obj，也就是当前的active对象是这个obj
+        '''
+        print("Normalize All Weights For: " + obj.name)
+        # 选择你要操作的对象，这里假设场景中只有一个导入的OBJ对象
+        if obj and obj.type == 'MESH':
+            # 进入权重编辑模式（如果需要）
+            bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+            
+            # 确保该对象是活动的，并且被选中
+            bpy.context.view_layer.objects.active = obj
+            obj.select_set(True)
+            
+            # 对所有顶点组应用 Normalize All
+            bpy.ops.object.vertex_group_normalize_all()
+
+            # 回到物体模式
+            bpy.ops.object.mode_set(mode='OBJECT')
+        else:
+            print("没有找到合适的网格对象来执行规范化操作。")
+
+    @classmethod
     def mesh_triangulate(cls,me):
         '''
         三角化一个mesh

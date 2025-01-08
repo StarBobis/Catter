@@ -12,6 +12,7 @@ from ..config.main_config import *
 from ..utils.json_utils import *
 from ..utils.timer_utils import *
 from ..utils.migoto_utils import Fatal
+from ..utils.obj_utils import ObjUtils
 
 from .m_ini_helper import *
 
@@ -153,7 +154,15 @@ class DrawIBModelFast:
             for model_collection in model_collection_list:
                 for obj_name in model_collection.obj_name_list:
                     obj = bpy.data.objects[obj_name]
+                    
+                    # 选中当前obj对象
                     bpy.context.view_layer.objects.active = obj
+
+                    # 对当前obj对象执行权重规格化
+                    if GenerateModConfig.export_normalize_all():
+                        ObjUtils.normalize_all(obj)
+                    
+
                     ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 
                     self.__obj_name_ib_dict[obj.name] = ib

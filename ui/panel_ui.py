@@ -108,6 +108,7 @@ class PanelGenerateMod(bpy.types.Panel):
         layout = self.layout
         layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
         layout.prop(context.scene.dbmt_generatemod, "export_same_number")
+        layout.prop(context.scene.dbmt_generatemod, "export_normalize_all")
         layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
         layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
         layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
