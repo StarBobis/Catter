@@ -1,18 +1,25 @@
 # Catter
-DBMT的Blender插件。
+DBMT's Blender Plugin
 
-# 使用方法
-- 下载并安装Blender(从3.6LTS到最新版4.x全部支持)
-- 从Release中下载CatterV和数字组成的压缩包，在Blender的插件面板中选择压缩包安装即可。
-- 安装后别忘了勾选启用Catter。
-- Catter附带了一个右侧面板、物体上的右键菜单、集合上的右键菜单可供操作。
+# Usage
+- Blender 3.6LTS to 4.2 LTS to latest 4.x
 
-# 特性
-- 一套标准的流程适用于所有支持的游戏
-- 简单规范的分支集合架构实现复杂效果
-- 一键导入导出、全自动贴图流程
-- 提供快速技术支持和快速版本迭代
-- 全功能由用户反馈设计
+# Features
+- Simple and Same usage for all game supported.
+- Simple Collection Hierarchy make toggle mod easy.
+- One click to import & export.
+- All function designed by user feedback.
 
-# 提交反馈
-- Catter所有功能来自Mod作者持续性反馈和改进建议，如果你有好主意可以提交到issue。
+# Feedback
+Welcome send your feedback and advice in Issue page.
+
+# Greate Thanks & Credit
+
+Catter's code all learned from these projects,without their great code Catter won't even be exists:
+- https://github.com/DarkStarSword/3d-fixes
+- https://github.com/SpectrumQT/WWMI-Tools
+- https://github.com/leotorrez/XXMITools
+- https://github.com/SilentNightSound/GI-Model-Importer
+
+Greate thanks for DarkStarSword's original blender plugin design!
+- https://github.com/DarkStarSword/3d-fixes/blob/master/blender_3dmigoto.py
