@@ -110,7 +110,7 @@ class M_UnityIniModelSeperated:
                         cls.global_key_index_constants = cls.global_key_index_constants + 1
 
     @classmethod
-    def add_unity_vs_texture_override_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
+    def add_unity_vs_texture_override_vb_sections(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModelFast):
         # 声明TextureOverrideVB部分，只有使用GPU-PreSkinning时是直接替换hash对应槽位
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
@@ -121,57 +121,69 @@ class M_UnityIniModelSeperated:
             for category_name in d3d11GameType.OrderedCategoryNameList:
                 category_hash = draw_ib_model.category_hash_dict[category_name]
                 category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
-                texture_override_vb_section.append("[TextureOverride_VB_" + draw_ib + "_" + category_name + "]")
+
+                texture_override_vb_name_suffix = "VB_" + draw_ib + "_" + category_name
+                texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_name_suffix + "]")
                 texture_override_vb_section.append("hash = " + category_hash)
+
+                # Call CommandList
+                texture_override_vb_section.append("run = CommandList_" + texture_override_vb_name_suffix)
+                texture_override_vb_section.new_line()
+
+                # Initialize CommandList
+                texture_override_vb_commandlist_section = M_IniSection(M_SectionType.CommandList)
+                texture_override_vb_commandlist_section.append("[CommandList_" + texture_override_vb_name_suffix + "]")
                 
                 drawtype_indent_prefix = ""
                 if GenerateModConfig.position_override_filter_draw_type():
                     if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
                         drawtype_indent_prefix = "  "
-                        texture_override_vb_section.append("if DRAW_TYPE == 1")
+                        texture_override_vb_commandlist_section.append("if DRAW_TYPE == 1")
                 
                 # 如果出现了VertexLimitRaise，Texcoord槽位需要检测filter_index才能替换
                 filterindex_indent_prefix = ""
                 if GenerateModConfig.vertex_limit_raise_add_filter_index():
                     if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
                         if cls.vlr_filter_index_indent != "":
-                            texture_override_vb_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
+                            texture_override_vb_commandlist_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
                             filterindex_indent_prefix = "  "
 
                 # 遍历获取所有在当前分类hash下进行替换的分类，并添加对应的资源替换
                 for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
                     if category_name == draw_category_name:
                         category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
-                        texture_override_vb_section.append(filterindex_indent_prefix + drawtype_indent_prefix + category_original_slot + " = Resource" + draw_ib + original_category_name)
+                        texture_override_vb_commandlist_section.append(filterindex_indent_prefix + drawtype_indent_prefix + category_original_slot + " = Resource" + draw_ib + original_category_name)
 
                 # draw一般都是在Blend槽位上进行的，所以我们这里要判断确定是Blend要替换的hash才能进行draw。
                 if category_name == d3d11GameType.CategoryDrawCategoryDict["Blend"]:
-                    texture_override_vb_section.append(drawtype_indent_prefix + "handling = skip")
-                    texture_override_vb_section.append(drawtype_indent_prefix + "draw = " + str(draw_ib_model.draw_number) + ", 0")
+                    texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "handling = skip")
+                    texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "draw = " + str(draw_ib_model.draw_number) + ", 0")
 
                 if GenerateModConfig.position_override_filter_draw_type():
                     # 对应if DRAW_TYPE == 1的结束
                     if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                        texture_override_vb_section.append("endif")
+                        texture_override_vb_commandlist_section.append("endif")
                 
                 if GenerateModConfig.vertex_limit_raise_add_filter_index():
                     # 对应if vb0 == 3000的结束
                     if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
                         if cls.vlr_filter_index_indent != "":
-                            texture_override_vb_section.append("endif")
+                            texture_override_vb_commandlist_section.append("endif")
                 
                 # 分支架构，如果是Position则需提供激活变量
                 if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
                     if draw_ib_model.key_number != 0:
-                        texture_override_vb_section.append("$active" + str(cls.global_generate_mod_number) + " = 1")
+                        texture_override_vb_commandlist_section.append("$active" + str(cls.global_generate_mod_number) + " = 1")
 
-                texture_override_vb_section.new_line()
+                texture_override_vb_commandlist_section.new_line()
+                commandlist_ini_builder.append_section(texture_override_vb_commandlist_section)
 
-            ini_builder.append_section(texture_override_vb_section)
+            config_ini_builder.append_section(texture_override_vb_section)
 
     @classmethod
-    def add_unity_vs_texture_override_ib_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
+    def add_unity_vs_texture_override_ib_sections(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModelFast):
         texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
+        texture_override_ib_commandlist_section = M_IniSection(M_SectionType.CommandList)
         draw_ib = draw_ib_model.draw_ib
         d3d11GameType = draw_ib_model.d3d11GameType
 
@@ -180,9 +192,11 @@ class M_UnityIniModelSeperated:
             part_name = draw_ib_model.part_name_list[count_i]
 
             style_part_name = M_IniHelper.get_style_alias(part_name)
+
+            texture_override_name_suffix = "IB_" + draw_ib + "_" + style_part_name
             ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
 
-            texture_override_ib_section.append("[TextureOverride_IB_" + draw_ib + "_" + style_part_name + "]")
+            texture_override_ib_section.append("[TextureOverride_" + texture_override_name_suffix + "]")
             texture_override_ib_section.append("hash = " + draw_ib)
             texture_override_ib_section.append("match_first_index = " + match_first_index)
 
@@ -242,7 +256,8 @@ class M_UnityIniModelSeperated:
                             category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
                             texture_override_ib_section.append(cls.vlr_filter_index_indent + category_original_slot + " = Resource" + draw_ib + original_category_name)
 
-            # Component DrawIndexed输出
+            
+            # prepare data
             component_name = "Component " + part_name 
             model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
@@ -260,62 +275,89 @@ class M_UnityIniModelSeperated:
                     switch_type_number = switch_type_number + 1
                     switch_model_collection_list.append(toggle_model_collection)
 
+            # Call CommandList
+            texture_override_ib_section.append("run = CommandList_" + texture_override_name_suffix)
+            texture_override_ib_section.new_line()
+
+            # CommandList initialize
+            texture_override_ib_commandlist_section.append("[CommandList_" + texture_override_name_suffix + "]")
+
+            # Component DrawIndexed输出
             # 输出按键切换的DrawIndexed
             if toggle_type_number >= 2:
                 for toggle_count in range(toggle_type_number):
                     if toggle_count == 0:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
                     else:
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
 
                     toggle_model_collection = toggle_model_collection_list[toggle_count]
                     for obj_name in toggle_model_collection.obj_name_list:
                         m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
 
-                texture_override_ib_section.append("endif")
-                texture_override_ib_section.new_line()
+                texture_override_ib_commandlist_section.append("endif")
+                texture_override_ib_commandlist_section.new_line()
 
                 cls.global_key_index_logic = cls.global_key_index_logic + 1
             elif toggle_type_number != 0:
                 for toggle_model_collection in toggle_model_collection_list:
                     for obj_name in toggle_model_collection.obj_name_list:
                         m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_section.append(cls.vlr_filter_index_indent + m_drawindexed.get_draw_str())
-                        texture_override_ib_section.new_line()
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + m_drawindexed.get_draw_str())
+                        texture_override_ib_commandlist_section.new_line()
 
             # 输出按键开关的DrawIndexed
             for switch_model_collection in switch_model_collection_list:
-                texture_override_ib_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + "  == 1")
+                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + "  == 1")
                 for obj_name in switch_model_collection.obj_name_list:
                     m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                    texture_override_ib_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                    texture_override_ib_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
-                    texture_override_ib_section.new_line()
-                texture_override_ib_section.append(cls.vlr_filter_index_indent + "endif")
-                texture_override_ib_section.new_line()
+                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
+                    texture_override_ib_commandlist_section.new_line()
+                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "endif")
+                texture_override_ib_commandlist_section.new_line()
                 cls.global_key_index_logic = cls.global_key_index_logic + 1
             
             if cls.vlr_filter_index_indent:
-                texture_override_ib_section.append("endif")
-                texture_override_ib_section.new_line()
+                texture_override_ib_commandlist_section.append("endif")
+                texture_override_ib_commandlist_section.new_line()
             
-        ini_builder.append_section(texture_override_ib_section)
+        config_ini_builder.append_section(texture_override_ib_section)
+        commandlist_ini_builder.append_section(texture_override_ib_commandlist_section)
 
     @classmethod
-    def add_unity_vs_vlr_section(cls,ini_builder,draw_ib_model:DrawIBModelFast):
+    def add_unity_vs_texture_override_vlr_section(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModelFast):
         '''
         Add VertexLimitRaise section, UnityVS style.
         Only Unity VertexShader GPU-PreSkinning use this.
+
+        XXX
+        override_byte_stride = 40
+        override_vertex_count = 14325
+        由于这个格式并未添加到CommandList的解析中，所以没法单独写在CommandList里，只能写在TextureOverride下面
+        所以我们这个VertexLimitRaise部分直接整体写入CommandList.ini中
         '''
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
         if d3d11GameType.GPU_PreSkinning:
             vertexlimit_section = M_IniSection(M_SectionType.TextureOverrideVertexLimitRaise)
-            vertexlimit_section.append("[TextureOverride_" + draw_ib + "_VertexLimitRaise]")
-            vertexlimit_section.append("hash = " +draw_ib_model.vertex_limit_hash)
+            
+
+            vertexlimit_section_name_suffix =  draw_ib + "_VertexLimitRaise"
+            vertexlimit_section.append("[TextureOverride_" + vertexlimit_section_name_suffix + "]")
+            vertexlimit_section.append("hash = " + draw_ib_model.vertex_limit_hash)
+
+            # Call CommandList
+            # vertexlimit_section.append("run = CommandList_" + vertexlimit_section_name_suffix)
+            # vertexlimit_section.new_line()
+
+            # Initialize CommandList
+            # vertexlimit_commandlist_section = M_IniSection(M_SectionType.CommandList)
+            # vertexlimit_commandlist_section.append("[CommandList_" + vertexlimit_section_name_suffix + "]" )
+            
             
             if GenerateModConfig.vertex_limit_raise_add_filter_index():
                 # 用户可能已经习惯了3000
@@ -326,7 +368,9 @@ class M_UnityIniModelSeperated:
             vertexlimit_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))
             vertexlimit_section.new_line()
 
-            ini_builder.append_section(vertexlimit_section)
+            # config_ini_builder.append_section(vertexlimit_section)
+            # commandlist_ini_builder.append_section(vertexlimit_commandlist_section)
+            commandlist_ini_builder.append_section(vertexlimit_section)
 
     @classmethod
     def add_unity_vs_resource_vb_sections(cls,ini_builder,draw_ib_model):
@@ -781,7 +825,7 @@ class M_UnityIniModelSeperated:
 
             cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
 
-            cls.add_unity_vs_vlr_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
+            cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
             cls.add_unity_cs_texture_override_vb_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
             cls.add_unity_cs_texture_override_ib_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
 
@@ -813,6 +857,11 @@ class M_UnityIniModelSeperated:
 
     @classmethod
     def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder):
+        '''
+        Generate a namespace = xxxxx to let different ini work together.
+        combine multiple drawib together use [_]
+        for this, we use namespace = [drawib][_][drawib][_]...
+        '''
         draw_ib_str = ""
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
             draw_ib_str = draw_ib_str + draw_ib + "_"
@@ -825,6 +874,10 @@ class M_UnityIniModelSeperated:
     
     @classmethod
     def add_namespace_sections_seperated(cls,ini_builder,draw_ib_model:DrawIBModelFast):
+        '''
+        Generate a namespace = xxxxx to let different ini work together.
+        for this, we use namespace = [drawib]
+        '''
         namespace_section = M_IniSection(M_SectionType.NameSpace)
         namespace_section.append("namespace = " + draw_ib_model.draw_ib)
         namespace_section.new_line()
@@ -847,6 +900,7 @@ class M_UnityIniModelSeperated:
         resource_ini_builder = M_IniBuilder()
         commandlist_ini_builder = M_IniBuilder()
 
+        # Add namespace 
         if not GenerateModConfig.generate_to_seperate_folder():
             cls.add_namespace_sections_merged(ini_builder=config_ini_builder)
             cls.add_namespace_sections_merged(ini_builder=resource_ini_builder)
@@ -856,16 +910,19 @@ class M_UnityIniModelSeperated:
             cls.add_texture_filter_index(ini_builder= config_ini_builder)
 
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+
+            # Add namespace
             if GenerateModConfig.generate_to_seperate_folder():
                 cls.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
+            # add variable, key
             cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.add_unity_vs_vlr_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_vb_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_ib_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vb_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_ib_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
             # 这俩要放入Resource中
             cls.add_unity_vs_resource_vb_sections(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)

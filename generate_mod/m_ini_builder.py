@@ -14,7 +14,7 @@ class M_SectionType:
     ResourceTexture = "ResourceTexture"
     CreditInfo = "CreditInfo"
     ResourceAndTextureOverride_Texture = "ResourceAndTextureOverride_Texture" # 用于Hash风格贴图中方便Resource和TextureOverride放在一起
-
+    CommandList = "CommandList"
 
 
 class M_IniSection:
@@ -27,6 +27,9 @@ class M_IniSection:
         self.SectionLineList.append(line)
 
     def new_line(self):
+        '''
+        append a new line.
+        '''
         self.SectionLineList.append("")
 
 
@@ -71,6 +74,8 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideTexture)
 
         self.__append_section_line(M_SectionType.ResourceAndTextureOverride_Texture)
+        
+        self.__append_section_line(M_SectionType.CommandList)
 
         self.__append_section_line(M_SectionType.CreditInfo)
 
