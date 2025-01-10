@@ -6,7 +6,7 @@ from .m_ini_builder import *
 from .m_drawib_model import *
 
 
-class M_UnityIniModel:
+class M_UnityIniModelSeperated:
     '''
     Unity VertexShader PreSkinning
     Unity ComputeShader PreSkinning

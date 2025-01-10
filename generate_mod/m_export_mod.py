@@ -2,7 +2,8 @@ import bpy
 
 from ..utils.command_utils import *
 from .m_unity_ini_model import *
-from .m_drawib_model_fast import DrawIBModelFast
+from .m_drawib_model import DrawIBModelFast
+from .m_unity_ini_model_seperated import M_UnityIniModelSeperated
 
 class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace_fast"
@@ -12,7 +13,7 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
     def execute(self, context):
         TimerUtils.Start("GenerateMod UnityVS Fast")
 
-        M_UnityIniModel.initialzie()
+        M_UnityIniModelSeperated.initialzie()
 
         workspace_collection = bpy.context.collection
         for draw_ib_collection in workspace_collection.children:
@@ -34,12 +35,12 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
             draw_ib = draw_ib_alias_name.split("_")[0]
             TimerUtils.Start("DrawIB Combine")
             draw_ib_model = DrawIBModelFast(draw_ib_collection)
-            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
             TimerUtils.End("DrawIB Combine")
 
         # ModModel填充完毕后，开始输出Mod
-        M_UnityIniModel.export_buffer_files()
-        M_UnityIniModel.generate_unity_vs_config_ini()
+        M_UnityIniModelSeperated.export_buffer_files()
+        M_UnityIniModelSeperated.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 

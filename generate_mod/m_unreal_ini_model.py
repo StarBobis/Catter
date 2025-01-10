@@ -2,7 +2,7 @@ import shutil
 
 from .m_draw_type import *
 from .m_ini_builder import *
-from .m_drawib_model_fast import *
+from .m_drawib_model import *
 
 
 class M_UnrealIniModel:
