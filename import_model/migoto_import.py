@@ -575,5 +575,10 @@ class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
     bl_description = "一键导入当前工作空间文件夹下所有的DrawIB对应的模型为分支集合架构"
 
     def execute(self, context):
-        ImprotFromWorkSpace(self,context)
+        if MainConfig.workspacename == "":
+            self.report({"ERROR"},"Please select your WorkSpace in DBMT before import.")
+        elif not os.path.exists(MainConfig.path_workspace_folder()):
+            self.report({"ERROR"},"Please select a correct WorkSpace in DBMT before import")
+        else:
+            ImprotFromWorkSpace(self,context)
         return {'FINISHED'}

@@ -3,6 +3,8 @@ import bpy
 import json
 import subprocess
 from ..config.main_config import *
+from ..utils.json_utils import *
+from ..utils.migoto_utils import Fatal
 
 class DrawIBPair:
 
@@ -18,10 +20,8 @@ class ImportUtils:
         workspace_path = MainConfig.path_workspace_folder()
 
         game_config_path = os.path.join(workspace_path,"Config.json")
-        game_config_file = open(game_config_path)
-        game_config_json = json.load(game_config_file)
-        game_config_file.close()
-
+        game_config_json = JsonUtils.LoadFromFile(game_config_path)
+ 
         # draw_ib_list =game_config_json["DrawIBList"]
         draw_ib_list = []
         for item in game_config_json:
@@ -37,6 +37,7 @@ class ImportUtils:
     @classmethod
     def get_import_drawib_aliasname_folder_path_dict_with_first_match_type(cls)->list:
         output_folder_path = MainConfig.path_workspace_folder()
+        
         draw_ib_list= ImportUtils.get_extract_drawib_list_from_workspace_config_json()
         
         final_import_folder_path_dict = {}
