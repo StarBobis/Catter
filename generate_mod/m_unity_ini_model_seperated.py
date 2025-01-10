@@ -792,6 +792,25 @@ class M_UnityIniModelSeperated:
         if not GenerateModConfig.generate_to_seperate_folder():
             ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
 
+    @classmethod
+    def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder):
+        draw_ib_str = ""
+        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
+            draw_ib_str = draw_ib_str + draw_ib + "_"
+
+        namespace_section = M_IniSection(M_SectionType.NameSpace)
+        namespace_section.append("namespace = " + draw_ib_str)
+        namespace_section.new_line()
+
+        ini_builder.append_section(namespace_section)
+    
+    @classmethod
+    def add_namespace_sections_seperated(cls,ini_builder,draw_ib_model:DrawIBModelFast):
+        namespace_section = M_IniSection(M_SectionType.NameSpace)
+        namespace_section.append("namespace = " + draw_ib_model.draw_ib)
+        namespace_section.new_line()
+
+        ini_builder.append_section(namespace_section)
 
     @classmethod
     def generate_unity_vs_config_ini(cls):
@@ -805,20 +824,33 @@ class M_UnityIniModelSeperated:
         - Bloody Spell
         - Unity-CPU-PreSkinning (All DX11 Unity games who allow 3Dmigoto inject, mostly used by GF2 now.)
         '''
-        ini_builder = M_IniBuilder()     
+        config_ini_builder = M_IniBuilder()
+        resource_ini_builder = M_IniBuilder()
+        commandlist_ini_builder = M_IniBuilder()
+
+        if not GenerateModConfig.generate_to_seperate_folder():
+            cls.add_namespace_sections_merged(ini_builder=config_ini_builder)
+            cls.add_namespace_sections_merged(ini_builder=resource_ini_builder)
+            cls.add_namespace_sections_merged(ini_builder=commandlist_ini_builder)
 
         if GenerateModConfig.slot_style_texture_add_filter_index():
-            cls.add_texture_filter_index(ini_builder= ini_builder)
+            cls.add_texture_filter_index(ini_builder= config_ini_builder)
 
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            cls.add_constants_present_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            if GenerateModConfig.generate_to_seperate_folder():
+                cls.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+                cls.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+                cls.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.add_unity_vs_vlr_section(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_unity_vs_texture_override_ib_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.add_unity_vs_resource_vb_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_texture_sections(ini_builder=ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_vlr_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_vb_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_unity_vs_texture_override_ib_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+
+            # 这俩要放入Resource中
+            cls.add_unity_vs_resource_vb_sections(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_texture_sections(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
 
@@ -828,12 +860,18 @@ class M_UnityIniModelSeperated:
                 draw_ib_output_folder = MainConfig.path_generate_mod_folder() + draw_ib + "\\"
                 if not os.path.exists(draw_ib_output_folder):
                     os.makedirs(draw_ib_output_folder)
-                ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
-                ini_builder.clear()
+                config_ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                config_ini_builder.clear()
+                resource_ini_builder.save_to_file(draw_ib_output_folder + "Resource.ini")
+                resource_ini_builder.clear()
+                commandlist_ini_builder.save_to_file(draw_ib_output_folder + "CommandList.ini")
+                commandlist_ini_builder.clear()
 
         cls.generate_hash_style_texture_ini()
 
         if not GenerateModConfig.generate_to_seperate_folder():
-            ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+            config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+            resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Resource.ini")
+            commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "CommandList.ini")
         
         # TimerUtils.End("generate_unity_vs_config_ini")

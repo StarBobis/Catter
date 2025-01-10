@@ -120,6 +120,7 @@ class PanelGenerateMod(bpy.types.Panel):
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
+            layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
             layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
         else:

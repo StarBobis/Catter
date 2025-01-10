@@ -26,6 +26,7 @@ register_classes = (
     Import3DMigotoRaw,
     DBMTImportAllFromCurrentWorkSpace,
     DBMTExportUnityVSModToWorkSpaceFast,
+    DBMTExportUnityVSModToWorkSpaceSeperated,
     DBMTExportUnityCSModToWorkSpaceFast,
 
     # 右键菜单栏

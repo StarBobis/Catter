@@ -1,6 +1,7 @@
 import hashlib
 
 class M_SectionType:
+    NameSpace = "NameSpace"
     Present = "Present"
     Constants = "Constants"
     Key = "Key"
@@ -53,6 +54,7 @@ class M_IniBuilder:
         self.ini_section_list.append(m_inisection)
 
     def save_to_file(self,config_ini_path:str):
+        self.__append_section_line(M_SectionType.NameSpace)
         self.__append_section_line(M_SectionType.Constants)
         self.__append_section_line(M_SectionType.Present)
         self.__append_section_line(M_SectionType.Key)
