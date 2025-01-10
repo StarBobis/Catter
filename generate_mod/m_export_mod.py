@@ -49,7 +49,12 @@ class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
         TimerUtils.End("GenerateMod UnityVS Fast")
         return {'FINISHED'}
     
+'''
+TODO 
+这里为了开发测试过程中不影响原有的功能，所以单独做一个新的按钮出来。
+等后续测试稳定后，再做成可选项的形式。
 
+'''
 class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace_seperated"
     bl_label = "Generate Mod(Seperated)"
