@@ -39,10 +39,6 @@ class M_UnityIniModelSeperated:
 
         cls.texture_hash_filter_index_dict = {}
 
-       
-
-
-
 
     @classmethod
     def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):

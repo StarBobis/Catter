@@ -72,13 +72,13 @@ class MainConfig:
         if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","Unity-CPU-PreSkinning"]:
             return GameCategory.UnityVS
         
-        elif cls.gamename in ["Game001","Game002","Game003","XYZJH2"]:
+        elif cls.gamename in ["Game001"]:
             return GameCategory.UnityCS
         
-        elif cls.gamename in ["WWMI","Game101"]:
+        elif cls.gamename in ["WWMI","Game002"]:
             return GameCategory.UnrealVS
         
-        elif cls.gamename in ["Game201"]:
+        elif cls.gamename in ["Game003"]:
             return GameCategory.UnrealCS
         else:
             return GameCategory.Unknown
