@@ -496,8 +496,8 @@ class CatterRightClickMenu(bpy.types.Menu):
     
     def draw(self, context):
         layout = self.layout
-        layout.operator(ConvertToFragmentOperator.bl_idname)
-        layout.separator()
+        # layout.operator(ConvertToFragmentOperator.bl_idname)
+        # layout.separator()
         layout.operator(RemoveUnusedVertexGroupOperator.bl_idname)
         layout.operator(MergeVertexGroupsWithSameNumber.bl_idname)
         layout.operator(FillVertexGroupGaps.bl_idname)
