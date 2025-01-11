@@ -255,7 +255,17 @@ class BufferModel:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
             np_type = MigotoUtils.get_nptype_from_format(d3d11_element.Format)
             format_len = MigotoUtils.format_components(d3d11_element.Format)
-            self.dtype = numpy.dtype(self.dtype.descr + [(d3d11_element_name, (np_type, format_len))])
+
+            # patchBLENDWEIGHTS时必须跳过处理，否则会导致步长不正确
+            if self.d3d11GameType.PatchBLENDWEIGHTS and d3d11_element_name in ["BLENDWEIGHTS","BLENDWEIGHT"]:
+                continue
+
+            # XXX 长度为1时必须手动指定为(1,)否则会变成1维数组
+            if format_len == 1:
+                self.dtype = numpy.dtype(self.dtype.descr + [(d3d11_element_name, (np_type, (1,)))])
+            else:
+                self.dtype = numpy.dtype(self.dtype.descr + [(d3d11_element_name, (np_type, format_len))])
+
         self.element_vertex_ndarray = numpy.zeros(mesh_loops_length,dtype=self.dtype)
 
         # 创建一个包含所有循环顶点索引的NumPy数组
@@ -282,7 +292,7 @@ class BufferModel:
             all_weights[v_index, :num_groups] = [g.weight for g in groups][:num_groups]
 
         # Initialize the blendindices and blendweights with zeros.
-        blendindices = numpy.zeros((mesh_loops_length, max_groups), dtype=int)
+        blendindices = numpy.zeros((mesh_loops_length, max_groups), dtype=numpy.uint32)
         blendweights = numpy.zeros((mesh_loops_length, max_groups), dtype=numpy.float32)
 
         # Map from loop_vertex_indices to precomputed data using advanced indexing.
@@ -514,6 +524,11 @@ class BufferModel:
         stride_offset = 0
         for categoryname,category_stride in category_stride_dict.items():
             category_buffer_dict[categoryname] = data_matrix[:,stride_offset:stride_offset + category_stride].flatten()
+            # print(data_matrix.shape)
+            # print(categoryname)
+            # print(category_stride)
+            # if categoryname == "Blend":
+                # print(category_buffer_dict[categoryname])
             stride_offset += category_stride
         # TimerUtils.End("Calc CategoryBuffer")
         return flattened_ib,category_buffer_dict

@@ -8,6 +8,7 @@ from .m_drawib_model import *
 
 class M_UnityIniModelSeperated:
     '''
+    This used in :
     Unity VertexShader PreSkinning
     Unity ComputeShader PreSkinning
     Unity CPU PreSkinning
@@ -334,11 +335,14 @@ class M_UnityIniModelSeperated:
         Add VertexLimitRaise section, UnityVS style.
         Only Unity VertexShader GPU-PreSkinning use this.
 
-        XXX
+        格式问题：
         override_byte_stride = 40
         override_vertex_count = 14325
         由于这个格式并未添加到CommandList的解析中，所以没法单独写在CommandList里，只能写在TextureOverride下面
         所以我们这个VertexLimitRaise部分直接整体写入CommandList.ini中
+
+        这个部分由于有一个Hash值，所以如果需要加密Mod并且让Hash值修复脚本能够运作的话，
+        可以在最终制作完成Mod后，手动把这个VertexLimitRaise部分放到Config.ini中
         '''
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
