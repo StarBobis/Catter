@@ -111,7 +111,7 @@ class ImportUtils:
             tmp_json_file.close()
             return tmp_json
         else:
-            return None
+            raise Fatal("Target tmp.json didn't exists: " + tmp_json_path)
 
 
     # Read model prefix attribute in fmt file to locate .ib and .vb file.

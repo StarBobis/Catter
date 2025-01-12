@@ -46,6 +46,7 @@ def import_shapekeys(mesh, obj, shapekeys):
 
 
 def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
+    # 这里注释掉的是旧的不包含Remapped的权重导入
     # assert (len(blend_indices) == len(blend_weights))
     # if blend_indices:
     #     # We will need to make sure we re-export the same blend indices later -
@@ -74,6 +75,9 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
         else:
             num_vertex_groups = max(component.vg_map.values()) + 1
             vg_map = list(map(int, component.vg_map.values()))
+        
+        # print("num_vertex_groups: " + str(num_vertex_groups))
+        # print(vg_map)
         for i in range(num_vertex_groups):
             obj.vertex_groups.new(name=str(i))
         for vertex in mesh.vertices:
@@ -216,6 +220,7 @@ def find_texture(texture_prefix, texture_suffix, directory):
 
 
 def create_material_with_texture(obj, mesh_name:str, directory:str):
+    # Credit to Rayvy
     # Изменим имя текстуры, чтобы оно точно совпадало с шаблоном (Change the texture name to match the template exactly)
     material_name = f"{mesh_name}_Material"
     # texture_name = f"{mesh_name}-DiffuseMap.jpg"
@@ -326,12 +331,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     obj["3DMigoto:RecalculateTANGENT"] = False
     obj["3DMigoto:RecalculateCOLOR"] = False
 
-    # # Nico: GI,HSR,ZZZ必须重计算TANGENT, 直接在导入时设置。
-    # # 不重计算时薄的双面模型会直接露出里面黑色的部分，以及轮廓线也会有问题。
-    # 直接在导入时设置不符合用户操作习惯，会让这个计算出乎用户意料，所以不再默认计算
-    # if MainConfig.gamename in ["GI","HSR","ZZZ"]:
-    #     obj["3DMigoto:RecalculateTANGENT"] = True
-
     # post process for import data.
     import_faces_from_ib(mesh, ib)
 
@@ -340,17 +339,21 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     import_uv_layers(mesh, obj, texcoords)
 
     #  metadata.json, if contains then we can import merged vgmap.
-    # TODO 这里每次导入都要读取一次，效率太低了
+    # TimerUtils.Start("Read Metadata")
     metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
     component = None
     if os.path.exists(metadatajsonpath):
-        print("导入")
+        print("鸣潮读取Metadata.json")
         extracted_object = read_metadata(metadatajsonpath)
         component_pattern = re.compile(r'.*component[ -_]*([0-9]+).*')
         result = component_pattern.findall(fmt_path.lower())
         if bpy.context.scene.dbmt.import_merged_vgmap:
+            print("检测到读取ReMapped顶点组")
             if len(result) == 1:
+                print("读取Component: " + str(int(result[0])))
                 component = extracted_object.components[int(result[0])]
+    # TimerUtils.End("Read Metadata") # 0:00:00.001490 
+
 
     import_vertex_groups(mesh, obj, blend_indices, blend_weights, component)
 
@@ -363,7 +366,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # Nico: 这个方法还必须得在mesh.validate和mesh.update之后调用
     if use_normals:
         mesh.normals_split_custom_set_from_vertices(normals)
-
 
     # auto texture 
     create_material_with_texture(obj, mesh_name=mesh_name,directory= os.path.dirname(fmt_path))
