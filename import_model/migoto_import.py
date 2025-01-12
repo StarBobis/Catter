@@ -300,6 +300,7 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
 
 
 def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str):
+    TimerUtils.Start("import_3dmigoto_raw_buffers")
     # get import prefix
     mesh_name = os.path.basename(fmt_path)
     if mesh_name.endswith(".fmt"):
@@ -387,6 +388,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # Force flush makes better user experience.
     bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
+    TimerUtils.End("import_3dmigoto_raw_buffers")
     return obj
 
 
@@ -580,5 +582,8 @@ class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
         elif not os.path.exists(MainConfig.path_workspace_folder()):
             self.report({"ERROR"},"Please select a correct WorkSpace in DBMT before import")
         else:
+            TimerUtils.Start("ImportFromWorkSpace")
+            # TODO 导入实在是太慢了，WWMI的模型导入要13秒，还好导入模型这个操作并不是很频繁，有空再来优化吧。
             ImprotFromWorkSpace(self,context)
+            TimerUtils.End("ImportFromWorkSpace")
         return {'FINISHED'}
