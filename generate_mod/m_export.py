@@ -10,6 +10,7 @@ from ..utils.json_utils import JsonUtils
 from ..utils.obj_utils import ObjUtils
 from ..utils.timer_utils import TimerUtils
 from ..utils.log_utils import LOG
+from ..utils.migoto_utils import Fatal
 
 from .d3d11_game_type import D3D11GameType
 from ..utils.migoto_utils import MigotoUtils
@@ -237,6 +238,11 @@ class BufferModel:
                     else:
                         # 否则就自动补一个UV，防止后续calc_tangents失败
                         obj.data.uv_layers.new(name=d3d11_element_name + ".xy")
+            
+            # Check if BLENDINDICES exists
+            if d3d11_element_name.startswith("BLENDINDICES"):
+                if not obj.vertex_groups:
+                    raise Fatal("your object [" +obj.name + "] need at leat one valid Vertex Group, Please check if your model's Vertex Group is correct.")
 
     def parse_elementname_ravel_ndarray_dict(self,mesh:bpy.types.Mesh) -> dict:
         '''
