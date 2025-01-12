@@ -1,9 +1,8 @@
 import bpy
 
 from ..utils.command_utils import *
-from .m_unity_ini_model import *
 from .m_drawib_model import DrawIBModelFast
-from .m_unity_ini_model_seperated import M_UnityIniModelSeperated
+from .m_unity_ini_model_seperated import *
 
 # class DBMTExportUnityVSModToWorkSpaceFast(bpy.types.Operator):
 #     bl_idname = "dbmt.export_unity_vs_mod_to_workspace_fast"
