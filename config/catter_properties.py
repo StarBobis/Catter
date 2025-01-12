@@ -119,7 +119,7 @@ class CatterPropertiesImportModel(bpy.types.PropertyGroup):
     ) # type: ignore
 
     import_merged_vgmap:bpy.props.BoolProperty(
-        name="Use Remapped VGS (WuWa)",
+        name="Use Remapped VGS (UnrealVS)",
         description="导入时是否导入融合后的顶点组 (Unreal的合并顶点组技术会用到)",
         default=False
     ) # type: ignore

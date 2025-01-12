@@ -54,7 +54,6 @@ class CatterConfigUI(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        dbmt_config = context.scene.dbmt
         # Path button to choose DBMT-GUI.exe location folder.
         row = layout.row()
         row.operator("object.select_dbmt_folder")
@@ -68,9 +67,8 @@ class CatterConfigUI(bpy.types.Panel):
         MainConfig.read_from_main_json()
         row.label(text="Current Game: " + MainConfig.gamename)
 
-        draw_seperator(self)
       
-        layout.prop(dbmt_config,"import_merged_vgmap")
+        
         
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
@@ -82,14 +80,13 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        dbmt_config = context.scene.dbmt
         MainConfig.read_from_main_json()
         layout.label(text="Current WorkSpace: " + MainConfig.workspacename)
-        layout.prop(dbmt_config,"model_scale")
+        layout.prop(context.scene.dbmt,"model_scale")
         #import_flip_coordinate_x 
-        layout.prop(dbmt_config,"import_flip_scale_x")
-        layout.prop(dbmt_config,"import_delete_loose")
-        
+        layout.prop(context.scene.dbmt,"import_flip_scale_x")
+        layout.prop(context.scene.dbmt,"import_delete_loose")
+        layout.prop(context.scene.dbmt,"import_merged_vgmap")
         draw_seperator(self)
         operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="Import .ib.vb.fmt Model Manually")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
@@ -125,7 +122,7 @@ class PanelGenerateMod(bpy.types.Panel):
             # layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
             layout.operator("dbmt.export_unity_cs_mod_to_workspace_seperated")
         else:
-            layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
+            layout.label(text= "Generate Mod for " + MainConfig.gamename + " Not Supported Yet.")
 
 
 class MigotoAttributePanel(bpy.types.Panel):
