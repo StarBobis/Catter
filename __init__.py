@@ -25,9 +25,10 @@ register_classes = (
     # 3Dmigoto Import Model & Generate Mod
     Import3DMigotoRaw,
     DBMTImportAllFromCurrentWorkSpace,
-    DBMTExportUnityVSModToWorkSpaceFast,
+    # DBMTExportUnityVSModToWorkSpaceFast,
     DBMTExportUnityVSModToWorkSpaceSeperated,
-    DBMTExportUnityCSModToWorkSpaceFast,
+    # DBMTExportUnityCSModToWorkSpaceFast,
+    DBMTExportUnityCSModToWorkSpaceSeperated,
 
     # 右键菜单栏
     RemoveAllVertexGroupOperator,

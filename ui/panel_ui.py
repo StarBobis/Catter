@@ -119,10 +119,11 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
-            layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
+            # layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
-            layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
+            # layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
+            layout.operator("dbmt.export_unity_cs_mod_to_workspace_seperated")
         else:
             layout.label(text= MainConfig.get_game_category() + " Not Supported Yet.")
 
