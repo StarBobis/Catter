@@ -340,18 +340,16 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     #  metadata.json, if contains then we can import merged vgmap.
     # TimerUtils.Start("Read Metadata")
-    metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
     component = None
-    if os.path.exists(metadatajsonpath):
-        print("鸣潮读取Metadata.json")
-        extracted_object = read_metadata(metadatajsonpath)
-        component_pattern = re.compile(r'.*component[ -_]*([0-9]+).*')
-        result = component_pattern.findall(fmt_path.lower())
-        if bpy.context.scene.dbmt.import_merged_vgmap:
-            print("检测到读取ReMapped顶点组")
-            if len(result) == 1:
-                print("读取Component: " + str(int(result[0])))
-                component = extracted_object.components[int(result[0])]
+    if bpy.context.scene.dbmt.import_merged_vgmap:
+        metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
+        if os.path.exists(metadatajsonpath):
+            # print("鸣潮读取Metadata.json")
+            extracted_object = read_metadata(metadatajsonpath)
+            fmt_filename = os.path.splitext(os.path.basename(fmt_path))[0]
+            if "-" in fmt_filename:
+                partname_count = int(fmt_filename.split("-")[1]) - 1
+                component = extracted_object.components[partname_count]
     # TimerUtils.End("Read Metadata") # 0:00:00.001490 
 
 
