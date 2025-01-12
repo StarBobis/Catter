@@ -18,6 +18,13 @@ https://docs.blender.org/api/4.1/change_log.html
 https://docs.blender.org/api/4.0/change_log.html#change-log
 '''
 
+# XXX Blender插件开发中的缓存问题：
+# 在使用VSCode进行Blender插件开发中，会创建一个指向项目的软连接，路径大概如下：
+# C:\Users\Administrator\AppData\Roaming\Blender Foundation\Blender\4.2\scripts\addons
+# 在插件架构发生大幅度变更时可能导致无法启动Blender，此时需要手动删掉插件缓存的这个软链接。
+
+# XXX 所有的文件夹都必须小写，因为git无法追踪文件夹名称大小写改变的记录
+
 bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",

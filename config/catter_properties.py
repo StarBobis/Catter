@@ -4,6 +4,8 @@ from ..config.main_config import MainConfig
 
 from bpy.props import FloatProperty, IntProperty
 
+# XXX 所有的属性都必须放到这个catter_properties.py中，方便统一管理
+
 class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
         name="Auto Open GeneratedMod Folder",

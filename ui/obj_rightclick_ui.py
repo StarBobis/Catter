@@ -5,6 +5,9 @@ from mathutils import Vector
 
 from bpy.props import BoolProperty,  CollectionProperty
 
+# XXX Blender4.2开始class中不能出现bl_options，所以我们全部都去掉了。
+# XXX bl_idname必须小写，单词之间以下划线分割，否则报错无法加载
+
 class RemoveAllVertexGroupOperator(bpy.types.Operator):
     bl_idname = "object.remove_all_vertex_group"
     bl_label = "移除所有顶点组"
@@ -498,6 +501,7 @@ class CatterRightClickMenu(bpy.types.Menu):
         layout = self.layout
         # layout.operator(ConvertToFragmentOperator.bl_idname)
         # layout.separator()
+        # XXX 这里调用时直接类名.bl_idname，避免出现魔法值，且修改后可避免无法同步的问题
         layout.operator(RemoveUnusedVertexGroupOperator.bl_idname)
         layout.operator(MergeVertexGroupsWithSameNumber.bl_idname)
         layout.operator(FillVertexGroupGaps.bl_idname)
