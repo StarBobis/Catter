@@ -405,6 +405,8 @@ class BufferModel:
                     
                     if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                         result = result.astype(numpy.float16)
+                    elif d3d11_element.Format == "R16G16_FLOAT":
+                        result = result[:, :2]
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                         result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
