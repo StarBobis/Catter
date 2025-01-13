@@ -2,7 +2,7 @@ import bpy
 
 from ..utils.command_utils import *
 from .m_drawib_model import DrawIBModelFast
-from .m_unity_ini_model_seperated import *
+from .m_unity_ini_model import *
 
 
 class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
