@@ -112,6 +112,8 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
         layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
+        # every_drawib_single_ib_file
+        layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")

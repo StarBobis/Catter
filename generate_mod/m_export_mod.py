@@ -35,7 +35,7 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
 
             draw_ib = draw_ib_alias_name.split("_")[0]
             TimerUtils.Start("DrawIB Combine")
-            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=False)
+            draw_ib_model = DrawIBModel(draw_ib_collection)
             M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
             TimerUtils.End("DrawIB Combine")
 
@@ -79,7 +79,7 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=False)
+            draw_ib_model = DrawIBModel(draw_ib_collection)
             M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
@@ -121,11 +121,11 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=True)
+            draw_ib_model = DrawIBModel(draw_ib_collection)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_UnrealIniModel.generate_unity_cs_config_ini()
+        M_UnrealIniModel.generate_unreal_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 
@@ -163,11 +163,11 @@ class DBMTExportUnrealCSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=True)
+            draw_ib_model = DrawIBModel(draw_ib_collection)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_UnrealIniModel.generate_unity_cs_config_ini()
+        M_UnrealIniModel.generate_unreal_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 

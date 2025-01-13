@@ -100,3 +100,11 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.export_normalize_all
     
+    # every_drawib_single_ib_file
+    @classmethod
+    def every_drawib_single_ib_file(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.every_drawib_single_ib_file
+        '''
+        return bpy.context.scene.dbmt_generatemod.every_drawib_single_ib_file
+    

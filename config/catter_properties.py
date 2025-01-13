@@ -74,6 +74,12 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
+    every_drawib_single_ib_file:bpy.props.BoolProperty(
+        name="Every DrawIB Single IB File",
+        description="If True, only generate one IndexBuffer file for every DrawIB, if False, generate IB File for every component in a DrawIB.",
+        default=False
+    ) # type: ignore
+
     
 
 

@@ -49,13 +49,13 @@ class ModelCollection:
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
 class DrawIBModel:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
-    def __init__(self,draw_ib_collection,single_ib_file:bool):
+    def __init__(self,draw_ib_collection):
         '''
         single_ib_file 一般这个选项Unity游戏都可以填False，虚幻游戏我们沿用WWMI的传统，先使用True试验。
 
         TODO 后续WWMI支持添加完成后，测试并使single_ib_file变为可选项。
         '''
-        self.single_ib = single_ib_file
+        self.single_ib = GenerateModConfig.every_drawib_single_ib_file()
         self.__obj_name_ib_dict:dict[str,list] = {} 
         self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
         self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
@@ -93,7 +93,7 @@ class DrawIBModel:
 
 
         # 构建IndexBuffer
-        if single_ib_file:
+        if self.single_ib:
             self.__read_component_ib_buf_dict_merged()
         else:
             self.__read_component_ib_buf_dict_seperated()
