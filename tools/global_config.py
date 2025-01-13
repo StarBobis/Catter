@@ -163,5 +163,5 @@ class GlobalConfig:
             return ""
 
     def initialize_d3d11_gametype(self):
-        gametype_folder_path = os.path.join(self.ConfigFolderPath, "gametypes\\" + self.GameName + "\\")
+        gametype_folder_path = os.path.join(self.ConfigFolderPath, "ExtractTypes\\" + self.GameName + "\\")
         self.D3D11GameTypeConfig = D3D11GameTypeLv2(GameTypeConfigFolderPath=gametype_folder_path)
