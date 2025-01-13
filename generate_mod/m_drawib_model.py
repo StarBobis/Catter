@@ -4,7 +4,7 @@ import re
 
 from .m_export import get_buffer_ib_vb_fast
 
-from .d3d11_game_type import *
+from ..tools.d3d11_game_type import *
 from .m_draw_type import *
 
 from ..utils.collection_utils import *
