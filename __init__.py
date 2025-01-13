@@ -40,13 +40,14 @@ register_classes = (
     CatterPropertiesImportModel,
     CatterPropertiesGenerateMod,
 
-    # 3Dmigoto Import Model & Generate Mod
+    # 3Dmigoto Import Model 
     Import3DMigotoRaw,
     DBMTImportAllFromCurrentWorkSpace,
-    # DBMTExportUnityVSModToWorkSpaceFast,
+    # Generate Mod
     DBMTExportUnityVSModToWorkSpaceSeperated,
-    # DBMTExportUnityCSModToWorkSpaceFast,
     DBMTExportUnityCSModToWorkSpaceSeperated,
+    DBMTExportUnrealVSModToWorkSpace,
+    DBMTExportUnrealCSModToWorkSpace,
 
     # 右键菜单栏
     RemoveAllVertexGroupOperator,

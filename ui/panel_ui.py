@@ -67,9 +67,7 @@ class CatterConfigUI(bpy.types.Panel):
         MainConfig.read_from_main_json()
         row.label(text="Current Game: " + MainConfig.gamename)
 
-      
-        
-        
+
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
     bl_label = "Import Model" 
@@ -116,11 +114,13 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
         
         if MainConfig.get_game_category() == GameCategory.UnityVS:
-            # layout.operator("dbmt.export_unity_vs_mod_to_workspace_fast")
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
-            # layout.operator("dbmt.export_unity_cs_mod_to_workspace_fast")
             layout.operator("dbmt.export_unity_cs_mod_to_workspace_seperated")
+        elif MainConfig.get_game_category() == GameCategory.UnrealVS:
+            layout.operator("dbmt.export_unreal_vs_mod_to_workspace")
+        elif MainConfig.get_game_category() == GameCategory.UnrealCS:
+            layout.operator("dbmt.export_unreal_cs_mod_to_workspace")
         else:
             layout.label(text= "Generate Mod for " + MainConfig.gamename + " Not Supported Yet.")
 
