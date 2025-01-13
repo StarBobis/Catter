@@ -47,7 +47,7 @@ class M_UnrealIniModel:
         Export to buffer files from ib and vb.
         '''
         for draw_ib_model in cls.drawib_drawibmodel_dict.values():
-            draw_ib_model.write_buffer_files()
+            draw_ib_model.write_category_buffer_files()
 
     
     @classmethod

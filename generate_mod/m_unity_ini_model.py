@@ -195,7 +195,14 @@ class M_UnityIniModelSeperated:
             style_part_name = M_IniHelper.get_style_alias(part_name)
 
             texture_override_name_suffix = "IB_" + draw_ib + "_" + style_part_name
-            ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
+
+            # 读取使用的IBResourceName，如果读取不到，就使用默认的
+            ib_resource_name = ""
+            if draw_ib_model.single_ib:
+                ib_resource_name = draw_ib_model.PartName_IBResourceName_Dict.get("1",None)
+            else:
+                ib_resource_name = draw_ib_model.PartName_IBResourceName_Dict.get(part_name,None)
+            
 
             texture_override_ib_section.append("[TextureOverride_" + texture_override_name_suffix + "]")
             texture_override_ib_section.append("hash = " + draw_ib)
@@ -377,7 +384,7 @@ class M_UnityIniModelSeperated:
             commandlist_ini_builder.append_section(vertexlimit_section)
 
     @classmethod
-    def add_unity_vs_resource_vb_sections(cls,ini_builder,draw_ib_model):
+    def add_unity_vs_resource_vb_sections(cls,ini_builder,draw_ib_model:DrawIBModelFast):
         '''
         Add Resource VB Section
         '''
@@ -401,16 +408,13 @@ class M_UnityIniModelSeperated:
 
         We default use R32_UINT because R16_UINT have a very small number limit.
         '''
-        for count_i in range(len(draw_ib_model.part_name_list)):
-            partname = draw_ib_model.part_name_list[count_i]
-            style_partname = M_IniHelper.get_style_alias(partname)
-            ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
-            
+        for partname, ib_filename in draw_ib_model.PartName_IBBufferFileName_Dict.items():
+            ib_resource_name = draw_ib_model.PartName_IBResourceName_Dict.get(partname,None)
             resource_vb_section.append("[" + ib_resource_name + "]")
             resource_vb_section.append("type = Buffer")
             resource_vb_section.append("format = DXGI_FORMAT_R32_UINT")
-            resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + style_partname + ".buf")
+            resource_vb_section.append("filename = Buffer/" + ib_filename)
             resource_vb_section.new_line()
 
         ini_builder.append_section(resource_vb_section)
@@ -537,7 +541,7 @@ class M_UnityIniModelSeperated:
         Export to buffer files from ib and vb.
         '''
         for draw_ib_model in cls.drawib_drawibmodel_dict.values():
-            draw_ib_model.write_buffer_files()
+            draw_ib_model.write_category_buffer_files()
         
 
     @classmethod

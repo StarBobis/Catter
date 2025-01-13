@@ -59,6 +59,8 @@ class DrawIBModelFast:
         self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
         self.extract_gametype_folder_path = ""
 
+        
+
         # 用于自动贴图
         self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
         self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
@@ -71,6 +73,8 @@ class DrawIBModelFast:
         # obj转换为指定格式备用
         self.__parse_obj_name_ib_category_buffer_dict()
         
+
+
         # 构建IndexBuffer
         if single_ib_file:
             self.__read_component_ib_buf_dict_merged()
@@ -82,6 +86,16 @@ class DrawIBModelFast:
 
         # 读取tmp.json中用于导出的数据
         self.__read_tmp_json()
+
+
+        # 用于写出时便于使用
+        self.PartName_IBResourceName_Dict = {}
+        self.PartName_IBBufferFileName_Dict = {}
+        # Export Index Buffer files.
+        self.write_ib_files()
+        
+        # Export Category Buffer files.
+        self.write_category_buffer_files()
 
 
     def __read_gametype_from_import_json(self):
@@ -395,42 +409,32 @@ class DrawIBModelFast:
 
             self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
 
-    def write_buffer_files(self):
-        '''
-        - 用于导出IndexBuffer文件和CategoryBuffer文件
-        - 这里几乎不消耗性能，无需关注
-        TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
-        '''
-        # Export IB files.
-        # TimerUtils.Start("Write Index Buffer")
-        if self.single_ib:
-            for partname in self.part_name_list:
-                component_name = "Component " + partname
-                ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
-                if ib_buf is None:
-                    print("Export Skip, Can't get ib buf for partname: " + partname)
-                else:
-                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
+    def write_ib_files(self):
+        for partname in self.part_name_list:
+            style_part_name = M_IniHelper.get_style_alias(partname)
+            component_name = "Component " + partname
+            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
 
-                    packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
-                    with open(ib_path, 'wb') as ibf:
-                        ibf.write(packed_data) 
+            ib_resource_name = "Resource_" + self.draw_ib + "_" + style_part_name
+            ib_buf_filename = self.draw_ib + "-" + style_part_name + ".buf"
+
+            self.PartName_IBResourceName_Dict[partname] = ib_resource_name
+            self.PartName_IBBufferFileName_Dict[partname] = ib_buf_filename
+
+            if ib_buf is None:
+                print("Export Skip, Can't get ib buf for partname: " + partname)
+            else:
+                ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + ib_buf_filename
+
+                packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
+                with open(ib_path, 'wb') as ibf:
+                    ibf.write(packed_data) 
+            
+            if self.single_ib:
                 break
-        else:
-            for partname in self.part_name_list:
-                component_name = "Component " + partname
-                ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
-                if ib_buf is None:
-                    print("Export Skip, Can't get ib buf for partname: " + partname)
-                else:
-                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
 
-                    packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
-                    with open(ib_path, 'wb') as ibf:
-                        ibf.write(packed_data) 
-        # TimerUtils.End("Write Index Buffer")
+    def write_category_buffer_files(self):
 
-        # TimerUtils.Start("Write Category Buffer")
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
             buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + category_name + ".buf"
@@ -440,4 +444,4 @@ class DrawIBModelFast:
             with open(buf_path, 'wb') as ibf:
                 category_buf.tofile(ibf)
 
-        # TimerUtils.End("Write Category Buffer")
+        # TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
