@@ -60,7 +60,6 @@ class DrawIBModel:
         self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
         self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
-        # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
 
         # 生成Mod的ini时要使用的内容
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
@@ -97,6 +96,11 @@ class DrawIBModel:
             self.__read_component_ib_buf_dict_merged()
         else:
             self.__read_component_ib_buf_dict_seperated()
+        
+        # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
+        # 目前只有WWMI会需要读取ShapeKey数据
+        if MainConfig.gamename == "WWMI":
+            self.__read_shapekey_cateogry_buf_dict()
 
         # 构建每个Category的VertexBuffer
         self.__read_categoryname_bytelist_dict()
@@ -318,7 +322,36 @@ class DrawIBModel:
                 self.componentname_ibbuf_dict[component_name] = ib_buf
             else:
                 LOG.warning(self.draw_ib + " collection: " + component_name + " is hide, skip export ib buf.")
-    
+
+    def __read_shapekey_cateogry_buf_dict(self):
+        # 这里不用担心循环obj_name时顺序是否正确，因为python3.7版本之后dict会保留插入时的顺序。
+        for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
+            obj = bpy.data.objects[obj_name]
+
+            # TODO 完成ShapeKey读取部分
+            base_data = obj.data.shape_keys.key_blocks['Basis'].data
+            shapekey_pattern = re.compile(r'.*(?:deform|custom)[_ -]*(\d+).*')
+
+            shapekeys = []
+            for shapekey in obj.data.shape_keys.key_blocks:
+                match = shapekey_pattern.findall(shapekey.name.lower())
+                if len(match) == 0:
+                    continue
+                shapekey_id = int(match[0])
+                shapekeys.append((shapekey_id, shapekey))
+
+            shapekey_data = {}
+            for vertex_id in range(len(obj.data.vertices)):
+                base_vertex_coords = base_data[vertex_id].co
+                shapekey_data[vertex_id] = {}
+                for (shapekey_id, shapekey) in shapekeys:
+                    shapekey_vertex_coords = shapekey.data[vertex_id].co
+                    vertex_offset = shapekey_vertex_coords - base_vertex_coords
+                    if vertex_offset.length < 0.00000001:
+                        continue
+                    shapekey_data[vertex_id][shapekey_id] = list(vertex_offset)
+
+
     def __read_categoryname_bytelist_dict(self):
         # TimerUtils.Start("__read_categoryname_bytelist_dict")
         for component_name, model_collection_list in self.componentname_modelcollection_list_dict.items():
@@ -360,33 +393,6 @@ class DrawIBModel:
         # TimerUtils.End("__read_categoryname_bytelist_dict")  
         # 耗时大概1S左右
 
-    def __read_shapekey_data(self):
-        # 这里不用担心循环obj_name时顺序是否正确，因为python3.7版本之后dict会保留插入时的顺序。
-        for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
-            obj = bpy.data.objects[obj_name]
-
-            # TODO 先完成WuWa一键导入，再完成这里的ShapeKey读取部分
-            base_data = obj.data.shape_keys.key_blocks['Basis'].data
-            shapekey_pattern = re.compile(r'.*(?:deform|custom)[_ -]*(\d+).*')
-
-            shapekeys = []
-            for shapekey in obj.data.shape_keys.key_blocks:
-                match = shapekey_pattern.findall(shapekey.name.lower())
-                if len(match) == 0:
-                    continue
-                shapekey_id = int(match[0])
-                shapekeys.append((shapekey_id, shapekey))
-
-            shapekey_data = {}
-            for vertex_id in range(len(obj.data.vertices)):
-                base_vertex_coords = base_data[vertex_id].co
-                shapekey_data[vertex_id] = {}
-                for (shapekey_id, shapekey) in shapekeys:
-                    shapekey_vertex_coords = shapekey.data[vertex_id].co
-                    vertex_offset = shapekey_vertex_coords - base_vertex_coords
-                    if vertex_offset.length < 0.00000001:
-                        continue
-                    shapekey_data[vertex_id][shapekey_id] = list(vertex_offset)
 
 
     def __read_tmp_json(self):
