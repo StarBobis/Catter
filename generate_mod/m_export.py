@@ -1,19 +1,13 @@
 import numpy
-import hashlib
 import bpy
 import collections
-import struct
 import math
 
-from ..utils.collection_utils import CollectionUtils
-from ..utils.json_utils import JsonUtils
 from ..utils.obj_utils import ObjUtils
 from ..utils.timer_utils import TimerUtils
-from ..utils.log_utils import LOG
-from ..utils.migoto_utils import Fatal
+from ..utils.migoto_utils import Fatal, MigotoUtils
 
 from .d3d11_game_type import D3D11GameType
-from ..utils.migoto_utils import MigotoUtils
 
 from ..config.generate_mod_config import GenerateModConfig
 
@@ -201,7 +195,6 @@ class BufferDataConverter:
 
         TimerUtils.End("Recalculate COLOR")
         return vb
-
 
 
 class BufferModel:
@@ -516,8 +509,6 @@ class BufferModel:
         flattened_ib = [item for sublist in ib for item in sublist]
         # TimerUtils.End("Calc IB VB")
 
-
-
         indexed_vertices = BufferDataConverter.average_normal_tangent(obj=obj, indexed_vertices=indexed_vertices, d3d11GameType=self.d3d11GameType,dtype=self.dtype)
         indexed_vertices = BufferDataConverter.average_normal_color(obj=obj, indexed_vertices=indexed_vertices, d3d11GameType=self.d3d11GameType,dtype=self.dtype)
 
@@ -532,11 +523,6 @@ class BufferModel:
         stride_offset = 0
         for categoryname,category_stride in category_stride_dict.items():
             category_buffer_dict[categoryname] = data_matrix[:,stride_offset:stride_offset + category_stride].flatten()
-            # print(data_matrix.shape)
-            # print(categoryname)
-            # print(category_stride)
-            # if categoryname == "Blend":
-                # print(category_buffer_dict[categoryname])
             stride_offset += category_stride
         # TimerUtils.End("Calc CategoryBuffer")
         return flattened_ib,category_buffer_dict
@@ -544,9 +530,6 @@ class BufferModel:
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     '''
     使用Numpy直接从mesh中转换数据到目标格式Buffer
-
-    TODO 完成此功能并全流程测试通过后删除上面的get_export_ib_vb函数
-    并移除IndexBuffer和VertexBuffer中的部分方法例如encode、pad等，进一步减少复杂度。
     '''
     buffer_model = BufferModel(d3d11GameType=d3d11GameType)
 

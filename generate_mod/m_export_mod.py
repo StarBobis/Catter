@@ -1,7 +1,7 @@
 import bpy
 
 from ..utils.command_utils import *
-from .m_drawib_model import DrawIBModelFast
+from .m_drawib_model import DrawIBModel
 from .m_unity_ini_model import *
 from .m_unreal_ini_model import M_UnrealIniModel
 
@@ -35,12 +35,11 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
 
             draw_ib = draw_ib_alias_name.split("_")[0]
             TimerUtils.Start("DrawIB Combine")
-            draw_ib_model = DrawIBModelFast(draw_ib_collection,single_ib_file=True)
+            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=False)
             M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
             TimerUtils.End("DrawIB Combine")
 
         # ModModel填充完毕后，开始输出Mod
-        # M_UnityIniModelSeperated.export_buffer_files()
         M_UnityIniModelSeperated.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
@@ -80,11 +79,10 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModelFast(draw_ib_collection,single_ib_file=False)
+            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=False)
             M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        # M_UnityIniModelSeperated.export_buffer_files()
         M_UnityIniModelSeperated.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
@@ -123,11 +121,10 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModelFast(draw_ib_collection,single_ib_file=True)
+            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=True)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        # M_UnrealIniModel.export_buffer_files()
         M_UnrealIniModel.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
@@ -166,11 +163,10 @@ class DBMTExportUnrealCSModToWorkSpace(bpy.types.Operator):
                 return {'FINISHED'}
 
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModelFast(draw_ib_collection,single_ib_file=True)
+            draw_ib_model = DrawIBModel(draw_ib_collection,single_ib_file=True)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        # M_UnrealIniModel.export_buffer_files()
         M_UnrealIniModel.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")

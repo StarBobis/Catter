@@ -5,7 +5,6 @@ import re
 from .m_export import get_buffer_ib_vb_fast
 
 from .d3d11_game_type import *
-from .m_draw_type import *
 
 from ..utils.collection_utils import *
 from ..config.main_config import *
@@ -16,8 +15,24 @@ from ..utils.obj_utils import ObjUtils
 
 from .m_ini_helper import *
 
-class TextureReplace:
+class M_DrawIndexed:
 
+    def __init__(self) -> None:
+        self.DrawNumber = ""
+        self.DrawOffsetIndex = ""
+        self.DrawStartIndex = "0"
+
+        # 代表一个obj具体的draw_indexed
+        self.AliasName = "" 
+
+        # 代表这个obj的顶点数
+        self.UniqueVertexCount = 0 
+    
+    def get_draw_str(self) ->str:
+        return "drawindexed = " + self.DrawNumber + "," + self.DrawOffsetIndex +  "," + self.DrawStartIndex
+
+
+class TextureReplace:
     def  __init__(self):
         self.resource_name = ""
         self.filter_index = 0
@@ -32,11 +47,13 @@ class ModelCollection:
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
-class DrawIBModelFast:
+class DrawIBModel:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
     def __init__(self,draw_ib_collection,single_ib_file:bool):
         '''
         single_ib_file 一般这个选项Unity游戏都可以填False，虚幻游戏我们沿用WWMI的传统，先使用True试验。
+
+        TODO 后续WWMI支持添加完成后，测试并使single_ib_file变为可选项。
         '''
         self.single_ib = single_ib_file
         self.__obj_name_ib_dict:dict[str,list] = {} 
