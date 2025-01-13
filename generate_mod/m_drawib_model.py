@@ -34,10 +34,14 @@ class ModelCollection:
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
 class DrawIBModelFast:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
-    def __init__(self,draw_ib_collection):
+    def __init__(self,draw_ib_collection,single_ib_file:bool):
+        '''
+        single_ib_file 一般这个选项Unity游戏都可以填False，虚幻游戏我们沿用WWMI的传统，先使用True试验。
+        '''
+        self.single_ib = single_ib_file
         self.__obj_name_ib_dict:dict[str,list] = {} 
         self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
-        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件。
+        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
         # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
 
@@ -63,10 +67,20 @@ class DrawIBModelFast:
         self.__read_gametype_from_import_json()
         self.__parse_drawib_collection_architecture(draw_ib_collection=draw_ib_collection)
         self.__parse_key_number()
-        self.__parse_obj_name_ib_category_buffer_dict()
 
-        self.__read_component_ib_buf_dict()
+        # obj转换为指定格式备用
+        self.__parse_obj_name_ib_category_buffer_dict()
+        
+        # 构建IndexBuffer
+        if single_ib_file:
+            self.__read_component_ib_buf_dict_merged()
+        else:
+            self.__read_component_ib_buf_dict_seperated()
+
+        # 构建每个Category的VertexBuffer
         self.__read_categoryname_bytelist_dict()
+
+        # 读取tmp.json中用于导出的数据
         self.__read_tmp_json()
 
 
@@ -169,7 +183,65 @@ class DrawIBModelFast:
         
         # TimerUtils.End("__parse_obj_name_ib_vb_dict")
 
-    def __read_component_ib_buf_dict(self):
+
+    def __read_component_ib_buf_dict_merged(self):
+        '''
+        所有Component共享整体的IB文件。
+        是游戏原本的做法，但是不分开的话整体会遇到135W上限。
+        '''
+        vertex_number_ib_offset = 0
+        ib_buf = []
+        draw_offset = 0
+        for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
+            for model_collection in moel_collection_list:
+                for obj_name in model_collection.obj_name_list:
+                    print("processing: " + obj_name)
+                    ib = self.__obj_name_ib_dict.get(obj_name,None)
+
+                    # ib的数据类型是list[int]
+                    unique_vertex_number_set = set(ib)
+                    unique_vertex_number = len(unique_vertex_number_set)
+
+                    if ib is None:
+                        print("Can't find ib object for " + obj_name +",skip this obj process.")
+                        continue
+
+                    offset_ib = []
+                    for ib_number in ib:
+                        offset_ib.append(ib_number + vertex_number_ib_offset)
+                    
+                    print("Component name: " + component_name)
+                    print("Draw Offset: " + str(vertex_number_ib_offset))
+                    ib_buf.extend(offset_ib)
+
+                    drawindexed_obj = M_DrawIndexed()
+                    draw_number = len(offset_ib)
+                    drawindexed_obj.DrawNumber = str(draw_number)
+                    drawindexed_obj.DrawOffsetIndex = str(draw_offset)
+                    drawindexed_obj.UniqueVertexCount = unique_vertex_number
+                    drawindexed_obj.AliasName = "collection name: [" + model_collection.model_collection_name + "] obj name: [" + obj_name + "]  (VertexCount:" + str(unique_vertex_number) + ")"
+                    self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
+                    draw_offset = draw_offset + draw_number
+
+                    # Add UniqueVertexNumber to show vertex count in mod ini.
+                    print("Draw Number: " + str(unique_vertex_number))
+                    vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
+
+                    LOG.newline()
+
+
+        for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
+            # Only export if it's not empty.
+            if len(ib_buf) != 0:
+                self.componentname_ibbuf_dict[component_name] = ib_buf
+            else:
+                LOG.warning(self.draw_ib + " collection: " + component_name + " is hide, skip export ib buf.")
+
+    def __read_component_ib_buf_dict_seperated(self):
+        '''
+        每个Component都有一个单独的IB文件。
+        所以每个Component都有135W上限。
+        '''
         vertex_number_ib_offset = 0
         for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
             ib_buf = []
@@ -331,17 +403,31 @@ class DrawIBModelFast:
         '''
         # Export IB files.
         # TimerUtils.Start("Write Index Buffer")
-        for partname in self.part_name_list:
-            component_name = "Component " + partname
-            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
-            if ib_buf is None:
-                print("Export Skip, Can't get ib buf for partname: " + partname)
-            else:
-                ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
+        if self.single_ib:
+            for partname in self.part_name_list:
+                component_name = "Component " + partname
+                ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
+                if ib_buf is None:
+                    print("Export Skip, Can't get ib buf for partname: " + partname)
+                else:
+                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
 
-                packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
-                with open(ib_path, 'wb') as ibf:
-                    ibf.write(packed_data) 
+                    packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
+                    with open(ib_path, 'wb') as ibf:
+                        ibf.write(packed_data) 
+                break
+        else:
+            for partname in self.part_name_list:
+                component_name = "Component " + partname
+                ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
+                if ib_buf is None:
+                    print("Export Skip, Can't get ib buf for partname: " + partname)
+                else:
+                    ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + M_IniHelper.get_style_alias(partname) + ".buf"
+
+                    packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
+                    with open(ib_path, 'wb') as ibf:
+                        ibf.write(packed_data) 
         # TimerUtils.End("Write Index Buffer")
 
         # TimerUtils.Start("Write Category Buffer")
