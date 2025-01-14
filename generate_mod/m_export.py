@@ -460,6 +460,8 @@ class BufferModel:
         '''
         # TimerUtils.Start("Calc IB VB")
         # (1) 统计模型的索引和唯一顶点
+        
+        
         if GenerateModConfig.export_same_number() and "TANGENT" in self.d3d11GameType.OrderedFullElementList:
             '''
             保持相同顶点数时，让相同顶点使用相同的TANGENT值来避免增加索引数和顶点数。
@@ -467,6 +469,7 @@ class BufferModel:
             效率比下面的低50%，不过能使用这个选项的场景只有导入直接导出原模型，所以总运行时间基本都在0.4秒以内，用户感觉不到差距的，没问题。
             '''
             # 创建一个空列表用于存储最终的结果
+            index_vertex_id_dict = {}
             ib = []
             indexed_vertices = collections.OrderedDict()
             # 一个字典确保每个符合条件的position只出现过一次
@@ -490,6 +493,7 @@ class BufferModel:
                     vertex_data = vertex_data_get.tobytes()
                     index = indexed_vertices.setdefault(vertex_data, len(indexed_vertices))
                     vertex_indices.append(index)
+                    index_vertex_id_dict[index] = blender_lvertex.vertex_index
                 
                 # 将当前多边形的顶点索引列表添加到最终结果列表中
                 ib.append(vertex_indices)
@@ -500,10 +504,25 @@ class BufferModel:
             '''
             不保持相同顶点时，仍然使用我们经典而又快速的方法
             '''
+            index_vertex_id_dict = {}
             indexed_vertices = collections.OrderedDict()
-            ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
-                    for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
-                        ]for poly in mesh.polygons]    
+            # ib = [[indexed_vertices.setdefault(self.element_vertex_ndarray[blender_lvertex.index].tobytes(), len(indexed_vertices))
+            #         for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
+            #             ]for poly in mesh.polygons] 
+            
+            # 很显然上面注释掉的才是最快的，但是没办法，我们必须得获取每个draw的索引对应的顶点索引
+            ib = []
+            for poly in mesh.polygons:
+                loop_indices = []
+                for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]:
+                    vertex_bytes = self.element_vertex_ndarray[blender_lvertex.index].tobytes()
+                    index = indexed_vertices.setdefault(vertex_bytes, len(indexed_vertices))
+                    loop_indices.append(index)
+                    # 在这里可以执行额外的操作，例如：
+                    # print(f"Processed vertex with bytes {vertex_bytes}")
+                    # 或者更新其他状态
+                    index_vertex_id_dict[index] = blender_lvertex.vertex_index
+                ib.append(loop_indices)   
 
 
         flattened_ib = [item for sublist in ib for item in sublist]
@@ -525,7 +544,7 @@ class BufferModel:
             category_buffer_dict[categoryname] = data_matrix[:,stride_offset:stride_offset + category_stride].flatten()
             stride_offset += category_stride
         # TimerUtils.End("Calc CategoryBuffer")
-        return flattened_ib,category_buffer_dict
+        return flattened_ib,category_buffer_dict,index_vertex_id_dict
 
 def get_buffer_ib_vb_fast(d3d11GameType:D3D11GameType):
     '''
