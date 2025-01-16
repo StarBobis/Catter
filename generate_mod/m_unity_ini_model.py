@@ -329,8 +329,8 @@ class M_UnityIniModelSeperated:
                 cls.global_key_index_logic = cls.global_key_index_logic + 1
             
             if cls.vlr_filter_index_indent:
-                texture_override_ib_commandlist_section.append("endif")
-                texture_override_ib_commandlist_section.new_line()
+                texture_override_ib_section.append("endif")
+                texture_override_ib_section.new_line()
             
         config_ini_builder.append_section(texture_override_ib_section)
         commandlist_ini_builder.append_section(texture_override_ib_commandlist_section)
