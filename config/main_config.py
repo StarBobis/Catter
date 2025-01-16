@@ -105,7 +105,11 @@ class MainConfig:
     
     @classmethod
     def path_games_folder(cls):
-        return os.path.join(MainConfig.base_path(),"Games\\")
+        base_path:str = MainConfig.base_path()
+        if base_path.endswith("\\"):
+            return os.path.join(MainConfig.base_path(),"Games\\")
+        else:
+            return os.path.join(MainConfig.base_path(),"\\Games\\")
     
     @classmethod
     def path_current_game_folder(cls):
