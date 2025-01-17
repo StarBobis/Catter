@@ -113,11 +113,14 @@ class DrawIBModel:
         # 用于写出时便于使用
         self.PartName_IBResourceName_Dict = {}
         self.PartName_IBBufferFileName_Dict = {}
+
         # Export Index Buffer files.
         self.write_ib_files()
-        
         # Export Category Buffer files.
         self.write_category_buffer_files()
+        # Export ShapeKey Buffer Files.(WWMI)
+        if MainConfig.gamename == "WWMI":
+            pass
 
 
     def __read_gametype_from_import_json(self):
