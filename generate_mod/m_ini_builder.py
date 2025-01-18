@@ -68,6 +68,8 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideVB)
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
+        self.__append_section_line(M_SectionType.CommandList)
+
         self.__append_section_line(M_SectionType.ResourceBuffer)
 
         self.__append_section_line(M_SectionType.ResourceTexture)
@@ -75,7 +77,7 @@ class M_IniBuilder:
 
         self.__append_section_line(M_SectionType.ResourceAndTextureOverride_Texture)
         
-        self.__append_section_line(M_SectionType.CommandList)
+        
 
         self.__append_section_line(M_SectionType.CreditInfo)
 

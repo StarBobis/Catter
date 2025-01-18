@@ -890,6 +890,11 @@ class M_UnityIniModelSeperated:
                     resource_ini_builder.clear()
                     commandlist_ini_builder.save_to_file(draw_ib_output_folder + "CommandList.ini")
                     commandlist_ini_builder.clear()
+                else:
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
         cls.generate_hash_style_texture_ini()
 
@@ -898,6 +903,11 @@ class M_UnityIniModelSeperated:
             if GenerateModConfig.generate_to_seperate_ini():
                 resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Resource.ini")
                 commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+            else:
+                if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
     @classmethod
     def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder):
@@ -995,6 +1005,11 @@ class M_UnityIniModelSeperated:
                     resource_ini_builder.clear()
                     commandlist_ini_builder.save_to_file(draw_ib_output_folder + "CommandList.ini")
                     commandlist_ini_builder.clear()
+                else:
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
         cls.generate_hash_style_texture_ini()
 
@@ -1003,5 +1018,9 @@ class M_UnityIniModelSeperated:
             if GenerateModConfig.generate_to_seperate_ini():
                 resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Resource.ini")
                 commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "CommandList.ini")
-        
+            else:
+                if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
         # TimerUtils.End("generate_unity_vs_config_ini")
