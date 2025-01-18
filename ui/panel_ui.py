@@ -46,14 +46,18 @@ class OBJECT_OT_select_dbmt_folder(bpy.types.Operator):
     
 
 class CatterConfigUI(bpy.types.Panel):
-    bl_label = "Config"
+    bl_label = "Catter"
     bl_idname = "CATTER_PT_CONFIG_UI"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Catter'
 
+    # 这个不能折叠，折叠后无法显示生成Mod按钮
+    # bl_options = {'DEFAULT_CLOSED'}
+
     def draw(self, context):
         layout = self.layout
+
         # Path button to choose DBMT-GUI.exe location folder.
         row = layout.row()
         row.operator("object.select_dbmt_folder")
@@ -62,19 +66,23 @@ class CatterConfigUI(bpy.types.Panel):
         dbmt_gui_exe_path = os.path.join(context.scene.dbmt.path, "DBMT.exe")
         if not os.path.exists(dbmt_gui_exe_path):
             layout.label(text="Error:Please select DBMT.exe location ", icon='ERROR')
-        
+
         row = layout.row()
         MainConfig.read_from_main_json()
         row.label(text="Current Game: " + MainConfig.gamename)
 
+        
+        
+
 
 
 class PanelModelWorkSpaceIO(bpy.types.Panel):
-    bl_label = "Import Model" 
+    bl_label = "Import Config" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Catter'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
@@ -86,18 +94,16 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
         layout.prop(context.scene.dbmt,"import_delete_loose")
         layout.prop(context.scene.dbmt,"import_merged_vgmap")
         draw_seperator(self)
-        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="Import .ib.vb.fmt Model Manually")
-        operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
 
-        layout.operator("dbmt.import_all_from_workspace", text="Import All From WorkSpace")
 
 
 class PanelGenerateMod(bpy.types.Panel):
-    bl_label = "Generate Mod" 
+    bl_label = "Generate Config" 
     bl_idname = "VIEW3D_PT_CATTER_GenerateMod_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Catter'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
@@ -115,6 +121,25 @@ class PanelGenerateMod(bpy.types.Panel):
         # every_drawib_single_ib_file
         layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
         
+        
+
+
+class PanelButtons(bpy.types.Panel):
+    bl_label = "Catter" 
+    bl_idname = "VIEW3D_PT_CATTER_Buttons_panel"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Catter'
+    
+
+    def draw(self, context):
+        layout = self.layout
+
+        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="Import .ib.vb.fmt Model Manually")
+        operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
+
+        layout.operator("dbmt.import_all_from_workspace", text="Import All From WorkSpace")
+
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")
         elif MainConfig.get_game_category() == GameCategory.UnityCS:
@@ -133,6 +158,7 @@ class MigotoAttributePanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Catter'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout

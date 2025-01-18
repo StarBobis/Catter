@@ -10,7 +10,7 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
         name="Auto Open GeneratedMod Folder",
         description="生成Mod后打开生成的Mod文件夹",
-        default=True
+        default=False
     ) # type: ignore
 
     hash_style_auto_texture: bpy.props.BoolProperty(
