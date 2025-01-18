@@ -98,7 +98,6 @@ class DrawIBModel:
         else:
             self.__read_component_ib_buf_dict_seperated()
         
-        # TODO 每个DrawIB，都应该有它所有的obj组合成的ShapeKey数据，在读取完每个obj的drawindexed对象后进行获取
         # 目前只有WWMI会需要读取ShapeKey数据
         if MainConfig.gamename == "WWMI":
             self.__read_shapekey_cateogry_buf_dict()

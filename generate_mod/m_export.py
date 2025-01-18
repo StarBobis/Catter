@@ -301,6 +301,9 @@ class BufferModel:
         blendindices[valid_mask] = all_groups[valid_indices]
         blendweights[valid_mask] = all_weights[valid_indices]
 
+        if GenerateModConfig.export_normalize_all():
+            blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
+
         # TimerUtils.End("GET BLEND")
 
         # 对每一种Element都获取对应的数据

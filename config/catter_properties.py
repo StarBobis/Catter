@@ -39,8 +39,8 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
 
     export_normalize_all: bpy.props.BoolProperty(
         name="Normalize All Weights",
-        description="导出时把模型自动规格化权重，防止忘记手动规格化导致模型塌陷问题。",
-        default=False
+        description="导出时把模型自动规格化权重，模型细分后必须勾选，防止模型塌陷问题。",
+        default=True
     ) # type: ignore
 
     recalculate_tangent: bpy.props.BoolProperty(
