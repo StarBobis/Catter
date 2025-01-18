@@ -250,10 +250,15 @@ class BufferModel:
         mesh_vertices_length = len(mesh.vertices)
 
         self.dtype = numpy.dtype([])
+
+        blendweights_formatlen = 0
         for d3d11_element_name in self.d3d11GameType.OrderedFullElementList:
             d3d11_element = self.d3d11GameType.ElementNameD3D11ElementDict[d3d11_element_name]
             np_type = MigotoUtils.get_nptype_from_format(d3d11_element.Format)
             format_len = MigotoUtils.format_components(d3d11_element.Format)
+
+            if d3d11_element_name in ["BLENDWEIGHTS","BLENDWEIGHT"]:
+                blendweights_formatlen = format_len
 
             # patchBLENDWEIGHTS时必须跳过处理，否则会导致步长不正确
             if self.d3d11GameType.PatchBLENDWEIGHTS and d3d11_element_name in ["BLENDWEIGHTS","BLENDWEIGHT"]:
@@ -302,7 +307,8 @@ class BufferModel:
         blendweights[valid_mask] = all_weights[valid_indices]
 
         if GenerateModConfig.export_normalize_all():
-            blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
+            if blendweights_formatlen > 1:
+                blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
 
         # TimerUtils.End("GET BLEND")
 
