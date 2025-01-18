@@ -76,7 +76,7 @@ class CatterConfigUI(bpy.types.Panel):
 
 
 
-class PanelModelWorkSpaceIO(bpy.types.Panel):
+class PanelModelImportConfig(bpy.types.Panel):
     bl_label = "Import Config" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
@@ -97,7 +97,7 @@ class PanelModelWorkSpaceIO(bpy.types.Panel):
 
 
 
-class PanelGenerateMod(bpy.types.Panel):
+class PanelGenerateModConfig(bpy.types.Panel):
     bl_label = "Generate Config" 
     bl_idname = "VIEW3D_PT_CATTER_GenerateMod_panel"
     bl_space_type = 'VIEW_3D'
@@ -120,8 +120,8 @@ class PanelGenerateMod(bpy.types.Panel):
         layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
         # every_drawib_single_ib_file
         layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
-        
-        
+        # generate_to_seperate_ini
+        layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
 
 
 class PanelButtons(bpy.types.Panel):

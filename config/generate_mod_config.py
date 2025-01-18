@@ -108,3 +108,10 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.every_drawib_single_ib_file
     
+    # generate_to_seperate_ini
+    @classmethod
+    def generate_to_seperate_ini(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.generate_to_seperate_ini
+        '''
+        return bpy.context.scene.dbmt_generatemod.generate_to_seperate_ini

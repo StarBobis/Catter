@@ -81,6 +81,12 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     ) # type: ignore
 
     
+    generate_to_seperate_ini:bpy.props.BoolProperty(
+        name="Generate To Seperate Ini",
+        description="Generate mod config to CommandList.ini, Resource.ini and Config.ini for better organization.",
+        default=False
+    ) # type: ignore
+    
 
 
 

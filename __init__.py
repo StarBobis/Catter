@@ -72,9 +72,9 @@ register_classes = (
 
     # UI
     CatterConfigUI,
-    PanelModelWorkSpaceIO,
-    PanelGenerateMod,
     MigotoAttributePanel,
+    PanelModelImportConfig,
+    PanelGenerateModConfig,
     PanelButtons,
     
     # DeveloperPanel,
