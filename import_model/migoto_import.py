@@ -318,11 +318,15 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
         return obj
 
     # create vb and ib class and read data.
+    TimerUtils.Start("Read VB Data") # 1.0636
     vb = VertexBuffer(open(fmt_path, 'r'))
     vb.parse_vb_bin(open(vb_path, 'rb'))
+    TimerUtils.End("Read VB Data")
 
+    TimerUtils.Start("Read IB Data") # 0.0788
     ib = IndexBuffer(open(fmt_path, 'r'))
     ib.parse_ib_bin(open(ib_path, 'rb'))
+    TimerUtils.End("Read IB Data")
 
     # Attach the vertex buffer layout to the object for later exporting. Can't
     # seem to retrieve this if attached to the mesh - to_mesh() doesn't copy it:
@@ -383,10 +387,10 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
         obj.scale.x = obj.scale.x * -1
 
     # Flush every time export
-    bpy.context.view_layer.update()
+    # bpy.context.view_layer.update()
 
     # Force flush makes better user experience.
-    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+    # bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
     TimerUtils.End("import_3dmigoto_raw_buffers")
     return obj

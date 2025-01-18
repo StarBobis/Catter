@@ -348,6 +348,14 @@ class IndexBuffer(object):
     def __len__(self):
         return len(self.faces) * 3
 
+'''
+TODO 
+
+VertexBuffer的这个架构导入实在是太慢了。
+但是如果更新到使用Numpy的复杂数据类型，会导致现有的ib和vb架构全部需要推倒重写。
+没办法，只能暂时忍受了，反正一般模型导入的时间都不会特别长，在可接受范围内。
+
+'''
 class VertexBuffer(object):
     vb_elem_pattern = re.compile(r'''vb\d+\[\d*\]\+\d+ (?P<semantic>[^:]+): (?P<data>.*)$''')
 
