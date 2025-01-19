@@ -126,12 +126,17 @@ class DrawIBModel:
         workspace_import_json_path = os.path.join(MainConfig.path_workspace_folder(), "Import.json")
         draw_ib_gametypename_dict = JsonUtils.LoadFromFile(workspace_import_json_path)
         gametypename = draw_ib_gametypename_dict.get(self.draw_ib,"")
-        gametype_file_path = os.path.join(MainConfig.path_current_game_type_folder(), gametypename + ".json")
-        # print(gametype_file_path)
-        if os.path.exists(gametype_file_path):
-            self.d3d11GameType:D3D11GameType = D3D11GameType(gametype_file_path)
+
+        # 新版本中，我们把数据类型的信息写到了tmp.json中，这样我们就能够读取tmp.json中的内容来决定生成Mod时的数据类型了。
+        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=gametypename)
+        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
+        if os.path.exists(tmp_json_path):
+            self.d3d11GameType:D3D11GameType = D3D11GameType(tmp_json_path)
         else:
-            raise Fatal("Please do a reimport model from your workspace at least once to generate a Import.json in your WorkSpace folder, because the Import.json in your WorkSpace is not found." + gametype_file_path)
+            raise Fatal("Can't find your tmp.json for generate mod:" + tmp_json_path)
+
+
+
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
         # TimerUtils.Start("__parse_drawib_collection_architecture")
@@ -212,7 +217,8 @@ class DrawIBModel:
 
                     # 对当前obj对象执行权重规格化
                     if GenerateModConfig.export_normalize_all():
-                        ObjUtils.normalize_all(obj)
+                        if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
+                            ObjUtils.normalize_all(obj)
 
                     ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 

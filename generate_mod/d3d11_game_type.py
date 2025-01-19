@@ -81,6 +81,7 @@ class D3D11GameType:
     def __post_init__(self):
         self.FileName = os.path.basename(self.FilePath)
         self.GameTypeName = os.path.splitext(self.FileName)[0]
+        
 
         self.OrderedFullElementList = []
         self.OrderedCategoryNameList = []
@@ -101,6 +102,8 @@ class D3D11GameType:
         self.TexcoordPatchNull = game_type_json.get("TexcoordPatchNull",False)
         self.UE4PatchNullInBlend = game_type_json.get("UE4PatchNullInBlend",False)
         self.RootComputeShaderHash = game_type_json.get("RootComputeShaderHash","")
+
+        self.GameTypeName = game_type_json.get("WorkGameType","")
 
         # self.OrderedFullElementList = game_type_json.get("OrderedFullElementList",[])
         self.CategoryDrawCategoryDict = game_type_json.get("CategoryDrawCategoryMap",{})

@@ -306,9 +306,10 @@ class BufferModel:
         blendindices[valid_mask] = all_groups[valid_indices]
         blendweights[valid_mask] = all_weights[valid_indices]
 
-        if GenerateModConfig.export_normalize_all():
-            if blendweights_formatlen > 1:
-                blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
+        if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
+            if GenerateModConfig.export_normalize_all():
+                if blendweights_formatlen > 1:
+                    blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
 
         # TimerUtils.End("GET BLEND")
 

@@ -71,9 +71,47 @@ class CatterConfigUI(bpy.types.Panel):
         MainConfig.read_from_main_json()
         row.label(text="Current Game: " + MainConfig.gamename)
 
-        
-        
 
+class MigotoAttributePanel(bpy.types.Panel):
+    bl_label = "Object Properties" 
+    bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Catter'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        # 检查是否有选中的对象
+        if len(context.selected_objects) > 0:
+            # 获取第一个选中的对象
+            selected_obj = context.selected_objects[0]
+            
+            # 显示对象名称
+            layout.row().label(text=f"obj name: {selected_obj.name}")
+            layout.row().label(text=f"mesh name: {selected_obj.data.name}")
+            draw_seperator(self)
+            gametypename = selected_obj.get("3DMigoto:GameTypeName",None)
+            if gametypename is not None:
+                row = layout.row()
+                row.label(text=f"GameType: " + str(gametypename))
+            draw_seperator(self)
+
+            # 示例：显示位置信息
+            recalculate_tangent = selected_obj.get("3DMigoto:RecalculateTANGENT",None)
+            if recalculate_tangent is not None:
+                row = layout.row()
+                row.label(text=f"Recalculate TANGENT:" + str(recalculate_tangent))
+
+            recalculate_color = selected_obj.get("3DMigoto:RecalculateCOLOR",None)
+            if recalculate_color is not None:
+                row = layout.row()
+                row.label(text=f"Recalculate COLOR:" + str(recalculate_color))
+
+        else:
+            # 如果没有选中的对象，则显示提示信息
+            row = layout.row()
+            row.label(text="doesn't select any object.")
 
 
 class PanelModelImportConfig(bpy.types.Panel):
@@ -151,46 +189,5 @@ class PanelButtons(bpy.types.Panel):
         else:
             layout.label(text= "Generate Mod for " + MainConfig.gamename + " Not Supported Yet.")
 
-
-class MigotoAttributePanel(bpy.types.Panel):
-    bl_label = "Object Properties" 
-    bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Catter'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        layout = self.layout
-        # 检查是否有选中的对象
-        if len(context.selected_objects) > 0:
-            # 获取第一个选中的对象
-            selected_obj = context.selected_objects[0]
-            
-            # 显示对象名称
-            layout.row().label(text=f"obj name: {selected_obj.name}")
-            layout.row().label(text=f"mesh name: {selected_obj.data.name}")
-            draw_seperator(self)
-            gametypename = selected_obj.get("3DMigoto:GameTypeName",None)
-            if gametypename is not None:
-                row = layout.row()
-                row.label(text=f"GameType: " + str(gametypename))
-            draw_seperator(self)
-
-            # 示例：显示位置信息
-            recalculate_tangent = selected_obj.get("3DMigoto:RecalculateTANGENT",None)
-            if recalculate_tangent is not None:
-                row = layout.row()
-                row.label(text=f"Recalculate TANGENT:" + str(recalculate_tangent))
-
-            recalculate_color = selected_obj.get("3DMigoto:RecalculateCOLOR",None)
-            if recalculate_color is not None:
-                row = layout.row()
-                row.label(text=f"Recalculate COLOR:" + str(recalculate_color))
-
-        else:
-            # 如果没有选中的对象，则显示提示信息
-            row = layout.row()
-            row.label(text="doesn't select any object.")
 
 
