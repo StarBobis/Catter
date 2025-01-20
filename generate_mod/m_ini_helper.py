@@ -1,6 +1,11 @@
 from .m_ini_builder import *
+from ..utils.json_utils import JsonUtils
+from ..config.main_config import MainConfig
 
 class M_IniHelper:
+    key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
+                    "x","c","v","b","n","m","j","k","l","o","p","[","]",
+                    "x","c","v","b","n","m","j","k","l","o","p","[","]"]
 
     @classmethod
     def get_style_alias(cls,partname:str):
@@ -18,9 +23,21 @@ class M_IniHelper:
         '''
         Default mod switch/toggle key.
         '''
-        key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]"]
-        return key_list[key_index]
+        
+        # 尝试读取Setting.json里的设置，解析错误就还使用默认的
+        try:
+            setting_json_dict = JsonUtils.LoadFromFile(MainConfig.path_setting_json())
+            print(setting_json_dict)
+            mod_switch_key = str(setting_json_dict["ModSwitchKey"])
+            mod_switch_key_list = mod_switch_key.split(",")
+            print(mod_switch_key_list)
+            switch_key_list:list[str] = []
+            for switch_key_str in mod_switch_key_list:
+                switch_key_list.append(switch_key_str[1:-1])
+            cls.key_list = switch_key_list
+        except Exception:
+            print("解析自定义SwitchKey失败")
+
+        return cls.key_list[key_index]
     
 

@@ -171,4 +171,8 @@ class MainConfig:
     def path_main_json(cls):
         return os.path.join(MainConfig.path_configs_folder(), "Main.json")
     
+    @classmethod
+    def path_setting_json(cls):
+        return os.path.join(MainConfig.path_configs_folder(), "Setting.json")
+    
 
