@@ -166,13 +166,17 @@ class MainConfig:
             os.makedirs(texture_path)
         return texture_path
     
+    @classmethod
+    def path_appdata_local(cls):
+        return os.path.join(os.environ['LOCALAPPDATA'])
+    
     # 定义Json文件路径---------------------------------------------------------------------------------
     @classmethod
     def path_main_json(cls):
-        return os.path.join(MainConfig.path_configs_folder(), "Main.json")
+        return os.path.join(MainConfig.path_appdata_local(), "DBMT-Main.json")
     
     @classmethod
     def path_setting_json(cls):
-        return os.path.join(MainConfig.path_configs_folder(), "Setting.json")
+        return os.path.join(MainConfig.path_appdata_local(), "DBMT-Setting.json")
     
 
