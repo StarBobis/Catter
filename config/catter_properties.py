@@ -94,7 +94,7 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
 
 
     slot_style_texture_add_filter_index:bpy.props.BoolProperty(
-        name="Hash Stype Texture Add filter_index",
+        name="Slot Stype Texture Add filter_index",
         description="可解决HSR知更鸟多层渲染问题，可解决ZZZ NPC贴图俯视仰视槽位不一致问题",
         default=False
     ) # type: ignore

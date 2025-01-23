@@ -16,7 +16,7 @@ def draw_seperator(self):
 
 
 class MigotoAttributePanel(bpy.types.Panel):
-    bl_label = "Object Properties" 
+    bl_label = "Properties" 
     bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -31,14 +31,12 @@ class MigotoAttributePanel(bpy.types.Panel):
             selected_obj = context.selected_objects[0]
             
             # 显示对象名称
-            layout.row().label(text=f"obj name: {selected_obj.name}")
-            layout.row().label(text=f"mesh name: {selected_obj.data.name}")
-            draw_seperator(self)
+            # layout.row().label(text=f"obj name: {selected_obj.name}")
+            # layout.row().label(text=f"mesh name: {selected_obj.data.name}")
             gametypename = selected_obj.get("3DMigoto:GameTypeName",None)
             if gametypename is not None:
                 row = layout.row()
                 row.label(text=f"GameType: " + str(gametypename))
-            draw_seperator(self)
 
             # 示例：显示位置信息
             recalculate_tangent = selected_obj.get("3DMigoto:RecalculateTANGENT",None)

@@ -16,6 +16,16 @@ https://docs.blender.org/api/4.2/change_log.html#to-4-2
 https://docs.blender.org/api/4.1/change_log.html
 3.6 to 4.0 
 https://docs.blender.org/api/4.0/change_log.html#change-log
+
+https://www.blender.org/support/
+https://docs.blender.org/api/3.6/
+https://docs.blender.org/api/4.2/
+
+Dev:
+https://github.com/JacquesLucke/blender_vscode
+https://github.com/BlackStartx/PyCharm-Blender-Plugin
+
+
 '''
 
 # XXX Blender插件开发中的缓存问题：
@@ -28,7 +38,7 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 0, 8, 8),
+    "version": (1, 0, 8, 9),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
