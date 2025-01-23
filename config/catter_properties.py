@@ -1,10 +1,35 @@
+# XXX 所有的属性都必须放到这个catter_properties.py中，方便统一管理
+
 import bpy
-
-from ..config.main_config import MainConfig
-
 from bpy.props import FloatProperty, IntProperty
 
-# XXX 所有的属性都必须放到这个catter_properties.py中，方便统一管理
+
+class CatterPropertiesImportModel(bpy.types.PropertyGroup):
+    # ------------------------------------------------------------------------------------------------------------
+    model_scale: FloatProperty(
+        name="Import Model Scale",
+        description="默认为1.0",
+        default=1.0,
+    ) # type: ignore
+
+    import_merged_vgmap:bpy.props.BoolProperty(
+        name="Use Remapped VGS (UnrealVS)",
+        description="导入时是否导入融合后的顶点组 (Unreal的合并顶点组技术会用到)",
+        default=False
+    ) # type: ignore
+
+    import_flip_scale_x :bpy.props.BoolProperty(
+        name="Set Scale's X to -1 to avoid mirror",
+        description="勾选后在导入模型时把缩放的X分量乘以-1，实现镜像效果，还原游戏中原本的样子，解决导入后镜像对调的问题",
+        default=False
+    ) # type: ignore
+
+    import_delete_loose :bpy.props.BoolProperty(
+        name="Delete Loose Vertices",
+        description="勾选后在导入模型时会把松散点删除，进入编辑模式就不会看见松散的没用的点影响Mod制作了，由于很常用所以默认是勾选的。",
+        default=True
+    ) # type: ignore
+
 
 class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
     open_generate_mod_folder_after_run: bpy.props.BoolProperty(
@@ -87,63 +112,3 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
     
-
-
-
-
-class CatterPropertiesCreditInfo(bpy.types.PropertyGroup):
-    '''
-    I don't think write author name and author link and other information on blender panel is a good idea.
-    Mod author should add it manually into mod, if they really care credits they will add more complicated credit info.
-    So default add is not a good idea, not goods enough to let every author happy.
-    But keep these code here, maybe will use it in the future.
-    '''
-
-    credit_info_author_name: bpy.props.StringProperty(
-        name="作者昵称",
-        description="作者的昵称",
-        default=""
-    ) # type: ignore
-
-    credit_info_author_social_link: bpy.props.StringProperty(
-        name="赞助链接",
-        description="用于赞助该作者的赞助链接",
-        default=""
-    ) # type: ignore
-
-
-
-class CatterPropertiesImportModel(bpy.types.PropertyGroup):
-    # ------------------------------------------------------------------------------------------------------------
-    path: bpy.props.StringProperty(
-        name="DBMT.exe Location",
-        description="插件需要先选择DBMT-GUI.exe的所在路径才能正常工作",
-        default=MainConfig.load_dbmt_path(),
-        subtype='DIR_PATH'
-    ) # type: ignore
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    model_scale: FloatProperty(
-        name="Import Model Scale",
-        description="默认为1.0",
-        default=1.0,
-    ) # type: ignore
-
-    import_merged_vgmap:bpy.props.BoolProperty(
-        name="Use Remapped VGS (UnrealVS)",
-        description="导入时是否导入融合后的顶点组 (Unreal的合并顶点组技术会用到)",
-        default=False
-    ) # type: ignore
-
-    import_flip_scale_x :bpy.props.BoolProperty(
-        name="Set Scale's X to -1 to avoid mirror",
-        description="勾选后在导入模型时把缩放的X分量乘以-1，实现镜像效果，还原游戏中原本的样子，解决导入后镜像对调的问题",
-        default=False
-    ) # type: ignore
-
-    import_delete_loose :bpy.props.BoolProperty(
-        name="Delete Loose Vertices",
-        description="勾选后在导入模型时会把松散点删除，进入编辑模式就不会看见松散的没用的点影响Mod制作了，由于很常用所以默认是勾选的。",
-        default=True
-    ) # type: ignore

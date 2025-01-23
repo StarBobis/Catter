@@ -584,7 +584,7 @@ class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
         if MainConfig.workspacename == "":
             self.report({"ERROR"},"Please select your WorkSpace in DBMT before import.")
         elif not os.path.exists(MainConfig.path_workspace_folder()):
-            self.report({"ERROR"},"Please select a correct WorkSpace in DBMT before import")
+            self.report({"ERROR"},"Please select a correct WorkSpace in DBMT before import " + MainConfig.path_workspace_folder())
         else:
             TimerUtils.Start("ImportFromWorkSpace")
             # TODO 导入实在是太慢了，WWMI的模型导入要13秒，还好导入模型这个操作并不是很频繁，有空再来优化吧。
