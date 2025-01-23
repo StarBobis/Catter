@@ -17,6 +17,7 @@ Welcome send your feedback and advice in Issue page.
 - Visual Studio Code
 - Python 3.12.7
 - Blender 4.2 LTS
+- https://github.com/JacquesLucke/blender_vscode (VSCode Plugin For Blender Dev)
 
 # Greate Thanks & Credit
 Catter's code all learned from these projects,without their great code Catter won't even be exists:
