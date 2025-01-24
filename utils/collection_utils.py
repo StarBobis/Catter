@@ -156,3 +156,32 @@ class CollectionUtils:
         return switch_collection
 
 
+    @classmethod
+    def is_valid_workspace_collection(cls,workspace_collection) -> str:
+        '''
+        按下生成Mod按钮之后，要判断当前选中的集合是否为工作空间集合，并且给出报错信息
+        所以在这里进行校验，如果有问题就返回对应的报错信息，如果没有就返回空字符串
+        在外面接收结果，判断如果不是空字符串就report然后返回，是空字符串才能继续执行。
+        '''
+        if len(workspace_collection.children) == 0:
+            return "当前选中的集合没有任何子集合，不是正确的工作空间集合"
+
+        for draw_ib_collection in workspace_collection.children:
+            # Skip hide collection.
+            if not CollectionUtils.is_collection_visible(draw_ib_collection.name):
+                continue
+
+            # get drawib
+            draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
+            if "_" not in draw_ib_alias_name:
+                return "当前选中集合中的DrawIB集合名称被意外修改导致无法识别到DrawIB\n1.请不要修改导入时以drawib_aliasname为名称的集合\n2.请确认您是否正确选中了工作空间集合."
+        
+            # 如果当前集合没有子集合，说明不是一个合格的分支Mod
+            if len(draw_ib_collection.children) == 0:
+                return "当前选中集合不是一个标准的分支模型集合，请检查您是否以分支集合方式导入了模型: " + draw_ib_collection.name + " 未检测到任何子集合"
+            
+            for component_collection in draw_ib_collection.children:
+                if len(component_collection.children) == 0:
+                    return "当前选中集合不是一个标准的分支模型集合，请检查您是否以分支集合方式导入了模型: " + component_collection.name + "未检测到任何子集合"
+
+        return ""
