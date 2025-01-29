@@ -37,6 +37,9 @@ class M_IniBuilder:
     def __init__(self):
         self.line_list = []
         self.ini_section_list:list[M_IniSection] = []
+
+        # 用于控制是否是第一次出现这个Section
+        self.ini_section_type_set:set = set()
     
     def clear(self):
         self.line_list.clear()
@@ -48,7 +51,11 @@ class M_IniBuilder:
         '''
         for ini_section in self.ini_section_list:
             if ini_section.SectionType == ini_section_type:
-                self.line_list.append("\n;MARK:" + ini_section.SectionType + "----------------------------------------------------------\n")
+                
+                if ini_section_type not in self.ini_section_type_set:
+                    self.line_list.append("\n;MARK:" + ini_section_type + "----------------------------------------------------------\n")
+                    self.ini_section_type_set.add(ini_section_type)
+
                 for line in ini_section.SectionLineList:
                     self.line_list.append(line + "\n")
 
@@ -57,14 +64,19 @@ class M_IniBuilder:
 
     def save_to_file(self,config_ini_path:str):
         self.__append_section_line(M_SectionType.NameSpace)
+
         self.__append_section_line(M_SectionType.Constants)
+
         self.__append_section_line(M_SectionType.Present)
+
         self.__append_section_line(M_SectionType.Key)
 
         self.__append_section_line(M_SectionType.IBSkip)
 
         self.__append_section_line(M_SectionType.TextureOverrideVertexLimitRaise)
+
         self.__append_section_line(M_SectionType.TextureOverrideVB)
+
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
         self.__append_section_line(M_SectionType.CommandList)
@@ -72,12 +84,11 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.ResourceBuffer)
 
         self.__append_section_line(M_SectionType.ResourceTexture)
+
         self.__append_section_line(M_SectionType.TextureOverrideTexture)
 
         self.__append_section_line(M_SectionType.ResourceAndTextureOverride_Texture)
         
-        
-
         self.__append_section_line(M_SectionType.CreditInfo)
 
 
