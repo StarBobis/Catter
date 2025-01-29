@@ -19,7 +19,7 @@ class M_SectionType:
 
 class M_IniSection:
     def __init__(self,section_type:M_SectionType) -> None:
-        self.SectionType = section_type
+        self.SectionType:M_SectionType = section_type
         self.SectionName = ""
         self.SectionLineList = []
 
@@ -55,9 +55,17 @@ class M_IniBuilder:
                 if ini_section_type not in self.ini_section_type_set:
                     self.line_list.append("\n;MARK:" + ini_section_type + "----------------------------------------------------------\n")
                     self.ini_section_type_set.add(ini_section_type)
+                
+                    if ini_section_type == M_SectionType.Constants:
+                        self.line_list.append("[Constants]\n")
+                    
+                    if ini_section_type == M_SectionType.Present:
+                        self.line_list.append("[Present]\n")
 
                 for line in ini_section.SectionLineList:
                     self.line_list.append(line + "\n")
+                
+                
 
     def append_section(self,m_inisection:M_IniSection):
         self.ini_section_list.append(m_inisection)

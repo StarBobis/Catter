@@ -45,20 +45,16 @@ class M_UnityIniModelSeperated:
         if draw_ib_model.key_number != 0:
             # 声明Constants变量
             constants_section = M_IniSection(M_SectionType.Constants)
-            constants_section.append("[Constants]")
             constants_section.append("global $active" + str(cls.global_generate_mod_number))
             for i in range(draw_ib_model.key_number):
                 key_str = "global persist $swapkey" + str(i + cls.global_key_index_constants) + " = 0"
                 constants_section.append(key_str) 
-            constants_section.new_line()
 
             ini_builder.append_section(constants_section)
 
             # 声明$active激活变量
             present_section = M_IniSection(M_SectionType.Present)
-            present_section.append("[Present]")
             present_section.append("post $active" + str(cls.global_generate_mod_number) + " = 0")
-            present_section.new_line()
 
             ini_builder.append_section(present_section)
 
