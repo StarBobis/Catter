@@ -264,7 +264,7 @@ class DrawIBModel:
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(draw_offset)
                     drawindexed_obj.UniqueVertexCount = unique_vertex_number
-                    drawindexed_obj.AliasName = "collection name: [" + model_collection.model_collection_name + "] obj name: [" + obj_name + "]  (VertexCount:" + str(unique_vertex_number) + ")"
+                    drawindexed_obj.AliasName = "[" + model_collection.model_collection_name + "] [" + obj_name + "]  (" + str(unique_vertex_number) + ")"
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     draw_offset = draw_offset + draw_number
 
@@ -317,7 +317,7 @@ class DrawIBModel:
                     drawindexed_obj.DrawNumber = str(draw_number)
                     drawindexed_obj.DrawOffsetIndex = str(offset)
                     drawindexed_obj.UniqueVertexCount = unique_vertex_number
-                    drawindexed_obj.AliasName = "collection name: [" + model_collection.model_collection_name + "] obj name: [" + obj_name + "]  (VertexCount:" + str(unique_vertex_number) + ")"
+                    drawindexed_obj.AliasName = "[" + model_collection.model_collection_name + "] [" + obj_name + "]  (" + str(unique_vertex_number) + ")"
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     offset = offset + draw_number
 

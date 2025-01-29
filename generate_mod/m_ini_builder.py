@@ -48,10 +48,9 @@ class M_IniBuilder:
         '''
         for ini_section in self.ini_section_list:
             if ini_section.SectionType == ini_section_type:
-                self.line_list.append("\n\n;----------------------------------------------------------\n; >>>>>> Start of "+ ini_section_type +" <<<<<<\n")
+                self.line_list.append("\n;MARK:" + ini_section.SectionType + "----------------------------------------------------------\n")
                 for line in ini_section.SectionLineList:
                     self.line_list.append(line + "\n")
-                self.line_list.append("; >>>>>> End of " + ini_section_type + " <<<<<<\n;----------------------------------------------------------\n")
 
     def append_section(self,m_inisection:M_IniSection):
         self.ini_section_list.append(m_inisection)
