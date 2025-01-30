@@ -80,14 +80,6 @@ class MainConfig:
         return generate_mod_folder_path
     
     @classmethod
-    def path_extract_types_folder(cls):
-        return os.path.join(MainConfig.path_configs_folder(),"ExtractTypes\\")
-    
-    @classmethod
-    def path_current_game_type_folder(cls):
-        return os.path.join(MainConfig.path_extract_types_folder(),MainConfig.gamename + "\\")
-    
-    @classmethod
     def path_extract_gametype_folder(cls,draw_ib:str,gametype_name:str):
         return os.path.join(MainConfig.path_workspace_folder(), draw_ib + "\\TYPE_" + gametype_name + "\\")
     

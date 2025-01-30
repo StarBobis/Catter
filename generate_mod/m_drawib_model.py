@@ -494,6 +494,7 @@ class DrawIBModel:
                             # self.__categoryname_bytelist_dict[category_name] = numpy.concatenate(self.__categoryname_bytelist_dict[category_name],category_buffer_list[category_name])
         
         # 顺便计算一下步长得到总顶点数
+        # print(self.d3d11GameType.CategoryStrideDict)
         position_stride = self.d3d11GameType.CategoryStrideDict["Position"]
         position_bytelength = len(self.__categoryname_bytelist_dict["Position"])
         self.draw_number = int(position_bytelength/position_stride)
