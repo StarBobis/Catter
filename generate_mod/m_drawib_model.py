@@ -583,7 +583,7 @@ class DrawIBModel:
             with open(buf_path, 'wb') as ibf:
                 category_buf.tofile(ibf)
 
-        # TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
+        # ShapeKey三个Buffer的导出
         if len(self.shapekey_offsets) != 0:
             with open(buf_output_folder + self.draw_ib + "-" + "ShapeKeyOffset.buf", 'wb') as file:
                 for number in self.shapekey_offsets:

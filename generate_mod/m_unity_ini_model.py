@@ -531,14 +531,6 @@ class M_UnityIniModelSeperated:
 
         texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "TextureReplace.ini")
 
-    @classmethod
-    def export_buffer_files(cls):
-        '''
-        Export to buffer files from ib and vb.
-        '''
-        for draw_ib_model in cls.drawib_drawibmodel_dict.values():
-            draw_ib_model.write_category_buffer_files()
-        
 
     @classmethod
     def add_unity_cs_texture_override_vb_sections(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
