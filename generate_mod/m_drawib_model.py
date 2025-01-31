@@ -76,7 +76,9 @@ class DrawIBModel:
         self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
         self.extract_gametype_folder_path = ""
 
-        
+        self.shapekey_offsets = []
+        self.shapekey_vertex_ids = []
+        self.shapekey_vertex_offsets = []
 
         # 用于自动贴图
         self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
@@ -430,9 +432,10 @@ class DrawIBModel:
                 for shapekey_index,vertex_offsets in vertex_shapekey_data.items():
                     shapekey_cache[shapekey_index][i] = vertex_offsets
 
-        shapekey_offsets = []
-        shapekey_vertex_ids = []
-        shapekey_vertex_offsets = []
+        
+
+
+
 
         shapekey_verts_count = 0
         # 从0到128去获取ShapeKey的Index，有就直接加到
@@ -440,23 +443,27 @@ class DrawIBModel:
 
             shapekey = shapekey_cache.get(group_id, None)
             if shapekey is None or len(shapekey_cache[group_id]) == 0:
-                shapekey_offsets.extend([shapekey_verts_count if shapekey_verts_count != 0 else 0])
+                self.shapekey_offsets.extend([shapekey_verts_count if shapekey_verts_count != 0 else 0])
                 continue
 
-            shapekey_offsets.extend([shapekey_verts_count])
+            self.shapekey_offsets.extend([shapekey_verts_count])
 
             for draw_index, vertex_offsets in shapekey.items():
-                shapekey_vertex_ids.extend([draw_index])
-                shapekey_vertex_offsets.extend(vertex_offsets + [0, 0, 0])
+                self.shapekey_vertex_ids.extend([draw_index])
+                self.shapekey_vertex_offsets.extend(vertex_offsets + [0, 0, 0])
                 shapekey_verts_count += 1
 
         LOG.newline()
         # TODO 这里的数字和WWMI导出的对不上，咱也不知道为啥，也许是WWMI中合并了一些顶点所以导致最后的形态键的顶点数量减少了？
         # 暂时无法确定，但是我们得到的内容和游戏中提取出来的一模一样，感觉90%以上的概率应该是正确的。
         # 使用大草神测试 DrawIB:94517393
-        print("shapekey_offsets: " + str(len(shapekey_offsets))) # 128 WWMI:128
-        print("shapekey_vertex_ids: " + str(len(shapekey_vertex_ids))) # 29161 WWMI:29404
-        print("shapekey_vertex_offsets: " + str(len(shapekey_vertex_offsets))) # 174966  WWMI:29404 * 6  = 176424 * 2 = 352848
+        print(self.shapekey_offsets[0])
+        print(self.shapekey_vertex_ids[0])
+        print(self.shapekey_vertex_offsets[0])
+
+        print("shapekey_offsets: " + str(len(self.shapekey_offsets))) # 128 WWMI:128
+        print("shapekey_vertex_ids: " + str(len(self.shapekey_vertex_ids))) # 29161 WWMI:29404
+        print("shapekey_vertex_offsets: " + str(len(self.shapekey_vertex_offsets))) # 174966  WWMI:29404 * 6  = 176424 * 2 = 352848
         TimerUtils.End("read shapekey data")
 
 
@@ -566,10 +573,10 @@ class DrawIBModel:
                 break
 
     def write_category_buffer_files(self):
-
+        buf_output_folder = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib)
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
-            buf_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + self.draw_ib + "-" + category_name + ".buf"
+            buf_path = buf_output_folder + self.draw_ib + "-" + category_name + ".buf"
             # print(type(category_buf[0]))
              # 将 list 转换为 numpy 数组
             # category_array = numpy.array(category_buf, dtype=numpy.uint8)
@@ -577,3 +584,27 @@ class DrawIBModel:
                 category_buf.tofile(ibf)
 
         # TODO 后面新增了ShapeKey之后，在这里新增ShapeKey三个Buffer的导出
+        if len(self.shapekey_offsets) != 0:
+            with open(buf_output_folder + self.draw_ib + "-" + "ShapeKeyOffset.buf", 'wb') as file:
+                for number in self.shapekey_offsets:
+                    # 假设数字是32位整数，使用'i'格式符
+                    # 根据实际需要调整数字格式和相应的格式符
+                    data = struct.pack('i', number)
+                    file.write(data)
+        
+        if len(self.shapekey_vertex_ids) != 0:
+            with open(buf_output_folder + self.draw_ib + "-" + "ShapeKeyVertexId.buf", 'wb') as file:
+                for number in self.shapekey_vertex_ids:
+                    # 假设数字是32位整数，使用'i'格式符
+                    # 根据实际需要调整数字格式和相应的格式符
+                    data = struct.pack('i', number)
+                    file.write(data)
+        
+        if len(self.shapekey_vertex_offsets) != 0:
+            # 将列表转换为numpy数组，并改变其数据类型为float16
+            float_array = numpy.array(self.shapekey_vertex_offsets, dtype=numpy.float32).astype(numpy.float16)
+            
+            # 以二进制模式写入文件
+            with open(buf_output_folder + self.draw_ib + "-" + "ShapeKeyVertexOffset.buf", 'wb') as file:
+                float_array.tofile(file)
+
