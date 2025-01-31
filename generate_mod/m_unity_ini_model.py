@@ -622,17 +622,6 @@ class M_UnityIniModelSeperated:
                 texture_override_ib_section.new_line()
                 continue
 
-            # Add texture slot check, hash style texture also need this.
-            # 根据用户反馈，默认删掉了，因为其它游戏用不到，ZZZ用的是run = CommandListSkinTexture
-            # if not GenerateModConfig.forbid_auto_texture_ini():
-            #     texture_override_ib_section.append(cls.vlr_filter_index_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-            #     slot_texturereplace_dict = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
-
-            #     # It may not have auto texture
-            #     if slot_texturereplace_dict is not None:
-            #         for slot in slot_texturereplace_dict.keys():
-            #             texture_override_ib_section.append(cls.vlr_filter_index_indent  + "checktextureoverride = " + slot)
-
             # Add ib replace
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "ib = " + ib_resource_name)
 

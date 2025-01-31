@@ -13,6 +13,7 @@ from ..utils.timer_utils import *
 from ..utils.migoto_utils import Fatal
 from ..utils.obj_utils import ObjUtils
 
+from ..import_model.migoto_format import *
 
 class M_DrawIndexed:
 
@@ -105,6 +106,8 @@ class DrawIBModel:
         self.d3d11GameType:D3D11GameType = None
 
         self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
+        self.total_index_count = 0 # 每个DrawIB都有总的IndexCount数，也就是所有的IB中的所有顶点索引数量
+
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
         self.category_hash_dict = {}
         self.match_first_index_list = []
@@ -155,12 +158,15 @@ class DrawIBModel:
 
         # Export Index Buffer files.
         self.write_ib_files()
-        # Export Category Buffer files.
+        # Export Category Buffer files. (And Export ShapeKey Buffer Files.(WWMI))
         self.write_category_buffer_files()
-        # Export ShapeKey Buffer Files.(WWMI)
-        if MainConfig.gamename == "WWMI":
-            pass
 
+        # WWMI专用，因为它非得用到metadata.json的东西
+        self.extracted_object:ExtractedObject = None
+        if MainConfig.gamename == "WWMI":
+            metadatajsonpath = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)  + "Metadata.json"
+            if os.path.exists(metadatajsonpath):
+                self.extracted_object = ExtractedObjectHelper.read_metadata(metadatajsonpath)
 
     
     def __read_gametype_from_import_json(self):
@@ -314,7 +320,8 @@ class DrawIBModel:
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
 
                     LOG.newline()
-
+        # 累加完毕后draw_offset的值就是总的index_count的值，正好作为WWMI的$object_id
+        self.total_index_count = draw_offset
 
         for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
             # Only export if it's not empty.
@@ -329,6 +336,7 @@ class DrawIBModel:
         所以每个Component都有135W上限。
         '''
         vertex_number_ib_offset = 0
+        total_offset = 0
         for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
             ib_buf = []
             offset = 0
@@ -362,6 +370,9 @@ class DrawIBModel:
                     self.obj_name_drawindexed_dict[obj_name] = drawindexed_obj
                     offset = offset + draw_number
 
+                    # 鸣潮需要
+                    total_offset = total_offset + draw_number
+
                     # Add UniqueVertexNumber to show vertex count in mod ini.
                     print("Draw Number: " + str(unique_vertex_number))
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
@@ -373,6 +384,8 @@ class DrawIBModel:
                 self.componentname_ibbuf_dict[component_name] = ib_buf
             else:
                 LOG.warning(self.draw_ib + " collection: " + component_name + " is hide, skip export ib buf.")
+
+        self.total_index_count = total_offset
 
     def __read_shapekey_cateogry_buf_dict(self):
         '''

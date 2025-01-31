@@ -55,10 +55,14 @@ class ExtractedObject:
     def as_json(self):
         return json.dumps(asdict(self), indent=4)
 
-
-def read_metadata(metadata_path: str) -> ExtractedObject:
-    with open(metadata_path) as f:
-        return ExtractedObject(**json.load(f))
+class ExtractedObjectHelper:
+    '''
+    不用类包起来难受，还是做成工具类好一点。。
+    '''
+    @classmethod
+    def read_metadata(cls,metadata_path: str) -> ExtractedObject:
+        with open(metadata_path) as f:
+            return ExtractedObject(**json.load(f))
     
 
 class InputLayoutElement(object):

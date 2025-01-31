@@ -4,6 +4,8 @@ from .m_ini_builder import *
 from .m_drawib_model import *
 from .m_ini_helper import M_IniHelper
 
+
+
 class M_UnrealIniModel:
     '''
     Unreal Engine VertexShader PreSkinning
@@ -41,6 +43,24 @@ class M_UnrealIniModel:
 
 
     @classmethod
+    def add_constants_section(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        constants_section = M_IniSection(M_SectionType.Constants)
+        constants_section.append("global $required_wwmi_version = 0.70")
+
+        # object_guid值为原模型的总的index_count 在metadata.json中有记录
+        constants_section.append("global $object_guid = " + str(draw_ib_model.extracted_object.index_count))
+        # 导出模型的总顶点数
+        constants_section.append("global $mesh_vertex_count = " + str(draw_ib_model.draw_number))
+
+        # TODO 我们还没有记录ShapeKey的顶点数，需要在生成ShapeKey的Buffer的时候记录一下
+        constants_section.append("global $shapekey_vertex_count = " )
+
+
+        ini_builder.append_section(constants_section)
+        pass
+
+
+    @classmethod
     def generate_unreal_vs_config_ini(cls):
         '''
         Supported Games:
@@ -66,7 +86,7 @@ class M_UnrealIniModel:
                 M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
             # XXX 在这里添加主要的ini生成逻辑
-            
+            cls.add_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
             
             # 移动槽位贴图
             M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)
