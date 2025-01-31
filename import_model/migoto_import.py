@@ -187,14 +187,8 @@ def import_vertices(mesh, vb: VertexBuffer):
             normals = [(x[0], x[1], x[2]) for x in data]
 
         elif elem.name in ('TANGENT', 'BINORMAL'):
+            # 不需要导入TANGENT，因为导出时会重新计算。
             pass
-            # Nico: 不需要导入TANGENT，因为导出时会重新计算。
-            #    # XXX: loops.tangent is read only. Not positive how to handle
-            #    # this, or if we should just calculate it when re-exporting.
-            #    for l in mesh.loops:
-            #        assert(data[l.vertex_index][3] in (1.0, -1.0))
-            #        l.tangent[:] = data[l.vertex_index][0:3]
-            # print('NOTICE: Skipping import of %s in favour of recalculating on export' % elem.name)
         elif elem.name.startswith('BLENDINDICES'):
             blend_indices[elem.SemanticIndex] = data
         elif elem.name.startswith('BLENDWEIGHT'):
@@ -317,19 +311,16 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     if os.path.getsize(vb_path) == 0 or os.path.getsize(ib_path) == 0:
         return obj
 
-    # create vb and ib class and read data.
+    # create vb and ib class and read data. TODO 这里耗时过于长了。
     TimerUtils.Start("Read VB Data") # 1.0636
     vb = VertexBuffer(open(fmt_path, 'r'))
     vb.parse_vb_bin(open(vb_path, 'rb'))
     TimerUtils.End("Read VB Data")
 
-    TimerUtils.Start("Read IB Data") # 0.0788
     ib = IndexBuffer(open(fmt_path, 'r'))
     ib.parse_ib_bin(open(ib_path, 'rb'))
-    TimerUtils.End("Read IB Data")
 
-    # Attach the vertex buffer layout to the object for later exporting. Can't
-    # seem to retrieve this if attached to the mesh - to_mesh() doesn't copy it:
+    # 设置GameTypeName，方便在Catter的Properties面板中查看
     obj['3DMigoto:GameTypeName'] = ib.gametypename
 
     # Nico: 设置默认不重计算TANGNET和COLOR

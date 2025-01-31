@@ -45,7 +45,7 @@ class ModelCollection:
         self.obj_name_list = []
 
 
-class DrawIBHelper:
+class M_DrawIBHelper:
     key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
                 "x","c","v","b","n","m","j","k","l","o","p","[","]",
                 "x","c","v","b","n","m","j","k","l","o","p","[","]"]
@@ -589,7 +589,7 @@ class DrawIBModel:
 
     def write_ib_files(self):
         for partname in self.part_name_list:
-            style_part_name = DrawIBHelper.get_style_alias(partname)
+            style_part_name = M_DrawIBHelper.get_style_alias(partname)
             component_name = "Component " + partname
             ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
 

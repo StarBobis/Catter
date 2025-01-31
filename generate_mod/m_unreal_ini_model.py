@@ -40,12 +40,6 @@ class M_UnrealIniModel:
         cls.texture_hash_filter_index_dict = {}
 
 
-    # TODO 重复的方法，能抽象为工具类吗？
-    
-
-    # TODO 重复的方法，能抽象为工具类吗？
-
-
     @classmethod
     def generate_unreal_vs_config_ini(cls):
         '''

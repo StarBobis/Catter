@@ -6,8 +6,11 @@ from ..utils.json_utils import JsonUtils
 from ..config.main_config import MainConfig, GenerateModConfig
 from .m_drawib_model import DrawIBModel
 
-class M_IniHelper:
 
+class M_IniHelper:
+    '''
+    This is a ini generate helper class to reuse functions.
+    '''
     
     @classmethod
     def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
