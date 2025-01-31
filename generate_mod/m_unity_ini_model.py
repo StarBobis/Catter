@@ -75,7 +75,7 @@ class M_UnityIniModelSeperated:
 
                     if draw_ib_model.d3d11GameType.GPU_PreSkinning:
                         key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
-                    key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
+                    key_section.append("key = " + DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
                     key_section.append("type = cycle")
                     
                     key_cycle_str = ""
@@ -97,7 +97,7 @@ class M_UnityIniModelSeperated:
                         key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
                         if draw_ib_model.d3d11GameType.GPU_PreSkinning:
                             key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
-                        key_section.append("key = " + M_IniHelper.get_mod_switch_key(cls.global_key_index_constants))
+                        key_section.append("key = " + DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
                         key_section.append("type = cycle")
                         key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = 1,0")
                         key_section.new_line()
@@ -187,7 +187,7 @@ class M_UnityIniModelSeperated:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = M_IniHelper.get_style_alias(part_name)
+            style_part_name = DrawIBHelper.get_style_alias(part_name)
 
             texture_override_name_suffix = "IB_" + draw_ib + "_" + style_part_name
 
@@ -424,7 +424,7 @@ class M_UnityIniModelSeperated:
         '''
         for count_i in range(len(draw_ib_model.part_name_list)):
             partname = draw_ib_model.part_name_list[count_i]
-            style_partname = M_IniHelper.get_style_alias(partname)
+            style_partname = DrawIBHelper.get_style_alias(partname)
             ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
             resource_ib_section = M_IniSection(M_SectionType.ResourceBuffer)
@@ -602,7 +602,7 @@ class M_UnityIniModelSeperated:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = M_IniHelper.get_style_alias(part_name)
+            style_part_name = DrawIBHelper.get_style_alias(part_name)
             ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
             texture_override_ib_namesuffix = "IB_" + draw_ib + "_" + style_part_name
             texture_override_ib_section.append("[TextureOverride_" + texture_override_ib_namesuffix + "]")
@@ -761,7 +761,7 @@ class M_UnityIniModelSeperated:
         '''
         for count_i in range(len(draw_ib_model.part_name_list)):
             partname = draw_ib_model.part_name_list[count_i]
-            style_partname = M_IniHelper.get_style_alias(partname)
+            style_partname = DrawIBHelper.get_style_alias(partname)
             ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
             

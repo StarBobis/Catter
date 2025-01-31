@@ -13,7 +13,6 @@ from ..utils.timer_utils import *
 from ..utils.migoto_utils import Fatal
 from ..utils.obj_utils import ObjUtils
 
-from .m_ini_helper import *
 
 class M_DrawIndexed:
 
@@ -44,6 +43,45 @@ class ModelCollection:
         self.type = ""
         self.model_collection_name = ""
         self.obj_name_list = []
+
+
+class DrawIBHelper:
+    key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
+                "x","c","v","b","n","m","j","k","l","o","p","[","]",
+                "x","c","v","b","n","m","j","k","l","o","p","[","]"]
+
+    @classmethod
+    def get_mod_switch_key(cls,key_index:int):
+        '''
+        Default mod switch/toggle key.
+        '''
+        
+        # 尝试读取Setting.json里的设置，解析错误就还使用默认的
+        try:
+            setting_json_dict = JsonUtils.LoadFromFile(MainConfig.path_setting_json())
+            print(setting_json_dict)
+            mod_switch_key = str(setting_json_dict["ModSwitchKey"])
+            mod_switch_key_list = mod_switch_key.split(",")
+            print(mod_switch_key_list)
+            switch_key_list:list[str] = []
+            for switch_key_str in mod_switch_key_list:
+                switch_key_list.append(switch_key_str[1:-1])
+            cls.key_list = switch_key_list
+        except Exception:
+            print("解析自定义SwitchKey失败")
+
+        return cls.key_list[key_index]
+
+    @classmethod
+    def get_style_alias(cls,partname:str):
+        '''
+        Convert to alia name style because it's widely used by Mod author.
+        '''
+        partname_alias_dict = {
+            "1":"Head","2":"Body","3":"Dress","4":"Extra"
+            ,"5":"Extra1","6":"Extra2","7":"Extra3","8":"Extra4","9":"Extra5"
+            ,"10":"Extra6","11":"Extra7","12":"Extra8"}
+        return partname_alias_dict.get(partname,partname)
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
@@ -124,6 +162,7 @@ class DrawIBModel:
             pass
 
 
+    
     def __read_gametype_from_import_json(self):
         workspace_import_json_path = os.path.join(MainConfig.path_workspace_folder(), "Import.json")
         draw_ib_gametypename_dict = JsonUtils.LoadFromFile(workspace_import_json_path)
@@ -550,7 +589,7 @@ class DrawIBModel:
 
     def write_ib_files(self):
         for partname in self.part_name_list:
-            style_part_name = M_IniHelper.get_style_alias(partname)
+            style_part_name = DrawIBHelper.get_style_alias(partname)
             component_name = "Component " + partname
             ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
 

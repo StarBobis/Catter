@@ -1,43 +1,113 @@
+import os
+import shutil
+
 from .m_ini_builder import *
 from ..utils.json_utils import JsonUtils
-from ..config.main_config import MainConfig
+from ..config.main_config import MainConfig, GenerateModConfig
+from .m_drawib_model import DrawIBModel
 
 class M_IniHelper:
-    key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]",
-                    "x","c","v","b","n","m","j","k","l","o","p","[","]"]
 
-    @classmethod
-    def get_style_alias(cls,partname:str):
-        '''
-        Convert to alia name style because it's widely used by Mod author.
-        '''
-        partname_alias_dict = {
-            "1":"Head","2":"Body","3":"Dress","4":"Extra"
-            ,"5":"Extra1","6":"Extra2","7":"Extra3","8":"Extra4","9":"Extra5"
-            ,"10":"Extra6","11":"Extra7","12":"Extra8"}
-        return partname_alias_dict.get(partname,partname)
     
     @classmethod
-    def get_mod_switch_key(cls,key_index:int):
+    def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
         '''
-        Default mod switch/toggle key.
+        Generate a namespace = xxxxx to let different ini work together.
+        combine multiple drawib together use [_]
+        for this, we use namespace = [drawib][_][drawib][_]...
         '''
+        draw_ib_str = ""
+        for draw_ib, draw_ib_model in drawib_drawibmodel_dict.items():
+            draw_ib_str = draw_ib_str + draw_ib + "_"
+
+        namespace_section = M_IniSection(M_SectionType.NameSpace)
+        namespace_section.append("namespace = " + draw_ib_str)
+        namespace_section.new_line()
+
+        ini_builder.append_section(namespace_section)
+    
+    @classmethod
+    def add_namespace_sections_seperated(cls,ini_builder,draw_ib_model:DrawIBModel):
+        '''
+        Generate a namespace = xxxxx to let different ini work together.
+        for this, we use namespace = [drawib]
+        '''
+        namespace_section = M_IniSection(M_SectionType.NameSpace)
+        namespace_section.append("namespace = " + draw_ib_model.draw_ib)
+        namespace_section.new_line()
+
+        ini_builder.append_section(namespace_section)
+
+    @classmethod
+    def move_slot_style_textures(cls,draw_ib_model:DrawIBModel):
+        '''
+        Move all textures from extracted game type folder to generate mod Texture folder.
+        Only works in default slot style texture.
+        '''
+        if GenerateModConfig.forbid_auto_texture_ini():
+            return
         
-        # 尝试读取Setting.json里的设置，解析错误就还使用默认的
-        try:
-            setting_json_dict = JsonUtils.LoadFromFile(MainConfig.path_setting_json())
-            print(setting_json_dict)
-            mod_switch_key = str(setting_json_dict["ModSwitchKey"])
-            mod_switch_key_list = mod_switch_key.split(",")
-            print(mod_switch_key_list)
-            switch_key_list:list[str] = []
-            for switch_key_str in mod_switch_key_list:
-                switch_key_list.append(switch_key_str[1:-1])
-            cls.key_list = switch_key_list
-        except Exception:
-            print("解析自定义SwitchKey失败")
+        if GenerateModConfig.hash_style_auto_texture():
+            return
+        
+        for texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.values():
+                target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
+                source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
+                
+                # only overwrite when there is no texture file exists.
+                if not os.path.exists(target_path):
+                    shutil.copy2(source_path,target_path)
 
-        return cls.key_list[key_index]
-    
+    @classmethod
+    def generate_hash_style_texture_ini(cls,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
+        '''
+        Generate Hash style TextureReplace.ini
+        '''
+        if GenerateModConfig.forbid_auto_texture_ini():
+            return
+        
+        if not GenerateModConfig.hash_style_auto_texture():
+            return 
+        
+        texture_ini_builder = M_IniBuilder()
+        hash_texture_filename_dict:dict[str,str] = {}
 
+        for draw_ib_model in drawib_drawibmodel_dict.values():
+            for texture_file_name in draw_ib_model.TextureResource_Name_FileName_Dict.values():
+                texture_hash = texture_file_name.split("-")[1]
+                hash_texture_filename_dict[texture_hash] = texture_file_name
+        
+        if len(hash_texture_filename_dict) == 0:
+            return
+        
+        for draw_ib,draw_ib_model in drawib_drawibmodel_dict.items():
+            for texture_hash, texture_file_name in hash_texture_filename_dict.items():
+                original_texture_file_path = draw_ib_model.extract_gametype_folder_path + texture_file_name
+
+                # same hash usually won't exists in two folder.
+                if not os.path.exists(original_texture_file_path):
+                    continue
+
+                # new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
+                new_texture_file_name = texture_hash + "_" + texture_file_name.split("-")[3]
+                
+                target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
+                
+                resource_and_textureoverride_texture_section = M_IniSection(M_SectionType.ResourceAndTextureOverride_Texture)
+                resource_and_textureoverride_texture_section.append("[Resource_Texture_" + texture_hash + "]")
+                resource_and_textureoverride_texture_section.append("filename = Texture/" + new_texture_file_name)
+                resource_and_textureoverride_texture_section.new_line()
+
+                resource_and_textureoverride_texture_section.append("[TextureOverride_" + texture_hash + "]")
+                resource_and_textureoverride_texture_section.append("; " + new_texture_file_name)
+                resource_and_textureoverride_texture_section.append("hash = " + texture_hash)
+                resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
+                resource_and_textureoverride_texture_section.new_line()
+
+                texture_ini_builder.append_section(resource_and_textureoverride_texture_section)
+
+                # copy only if target not exists avoid overwrite texture manually replaced by mod author.
+                if not os.path.exists(target_texture_file_path):
+                    shutil.copy2(original_texture_file_path,target_texture_file_path)
+
+        texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "TextureReplace.ini")
