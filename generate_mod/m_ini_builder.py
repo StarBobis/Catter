@@ -5,15 +5,21 @@ class M_SectionType:
     Present = "Present"
     Constants = "Constants"
     Key = "Key"
+
     TextureOverrideIB = "TextureOverrideIB"
     TextureOverrideVB = "TextureOverrideVB"
     TextureOverrideVertexLimitRaise = "TextureOverrideVertexLimitRaise"
     TextureOverrideTexture = "TextureOverrideTexture"
+    TextureOverrideGeneral = "TextureOverrideGeneral" # 除VB IB VLR之外的通用类型
+
     IBSkip = "IBSkip"
+
     ResourceBuffer = "ResourceBuffer"
     ResourceTexture = "ResourceTexture"
-    CreditInfo = "CreditInfo"
     ResourceAndTextureOverride_Texture = "ResourceAndTextureOverride_Texture" # 用于Hash风格贴图中方便Resource和TextureOverride放在一起
+    ResourceModInfo = "ResourceModInfo" # WWMI里的Mod作者信息部分
+
+    CreditInfo = "CreditInfo"
     CommandList = "CommandList"
 
 
@@ -81,6 +87,8 @@ class M_IniBuilder:
 
         self.__append_section_line(M_SectionType.IBSkip)
 
+        self.__append_section_line(M_SectionType.TextureOverrideGeneral)
+
         self.__append_section_line(M_SectionType.TextureOverrideVertexLimitRaise)
 
         self.__append_section_line(M_SectionType.TextureOverrideVB)
@@ -96,6 +104,8 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideTexture)
 
         self.__append_section_line(M_SectionType.ResourceAndTextureOverride_Texture)
+
+        self.__append_section_line(M_SectionType.ResourceModInfo)
         
         self.__append_section_line(M_SectionType.CreditInfo)
 

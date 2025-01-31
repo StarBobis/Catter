@@ -121,6 +121,8 @@ class DrawIBModel:
         self.shapekey_vertex_ids = []
         self.shapekey_vertex_offsets = []
 
+        # TODO 这玩意好像不对啊，跟WWMI的注释里说的不一样，又是一个坑
+
         # 用于自动贴图
         self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
         self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
@@ -420,6 +422,8 @@ class DrawIBModel:
             print(obj_name + "'s shapekey number: " + str(len(mesh.shape_keys.key_blocks)))
 
             base_data = mesh_shapekeys.key_blocks['Basis'].data
+
+
             for shapekey in mesh_shapekeys.key_blocks:
                 # print(shapekey.name)
                 # 截取形态键名称中的形态键shapekey_id，获取不到就跳过
@@ -463,8 +467,6 @@ class DrawIBModel:
 
                     # 此时如果能获取到，说明有效，此时可以直接放入准备好的字典
                     shapekey_data[offseted_vertex_index][shapekey_index] = list(vertex_offset)
-
-                    
 
                 # break
             # 对于每一个obj的每个顶点，都从0到128获取它的形态键对应偏移值

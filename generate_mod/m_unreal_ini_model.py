@@ -52,14 +52,174 @@ class M_UnrealIniModel:
         # 导出模型的总顶点数
         constants_section.append("global $mesh_vertex_count = " + str(draw_ib_model.draw_number))
 
-        # TODO 我们还没有记录ShapeKey的顶点数，需要在生成ShapeKey的Buffer的时候记录一下
-        constants_section.append("global $shapekey_vertex_count = " )
+        # 哦，总算搞明白了，WWMI的代码中的注释也有问题，它说的Number of shapekeyed vertices in custom model原来不是字面意思，而是指的是shapekey_vertex_id的数量。
+        # 因为这玩意是用来改变Shapekey的UAV的大小的
+        constants_section.append("global $shapekey_vertex_count = " + str(len(draw_ib_model.shapekey_vertex_ids)))
 
+        # WWMI中每个mod的mod_id都是-1000，暂时不知道是为了什么，难道是保留设计？不管了，为保证兼容性，暂时先留着
+        constants_section.append("global $mod_id = -1000")
+
+        constants_section.append("global $state_id = 0")
+
+        constants_section.append("global $mod_enabled = 0")
+
+        constants_section.append("global $object_detected = 0")
+
+        constants_section.new_line()
 
         ini_builder.append_section(constants_section)
-        pass
+    
+    @classmethod
+    def add_present_section(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        present_section = M_IniSection(M_SectionType.Present)
+
+        present_section.append("if $object_detected")
+        present_section.append("  if $mod_enabled")
+        present_section.append("    post $object_detected = 0")
+        present_section.append("    run = CommandListUpdateMergedSkeleton")
+        present_section.append("  else")
+        present_section.append("    if $mod_id == -1000")
+        present_section.append("      run = CommandListRegisterMod")
+        present_section.append("    endif")
+        present_section.append("  endif")
+        present_section.append("endif")
+        present_section.new_line()
+
+        ini_builder.append_section(present_section)
+
+    @classmethod
+    def add_commandlist_section(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        commandlist_section = M_IniSection(M_SectionType.CommandList)
+
+        # CommandListRegisterMod
+        commandlist_section.append("[CommandListRegisterMod]")
+        commandlist_section.append("$\\WWMIv1\\required_wwmi_version = $required_wwmi_version")
+        commandlist_section.append("$\\WWMIv1\\object_guid = $object_guid")
+        commandlist_section.append("Resource\\WWMIv1\\ModName = ref ResourceModName")
+        commandlist_section.append("Resource\\WWMIv1\\ModAutohr = ref ResourceModAuthor")
+        commandlist_section.append("Resource\\WWMIv1\\ModDesc = ref ResourceModDesc")
+        commandlist_section.append("Resource\\WWMIv1\\ModLink = ref ResourceModLink")
+        commandlist_section.append("Resource\\WWMIv1\\ModLogo = ref ResourceModLogo")
+        commandlist_section.append("run = CommandList\\WWMIv1\\RegisterMod")
+        commandlist_section.append("$mod_id = $\\WWMIv1\\mod_id")
+        commandlist_section.append("if $mod_id >= 0")
+        commandlist_section.append("  $mod_enabled = 1")
+        commandlist_section.append("endif")
+        commandlist_section.new_line()
+
+        # CommandListUpdateMergedSkeleton
+        commandlist_section.append("[CommandListUpdateMergedSkeleton]")
+        commandlist_section.append("if $state_id")
+        commandlist_section.append("  $state_id = 0")
+        commandlist_section.append("else")
+        commandlist_section.append("  $state_id = 1")
+        commandlist_section.append("endif")
+        commandlist_section.append("ResourceMergedSkeleton = copy ResourceMergedSkeletonRW")
+        commandlist_section.append("ResourceExtraMergedSkeleton = copy ResourceExtraMergedSkeletonRW")
+        commandlist_section.new_line()
+
+        # CommandListMergeSkeleton
+        commandlist_section.append("[CommandListMergeSkeleton]")
+        commandlist_section.append("$\\WWMIv1\\custom_mesh_scale = 1.0")
+        commandlist_section.append("cs-cb8 = ref vs-cb4")
+        commandlist_section.append("cs-u6 = ResourceMergedSkeletonRW")
+        commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
+        commandlist_section.append("cs-cb8 = ref vs-cb3")
+        commandlist_section.append("cs-u6 = ResourceExtraMergedSkeletonRW")
+        commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
+        commandlist_section.new_line()
+
+        # CommandListTriggerResourceOverrides
+        commandlist_section.append("[CommandListTriggerResourceOverrides]")
+        commandlist_section.append("CheckTextureOverride = ps-t0")
+        commandlist_section.append("CheckTextureOverride = ps-t1")
+        commandlist_section.append("CheckTextureOverride = ps-t2")
+        commandlist_section.append("CheckTextureOverride = ps-t3")
+        commandlist_section.append("CheckTextureOverride = ps-t4")
+        commandlist_section.append("CheckTextureOverride = ps-t5")
+        commandlist_section.append("CheckTextureOverride = ps-t6")
+        commandlist_section.append("CheckTextureOverride = ps-t7")
+        commandlist_section.append("CheckTextureOverride = vs-cb3")
+        commandlist_section.append("CheckTextureOverride = vs-cb4")
+        commandlist_section.new_line()
+
+        # CommandListOverrideSharedResources
+        # TODO 暂时先写死，后面再来改，因为要先走测试流程，测试通过再考虑灵活性以及其它数据类型的Mod的兼容问题
+        commandlist_section.append("[CommandListOverrideSharedResources]")
+        commandlist_section.append("ResourceBypassVB0 = ref vb0")
+        commandlist_section.append("ib = ResourceIndexBuffer")
+        commandlist_section.append("vb0 = ResourcePositionBuffer")
+        commandlist_section.append("vb1 = ResourceVectorBuffer")
+        commandlist_section.append("vb2 = ResourceTexcoordBuffer")
+        commandlist_section.append("vb3 = ResourceColorBuffer")
+        commandlist_section.append("vb4 = ResourceBlendBuffer")
+        commandlist_section.append("if vs-cb3 == 3381.7777")
+        commandlist_section.append("  vs-cb3 = ResourceExtraMergedSkeleton")
+        commandlist_section.append("endif")
+        commandlist_section.append("if vs-cb4 == 3381.7777")
+        commandlist_section.append("  vs-cb4 = ResourceMergedSkeleton")
+        commandlist_section.append("endif")
+        commandlist_section.new_line()
+
+        # CommandListCleanupSharedResources
+        # TODO 后续要搞清楚使用槽位恢复技术的原因是什么，以及测试0.62中不使用槽位恢复的缺点，以及0.70之后版本中使用槽位恢复的意义
+        commandlist_section.append("[CommandListCleanupSharedResources]")
+        commandlist_section.append("vb0 = ref ResourceBypassVB0")
+        commandlist_section.new_line()
 
 
+        ini_builder.append_section(commandlist_section)
+
+    @classmethod
+    def add_resource_mod_info_section_default(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        '''
+        这里第一个版本我们暂时不提供可以指定Mod信息的功能，所以全部都用的是默认的值
+        TODO 这个可以放入M_IniHelper中
+        '''
+        resource_mod_info_section = M_IniSection(M_SectionType.ResourceBuffer)
+
+        resource_mod_info_section.append("[ResourceModName]")
+        resource_mod_info_section.append("type = Buffer")
+        resource_mod_info_section.append("data = \"Unnamed Mod\"")
+        resource_mod_info_section.new_line()
+
+        resource_mod_info_section.append("[ResourceModAuthor]")
+        resource_mod_info_section.append("type = Buffer")
+        resource_mod_info_section.append("data = \"Unknown Author\"")
+        resource_mod_info_section.new_line()
+
+        resource_mod_info_section.append("[ResourceModDesc]")
+        resource_mod_info_section.append("; type = Buffer")
+        resource_mod_info_section.append("; data = \"Empty Mod Description\"")
+        resource_mod_info_section.new_line()
+
+        resource_mod_info_section.append("[ResourceModLink]")
+        resource_mod_info_section.append("; type = Buffer")
+        resource_mod_info_section.append("; data = \"Empty Mod Link\"")
+        resource_mod_info_section.new_line()
+
+        resource_mod_info_section.append("[ResourceModLogo]")
+        resource_mod_info_section.append("; filename = Textures/Logo.dds")
+        resource_mod_info_section.new_line()
+
+        ini_builder.append_section(resource_mod_info_section)
+
+
+    @classmethod
+    def add_texture_override_mark_bone_data_cb(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        '''
+        给VS-CB4的Hash值做一个filter_index标记
+        '''
+        texture_override_mark_bonedatacb_section = M_IniSection(M_SectionType.TextureOverrideGeneral)
+
+        texture_override_mark_bonedatacb_section.append("[TextureOverrideMarkBoneDataCB]")
+        texture_override_mark_bonedatacb_section.append("hash = " + draw_ib_model.extracted_object.cb4_hash)
+        texture_override_mark_bonedatacb_section.append("match_priority = 0")
+        texture_override_mark_bonedatacb_section.append("filter_index = 3381.7777")
+        texture_override_mark_bonedatacb_section.new_line()
+
+        ini_builder.append_section(texture_override_mark_bonedatacb_section)
+    
     @classmethod
     def generate_unreal_vs_config_ini(cls):
         '''
@@ -87,6 +247,14 @@ class M_UnrealIniModel:
 
             # XXX 在这里添加主要的ini生成逻辑
             cls.add_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_commandlist_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_mod_info_section_default(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+
+            # TODO 今天太晚了就先到这里，后面再补充吧
+            
+
             
             # 移动槽位贴图
             M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)
