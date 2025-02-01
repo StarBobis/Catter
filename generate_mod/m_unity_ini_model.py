@@ -5,7 +5,7 @@ from .m_ini_builder import *
 from .m_drawib_model import *
 from .m_ini_helper import M_IniHelper
 
-class M_UnityIniModelSeperated:
+class M_UnityIniModel:
     '''
     This used in :
     Unity VertexShader PreSkinning
@@ -188,8 +188,14 @@ class M_UnityIniModelSeperated:
                             category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
                             texture_override_ib_section.append(cls.vlr_filter_index_indent + category_original_slot + " = Resource" + draw_ib + original_category_name)
 
-            
-            # prepare data
+            # Call CommandList
+            texture_override_ib_section.append("run = CommandList_" + texture_override_name_suffix)
+            texture_override_ib_section.new_line()
+
+            # CommandList initialize
+            texture_override_ib_commandlist_section.append("[CommandList_" + texture_override_name_suffix + "]")
+
+            # TODO 抽象成方法，返回DrawIndexed对应内容的字符串列表
             component_name = "Component " + part_name 
             model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
@@ -207,12 +213,7 @@ class M_UnityIniModelSeperated:
                     switch_type_number = switch_type_number + 1
                     switch_model_collection_list.append(toggle_model_collection)
 
-            # Call CommandList
-            texture_override_ib_section.append("run = CommandList_" + texture_override_name_suffix)
-            texture_override_ib_section.new_line()
 
-            # CommandList initialize
-            texture_override_ib_commandlist_section.append("[CommandList_" + texture_override_name_suffix + "]")
 
             # Component DrawIndexed输出
             # 输出按键切换的DrawIndexed
@@ -384,80 +385,6 @@ class M_UnityIniModelSeperated:
             resource_texture_section.new_line()
 
         ini_builder.append_section(resource_texture_section)
-
-    @classmethod
-    def move_slot_style_textures(cls,draw_ib_model:DrawIBModel):
-        '''
-        Move all textures from extracted game type folder to generate mod Texture folder.
-        Only works in default slot style texture.
-        '''
-        if GenerateModConfig.forbid_auto_texture_ini():
-            return
-        
-        if GenerateModConfig.hash_style_auto_texture():
-            return
-        
-        for texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-                target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
-                source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
-                
-                # only overwrite when there is no texture file exists.
-                if not os.path.exists(target_path):
-                    shutil.copy2(source_path,target_path)
-
-    @classmethod
-    def generate_hash_style_texture_ini(cls):
-        '''
-        Generate Hash style TextureReplace.ini
-        '''
-        if GenerateModConfig.forbid_auto_texture_ini():
-            return
-        
-        if not GenerateModConfig.hash_style_auto_texture():
-            return 
-        
-        texture_ini_builder = M_IniBuilder()
-        hash_texture_filename_dict:dict[str,str] = {}
-
-        for draw_ib_model in cls.drawib_drawibmodel_dict.values():
-            for texture_file_name in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-                texture_hash = texture_file_name.split("-")[1]
-                hash_texture_filename_dict[texture_hash] = texture_file_name
-        
-        if len(hash_texture_filename_dict) == 0:
-            return
-        
-        for draw_ib,draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            for texture_hash, texture_file_name in hash_texture_filename_dict.items():
-                original_texture_file_path = draw_ib_model.extract_gametype_folder_path + texture_file_name
-
-                # same hash usually won't exists in two folder.
-                if not os.path.exists(original_texture_file_path):
-                    continue
-
-                # new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
-                new_texture_file_name = texture_hash + "_" + texture_file_name.split("-")[3]
-                
-                target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
-                
-                resource_and_textureoverride_texture_section = M_IniSection(M_SectionType.ResourceAndTextureOverride_Texture)
-                resource_and_textureoverride_texture_section.append("[Resource_Texture_" + texture_hash + "]")
-                resource_and_textureoverride_texture_section.append("filename = Texture/" + new_texture_file_name)
-                resource_and_textureoverride_texture_section.new_line()
-
-                resource_and_textureoverride_texture_section.append("[TextureOverride_" + texture_hash + "]")
-                resource_and_textureoverride_texture_section.append("; " + new_texture_file_name)
-                resource_and_textureoverride_texture_section.append("hash = " + texture_hash)
-                resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
-                resource_and_textureoverride_texture_section.new_line()
-
-                texture_ini_builder.append_section(resource_and_textureoverride_texture_section)
-
-                # copy only if target not exists avoid overwrite texture manually replaced by mod author.
-                if not os.path.exists(target_texture_file_path):
-                    shutil.copy2(original_texture_file_path,target_texture_file_path)
-
-        texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "TextureReplace.ini")
 
 
     @classmethod
@@ -784,7 +711,7 @@ class M_UnityIniModelSeperated:
                 cls.add_unity_cs_resource_vb_sections(config_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_resource_texture_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
+            M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)
 
             cls.global_generate_mod_number = cls.global_generate_mod_number + 1
 
@@ -806,7 +733,7 @@ class M_UnityIniModelSeperated:
                     if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
                         os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
-        cls.generate_hash_style_texture_ini()
+        M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
             config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
@@ -875,7 +802,7 @@ class M_UnityIniModelSeperated:
                 cls.add_unity_vs_resource_vb_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_resource_texture_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.move_slot_style_textures(draw_ib_model=draw_ib_model)
+            M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)
 
             cls.global_generate_mod_number = cls.global_generate_mod_number + 1
 
@@ -897,7 +824,7 @@ class M_UnityIniModelSeperated:
                     if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
                         os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
-        cls.generate_hash_style_texture_ini()
+        M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
             config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
@@ -912,4 +839,3 @@ class M_UnityIniModelSeperated:
 
 
 
-                    

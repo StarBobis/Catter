@@ -14,7 +14,7 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
     def execute(self, context):
         TimerUtils.Start("GenerateMod UnityVS Fast")
 
-        M_UnityIniModelSeperated.initialzie()
+        M_UnityIniModel.initialzie()
 
         workspace_collection = bpy.context.collection
 
@@ -32,10 +32,10 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_UnityIniModelSeperated.generate_unity_vs_config_ini()
+        M_UnityIniModel.generate_unity_vs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
         CommandUtils.OpenGeneratedModFolder()
@@ -52,7 +52,7 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
     def execute(self, context):
         TimerUtils.Start("GenerateMod UnityCS")
 
-        M_UnityIniModelSeperated.initialzie()
+        M_UnityIniModel.initialzie()
 
         workspace_collection = bpy.context.collection
 
@@ -70,10 +70,10 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
-            M_UnityIniModelSeperated.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+            M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
-        M_UnityIniModelSeperated.generate_unity_cs_config_ini()
+        M_UnityIniModel.generate_unity_cs_config_ini()
 
         self.report({'INFO'},"Generate Mod Success!")
 

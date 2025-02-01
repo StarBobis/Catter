@@ -216,6 +216,7 @@ class M_IniHelper:
                 resource_and_textureoverride_texture_section.append("[TextureOverride_" + texture_hash + "]")
                 resource_and_textureoverride_texture_section.append("; " + new_texture_file_name)
                 resource_and_textureoverride_texture_section.append("hash = " + texture_hash)
+                resource_and_textureoverride_texture_section.append("match_priority = 0")
                 resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
                 resource_and_textureoverride_texture_section.new_line()
 
