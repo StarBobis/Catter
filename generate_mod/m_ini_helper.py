@@ -11,7 +11,33 @@ class M_IniHelper:
     '''
     This is a ini generate helper class to reuse functions.
     '''
+    key_list = ["x","c","v","b","n","m","j","k","l","o","p","[","]",
+                "x","c","v","b","n","m","j","k","l","o","p","[","]",
+                "x","c","v","b","n","m","j","k","l","o","p","[","]"]
+
+    @classmethod
+    def get_mod_switch_key(cls,key_index:int):
+        '''
+        Default mod switch/toggle key.
+        '''
+        
+        # 尝试读取Setting.json里的设置，解析错误就还使用默认的
+        try:
+            setting_json_dict = JsonUtils.LoadFromFile(MainConfig.path_setting_json())
+            print(setting_json_dict)
+            mod_switch_key = str(setting_json_dict["ModSwitchKey"])
+            mod_switch_key_list = mod_switch_key.split(",")
+            print(mod_switch_key_list)
+            switch_key_list:list[str] = []
+            for switch_key_str in mod_switch_key_list:
+                switch_key_list.append(switch_key_str[1:-1])
+            cls.key_list = switch_key_list
+        except Exception:
+            print("解析自定义SwitchKey失败")
+
+        return cls.key_list[key_index]
     
+
     @classmethod
     def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
         '''
@@ -67,7 +93,66 @@ class M_IniHelper:
             present_section.append("post $active" + str(global_generate_mod_number) + " = 0")
             ini_builder.append_section(present_section)
 
+    @classmethod
+    def add_switchkey_sections(cls,ini_builder,draw_ib_model:DrawIBModel,global_generate_mod_number,input_global_key_index_constants):
+        '''
+        声明按键切换和按键开关的变量 Key Section
+        '''
+        if draw_ib_model.key_number != 0:
+            # 
+            global_key_index_constants = input_global_key_index_constants
+            for model_collection_list in draw_ib_model.componentname_modelcollection_list_dict.values():
+                toggle_type_number = 0
+                switch_type_number = 0
+                
+                for toggle_model_collection in model_collection_list:
+                    if toggle_model_collection.type == "toggle":
+                        toggle_type_number = toggle_type_number + 1
+                    elif toggle_model_collection.type == "switch":
+                        switch_type_number = switch_type_number + 1
 
+                if toggle_type_number >= 2:
+                    key_section = M_IniSection(M_SectionType.Key)
+                    key_section.append("[KeySwap" + str(global_key_index_constants) + "]")
+
+                    if draw_ib_model.d3d11GameType.GPU_PreSkinning:
+                        key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
+                    key_section.append("key = " + cls.get_mod_switch_key(global_key_index_constants))
+                    key_section.append("type = cycle")
+                    
+                    key_cycle_str = ""
+                    for i in range(toggle_type_number):
+                        if i < toggle_type_number + 1:
+                            key_cycle_str = key_cycle_str + str(i) + ","
+                        else:
+                            key_cycle_str = key_cycle_str + str(i)
+
+                    key_section.append("$swapkey" + str(global_key_index_constants) + " = " + key_cycle_str)
+                    key_section.new_line()
+
+                    ini_builder.append_section(key_section)
+                    global_key_index_constants = global_key_index_constants + 1
+                
+                if switch_type_number >= 1:
+                    for i in range(switch_type_number):
+                        key_section = M_IniSection(M_SectionType.Key)
+                        key_section.append("[KeySwap" + str(global_key_index_constants) + "]")
+                        if draw_ib_model.d3d11GameType.GPU_PreSkinning:
+                            key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
+                        key_section.append("key = " + cls.get_mod_switch_key(global_key_index_constants))
+                        key_section.append("type = cycle")
+                        key_section.append("$swapkey" + str(global_key_index_constants) + " = 1,0")
+                        key_section.new_line()
+
+                        ini_builder.append_section(key_section)
+                        global_key_index_constants = global_key_index_constants + 1
+            
+            # 返回，因为修改后要赋值给全局的
+            return global_key_index_constants
+        else:
+            # 如果没有任何按键则直接返回原始数量
+            return input_global_key_index_constants
+        
     @classmethod
     def move_slot_style_textures(cls,draw_ib_model:DrawIBModel):
         '''

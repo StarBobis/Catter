@@ -14,7 +14,10 @@ class M_UnityIniModelSeperated:
     '''
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
 
+    # 代表全局声明了几个Key
     global_key_index_constants = 0
+
+
     global_key_index_logic = 0
 
     # 这个数量代表一共生成了几个DrawIB的Mod，每个DrawIB都是一个Mod
@@ -41,58 +44,7 @@ class M_UnityIniModelSeperated:
         cls.vlr_filter_index_indent = ""
 
         cls.texture_hash_filter_index_dict = {}
-
-
-    @classmethod
-    def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel,global_generate_mod_number):
-        if draw_ib_model.key_number != 0:
-            # 声明按键切换和按键开关的变量
-            for component_name, model_collection_list in draw_ib_model.componentname_modelcollection_list_dict.items():
-                toggle_type_number = 0
-                switch_type_number = 0
-                
-                for toggle_model_collection in model_collection_list:
-                    if toggle_model_collection.type == "toggle":
-                        toggle_type_number = toggle_type_number + 1
-                    elif toggle_model_collection.type == "switch":
-                        switch_type_number = switch_type_number + 1
-
-                if toggle_type_number >= 2:
-                    key_section = M_IniSection(M_SectionType.Key)
-                    key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
-
-                    if draw_ib_model.d3d11GameType.GPU_PreSkinning:
-                        key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
-                    key_section.append("key = " + M_DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
-                    key_section.append("type = cycle")
-                    
-                    key_cycle_str = ""
-                    for i in range(toggle_type_number):
-                        if i < toggle_type_number + 1:
-                            key_cycle_str = key_cycle_str + str(i) + ","
-                        else:
-                            key_cycle_str = key_cycle_str + str(i)
-
-                    key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = " + key_cycle_str)
-                    key_section.new_line()
-
-                    ini_builder.append_section(key_section)
-                    cls.global_key_index_constants = cls.global_key_index_constants + 1
-                
-                if switch_type_number >= 1:
-                    for i in range(switch_type_number):
-                        key_section = M_IniSection(M_SectionType.Key)
-                        key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
-                        if draw_ib_model.d3d11GameType.GPU_PreSkinning:
-                            key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
-                        key_section.append("key = " + M_DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
-                        key_section.append("type = cycle")
-                        key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = 1,0")
-                        key_section.new_line()
-
-                        ini_builder.append_section(key_section)
-                        cls.global_key_index_constants = cls.global_key_index_constants + 1
-
+        
     @classmethod
     def add_unity_vs_texture_override_vb_sections(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
         # 声明TextureOverrideVB部分，只有使用GPU-PreSkinning时是直接替换hash对应槽位
@@ -205,18 +157,6 @@ class M_UnityIniModelSeperated:
             # if ZZZ ,use run = CommandListSkinTexture solve slot check problems.
             if MainConfig.gamename == "ZZZ" :
                 texture_override_ib_section.append(cls.vlr_filter_index_indent + "run = CommandListSkinTexture")
-            # Add texture slot check, hash style texture also need this.
-            # 根据用户反馈，默认删掉了，因为其它游戏用不到，ZZZ用的是run = CommandListSkinTexture
-            # elif not GenerateModConfig.forbid_auto_texture_ini():
-            #     texture_override_ib_section.append(cls.vlr_filter_index_indent + "; Add more slot check here to compatible with XXMI if you manually add more slot replace.")
-            #     slot_texturereplace_dict = draw_ib_model.PartName_SlotTextureReplaceDict_Dict.get(part_name,None)
-
-            #     # It may not have auto texture
-            #     if slot_texturereplace_dict is not None:
-            #         for slot in slot_texturereplace_dict.keys():
-            #             texture_override_ib_section.append(cls.vlr_filter_index_indent  + "checktextureoverride = " + slot)
-
-
 
             # Add ib replace
             texture_override_ib_section.append(cls.vlr_filter_index_indent + "ib = " + ib_resource_name)
@@ -816,9 +756,12 @@ class M_UnityIniModelSeperated:
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
+            # 按键开关与按键切换声明部分
             M_IniHelper.add_switchkey_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,global_key_index_constants=cls.global_key_index_constants)
             M_IniHelper.add_switchkey_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
-            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number) 
+            global_key_index_counstants_added = M_IniHelper.add_switchkey_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,input_global_key_index_constants=cls.global_key_index_constants) 
+            cls.global_key_index_constants = global_key_index_counstants_added
+
 
             if GenerateModConfig.generate_to_seperate_ini():
                 cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
@@ -880,7 +823,6 @@ class M_UnityIniModelSeperated:
 
     @classmethod
     def generate_unity_vs_config_ini(cls):
-        # TimerUtils.Start("generate_unity_vs_config_ini")
         '''
         Supported Games:
         - Genshin Impact
@@ -913,10 +855,12 @@ class M_UnityIniModelSeperated:
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
-            # add variable, key
+            # 按键开关与按键切换声明部分
             M_IniHelper.add_switchkey_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,global_key_index_constants=cls.global_key_index_constants)
             M_IniHelper.add_switchkey_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
-            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
+            global_key_index_counstants_added = M_IniHelper.add_switchkey_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,input_global_key_index_constants=cls.global_key_index_constants) 
+            cls.global_key_index_constants = global_key_index_counstants_added
+
 
             if GenerateModConfig.generate_to_seperate_ini():
                 cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
@@ -965,4 +909,7 @@ class M_UnityIniModelSeperated:
                     os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
                 if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
                     os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
-        # TimerUtils.End("generate_unity_vs_config_ini")
+
+
+
+                    
