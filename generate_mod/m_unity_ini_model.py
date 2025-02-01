@@ -44,23 +44,8 @@ class M_UnityIniModelSeperated:
 
 
     @classmethod
-    def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
+    def add_constants_present_sections(cls,ini_builder,draw_ib_model:DrawIBModel,global_generate_mod_number):
         if draw_ib_model.key_number != 0:
-            # 声明Constants变量
-            constants_section = M_IniSection(M_SectionType.Constants)
-            constants_section.append("global $active" + str(cls.global_generate_mod_number))
-            for i in range(draw_ib_model.key_number):
-                key_str = "global persist $swapkey" + str(i + cls.global_key_index_constants) + " = 0"
-                constants_section.append(key_str) 
-
-            ini_builder.append_section(constants_section)
-
-            # 声明$active激活变量
-            present_section = M_IniSection(M_SectionType.Present)
-            present_section.append("post $active" + str(cls.global_generate_mod_number) + " = 0")
-
-            ini_builder.append_section(present_section)
-
             # 声明按键切换和按键开关的变量
             for component_name, model_collection_list in draw_ib_model.componentname_modelcollection_list_dict.items():
                 toggle_type_number = 0
@@ -77,7 +62,7 @@ class M_UnityIniModelSeperated:
                     key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
 
                     if draw_ib_model.d3d11GameType.GPU_PreSkinning:
-                        key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
+                        key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
                     key_section.append("key = " + M_DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
                     key_section.append("type = cycle")
                     
@@ -99,7 +84,7 @@ class M_UnityIniModelSeperated:
                         key_section = M_IniSection(M_SectionType.Key)
                         key_section.append("[KeySwap" + str(cls.global_key_index_constants) + "]")
                         if draw_ib_model.d3d11GameType.GPU_PreSkinning:
-                            key_section.append("condition = $active" + str(cls.global_generate_mod_number) + " == 1")
+                            key_section.append("condition = $active" + str(global_generate_mod_number) + " == 1")
                         key_section.append("key = " + M_DrawIBHelper.get_mod_switch_key(cls.global_key_index_constants))
                         key_section.append("type = cycle")
                         key_section.append("$swapkey" + str(cls.global_key_index_constants) + " = 1,0")
@@ -831,7 +816,9 @@ class M_UnityIniModelSeperated:
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
-            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
+            M_IniHelper.add_switchkey_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,global_key_index_constants=cls.global_key_index_constants)
+            M_IniHelper.add_switchkey_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
+            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number) 
 
             if GenerateModConfig.generate_to_seperate_ini():
                 cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
@@ -927,7 +914,9 @@ class M_UnityIniModelSeperated:
                     M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
             # add variable, key
-            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            M_IniHelper.add_switchkey_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number,global_key_index_constants=cls.global_key_index_constants)
+            M_IniHelper.add_switchkey_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
+            cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model,global_generate_mod_number=cls.global_generate_mod_number)
 
             if GenerateModConfig.generate_to_seperate_ini():
                 cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
