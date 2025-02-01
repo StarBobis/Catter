@@ -19,7 +19,6 @@ class M_UnrealIniModel:
     global_key_index_logic = 0
     global_generate_mod_number = 0
 
-    vlr_filter_index_indent = ""
 
     # for texture filter_index function.
     texture_hash_filter_index_dict = {}
@@ -36,8 +35,6 @@ class M_UnrealIniModel:
         cls.global_key_index_constants = 0
         cls.global_key_index_logic = 0
         cls.global_generate_mod_number = 0
-
-        cls.vlr_filter_index_indent = ""
 
         cls.texture_hash_filter_index_dict = {}
 
@@ -296,7 +293,7 @@ class M_UnrealIniModel:
             cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-            
+
             
             # 移动槽位贴图
             M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)

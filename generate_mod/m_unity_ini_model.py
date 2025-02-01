@@ -16,8 +16,11 @@ class M_UnityIniModelSeperated:
 
     global_key_index_constants = 0
     global_key_index_logic = 0
+
+    # 这个数量代表一共生成了几个DrawIB的Mod，每个DrawIB都是一个Mod
     global_generate_mod_number = 0
 
+    # VertexLimitRaise导致的缩进
     vlr_filter_index_indent = ""
 
     # 贴图filter_index功能
