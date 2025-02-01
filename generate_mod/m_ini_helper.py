@@ -34,6 +34,7 @@ class M_IniHelper:
         '''
         Generate a namespace = xxxxx to let different ini work together.
         for this, we use namespace = [drawib]
+        这里是分开生成到不同的draw_ib文件夹中时使用的
         '''
         namespace_section = M_IniSection(M_SectionType.NameSpace)
         namespace_section.append("namespace = " + draw_ib_model.draw_ib)

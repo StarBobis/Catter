@@ -3,7 +3,7 @@ import math
 
 from .m_ini_builder import *
 from .m_drawib_model import *
-
+from .m_ini_helper import M_IniHelper
 
 class M_UnityIniModelSeperated:
     '''
@@ -813,9 +813,9 @@ class M_UnityIniModelSeperated:
 
         if not GenerateModConfig.generate_to_seperate_folder():
             if GenerateModConfig.generate_to_seperate_ini():
-                cls.add_namespace_sections_merged(ini_builder=config_ini_builder)
-                cls.add_namespace_sections_merged(ini_builder=resource_ini_builder)
-                cls.add_namespace_sections_merged(ini_builder=commandlist_ini_builder)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=resource_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=commandlist_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
 
         if GenerateModConfig.slot_style_texture_add_filter_index():
@@ -824,9 +824,9 @@ class M_UnityIniModelSeperated:
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
             if GenerateModConfig.generate_to_seperate_folder():
                 if GenerateModConfig.generate_to_seperate_ini():
-                    cls.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
-                    cls.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-                    cls.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
 
@@ -886,34 +886,7 @@ class M_UnityIniModelSeperated:
                 if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
                     os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
 
-    @classmethod
-    def add_namespace_sections_merged(cls,ini_builder:M_IniBuilder):
-        '''
-        Generate a namespace = xxxxx to let different ini work together.
-        combine multiple drawib together use [_]
-        for this, we use namespace = [drawib][_][drawib][_]...
-        '''
-        draw_ib_str = ""
-        for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
-            draw_ib_str = draw_ib_str + draw_ib + "_"
 
-        namespace_section = M_IniSection(M_SectionType.NameSpace)
-        namespace_section.append("namespace = " + draw_ib_str)
-        namespace_section.new_line()
-
-        ini_builder.append_section(namespace_section)
-    
-    @classmethod
-    def add_namespace_sections_seperated(cls,ini_builder,draw_ib_model:DrawIBModel):
-        '''
-        Generate a namespace = xxxxx to let different ini work together.
-        for this, we use namespace = [drawib]
-        '''
-        namespace_section = M_IniSection(M_SectionType.NameSpace)
-        namespace_section.append("namespace = " + draw_ib_model.draw_ib)
-        namespace_section.new_line()
-
-        ini_builder.append_section(namespace_section)
 
     @classmethod
     def generate_unity_vs_config_ini(cls):
@@ -934,9 +907,9 @@ class M_UnityIniModelSeperated:
         # Add namespace 
         if not GenerateModConfig.generate_to_seperate_folder():
             if GenerateModConfig.generate_to_seperate_ini():
-                cls.add_namespace_sections_merged(ini_builder=config_ini_builder)
-                cls.add_namespace_sections_merged(ini_builder=resource_ini_builder)
-                cls.add_namespace_sections_merged(ini_builder=commandlist_ini_builder)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=resource_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+                M_IniHelper.add_namespace_sections_merged(ini_builder=commandlist_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if GenerateModConfig.slot_style_texture_add_filter_index():
             cls.add_texture_filter_index(ini_builder= config_ini_builder)
@@ -946,9 +919,9 @@ class M_UnityIniModelSeperated:
             # Add namespace
             if GenerateModConfig.generate_to_seperate_folder():
                 if GenerateModConfig.generate_to_seperate_ini():
-                    cls.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
-                    cls.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-                    cls.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+                    M_IniHelper.add_namespace_sections_seperated(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
 
             # add variable, key
             cls.add_constants_present_sections(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)

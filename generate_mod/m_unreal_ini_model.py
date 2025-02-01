@@ -257,9 +257,10 @@ class M_UnrealIniModel:
 
             # TODO 这里的drawindexed部分，由于之前的代码可以复用，而且要融合我们的集合架构，所以这里必须先完成对之前方法迁移到M_IniHelper中,方便复用
 
-
-
-
+            texture_override_component.append("    " + "run = CommandListCleanupSharedResources")
+            texture_override_component.append("  endif")
+            texture_override_component.append("endif")
+            texture_override_component.new_line()
 
         ini_builder.append_section(texture_override_component)
     
@@ -280,7 +281,6 @@ class M_UnrealIniModel:
             M_IniHelper.add_namespace_sections_merged(ini_builder=resource_ini_builder, drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
             M_IniHelper.add_namespace_sections_merged(ini_builder=commandlist_ini_builder, drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
-
         for draw_ib, draw_ib_model in cls.drawib_drawibmodel_dict.items():
             # Add namespace
             if GenerateModConfig.generate_to_seperate_folder():
@@ -296,7 +296,7 @@ class M_UnrealIniModel:
             cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-
+            
             
             # 移动槽位贴图
             M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)
