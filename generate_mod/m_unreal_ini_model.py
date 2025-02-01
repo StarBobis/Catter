@@ -219,6 +219,49 @@ class M_UnrealIniModel:
         texture_override_mark_bonedatacb_section.new_line()
 
         ini_builder.append_section(texture_override_mark_bonedatacb_section)
+
+    @classmethod
+    def add_texture_override_component(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        '''
+        TODO 这里我们先考虑MergedSkeleton的情况，因为这个最常用，后面再写分开的VGS的情况
+        '''
+        
+        texture_override_component = M_IniSection(M_SectionType.TextureOverrideIB)
+
+        for component_name in draw_ib_model.componentname_ibbuf_dict.keys():
+            component_count = int(component_name[-1]) - 1
+            component_count_str = str(component_count)
+            component_object = draw_ib_model.extracted_object.components[component_count]
+            # print(str(component_count))
+            
+            texture_override_component.append("[TextureOverrideComponent" + component_count_str + "]")
+            texture_override_component.append("match_first_index = " + str(component_object.index_offset))
+            texture_override_component.append("match_index_count = " + str(component_object.index_count))
+            texture_override_component.append("$object_detected = 1")
+            texture_override_component.append("if $mod_enabled")
+
+            state_id_var_str = "$state_id_" + component_count_str
+            texture_override_component.append("  " + "local " + state_id_var_str)
+            texture_override_component.append("  " + "if " + state_id_var_str + " != $state_id")
+            texture_override_component.append("    " + state_id_var_str + " = $state_id")
+            texture_override_component.append("    " + "$\\WWMIv1\\vg_offset = " + str(component_object.vg_offset))
+            texture_override_component.append("    " + "$\\WWMIv1\\vg_count = " + str(component_object.vg_count))
+            texture_override_component.append("    " + "run = CommandListMergeSkeleton")
+            texture_override_component.append("  endif")
+            # TODO 有空的话，搞清楚这里为啥用!==
+            texture_override_component.append("  " + "if ResourceMergedSkeleton !== null")
+            texture_override_component.append("    " + "handling = skip")
+            texture_override_component.append("    " + "run = CommandListTriggerResourceOverrides")
+            texture_override_component.append("    " + "run = CommandListOverrideSharedResources")
+            texture_override_component.append("    " + "; Draw Component " + component_count_str)
+
+            # TODO 这里的drawindexed部分，由于之前的代码可以复用，而且要融合我们的集合架构，所以这里必须先完成对之前方法迁移到M_IniHelper中,方便复用
+
+
+
+
+
+        ini_builder.append_section(texture_override_component)
     
     @classmethod
     def generate_unreal_vs_config_ini(cls):
@@ -252,8 +295,7 @@ class M_UnrealIniModel:
             cls.add_resource_mod_info_section_default(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
-            # TODO 今天太晚了就先到这里，后面再补充吧
-            
+            cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             
             # 移动槽位贴图
