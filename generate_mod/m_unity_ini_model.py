@@ -285,15 +285,6 @@ class M_UnityIniModel:
             vertexlimit_section_name_suffix =  draw_ib + "_VertexLimitRaise"
             vertexlimit_section.append("[TextureOverride_" + vertexlimit_section_name_suffix + "]")
             vertexlimit_section.append("hash = " + draw_ib_model.vertex_limit_hash)
-
-            # Call CommandList
-            # vertexlimit_section.append("run = CommandList_" + vertexlimit_section_name_suffix)
-            # vertexlimit_section.new_line()
-
-            # Initialize CommandList
-            # vertexlimit_commandlist_section = M_IniSection(M_SectionType.CommandList)
-            # vertexlimit_commandlist_section.append("[CommandList_" + vertexlimit_section_name_suffix + "]" )
-            
             
             if GenerateModConfig.vertex_limit_raise_add_filter_index():
                 # 用户可能已经习惯了3000
@@ -304,8 +295,6 @@ class M_UnityIniModel:
             vertexlimit_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))
             vertexlimit_section.new_line()
 
-            # config_ini_builder.append_section(vertexlimit_section)
-            # commandlist_ini_builder.append_section(vertexlimit_commandlist_section)
             commandlist_ini_builder.append_section(vertexlimit_section)
 
     @classmethod
@@ -344,31 +333,12 @@ class M_UnityIniModel:
 
         ini_builder.append_section(resource_vb_section)
 
-    @classmethod
-    def add_resource_ib_sections(cls,ini_builder,draw_ib_model):
-        '''
-        Add Resource IB Section
-
-        We default use R32_UINT because R16_UINT have a very small number limit.
-        '''
-        for count_i in range(len(draw_ib_model.part_name_list)):
-            partname = draw_ib_model.part_name_list[count_i]
-            style_partname = M_DrawIBHelper.get_style_alias(partname)
-            ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
-
-            resource_ib_section = M_IniSection(M_SectionType.ResourceBuffer)
-            resource_ib_section.append("[" + ib_resource_name + "]")
-            resource_ib_section.append("type = Buffer")
-            resource_ib_section.append("format = DXGI_FORMAT_R32_UINT")
-            resource_ib_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + style_partname + ".buf")
-            resource_ib_section.new_line()
-
-            ini_builder.append_section(resource_ib_section)
 
     @classmethod
     def add_resource_texture_sections(cls,ini_builder,draw_ib_model:DrawIBModel):
         '''
         Add texture resource.
+        只有槽位风格贴图会用到，因为Hash风格贴图有专门的方法去声明这个。
         '''
         if GenerateModConfig.forbid_auto_texture_ini():
             return 
