@@ -142,6 +142,10 @@ class M_UnrealIniModel:
 
         # CommandListOverrideSharedResources
         # TODO 暂时先写死，后面再来改，因为要先走测试流程，测试通过再考虑灵活性以及其它数据类型的Mod的兼容问题
+
+        commandlist_section.append("[ResourceBypassVB0]")
+        commandlist_section.new_line()
+
         commandlist_section.append("[CommandListOverrideSharedResources]")
         commandlist_section.append("ResourceBypassVB0 = ref vb0")
         commandlist_section.append("ib = ResourceIndexBuffer")
@@ -162,6 +166,31 @@ class M_UnrealIniModel:
         # TODO 后续要搞清楚使用槽位恢复技术的原因是什么，以及测试0.62中不使用槽位恢复的缺点，以及0.70之后版本中使用槽位恢复的意义
         commandlist_section.append("[CommandListCleanupSharedResources]")
         commandlist_section.append("vb0 = ref ResourceBypassVB0")
+        commandlist_section.new_line()
+
+        # TODO ShapeKey的CommandList只有在ShapeKey存在时才加入，物体Mod不加入
+        # CommandListSetupShapeKeys
+        commandlist_section.append("[CommandListSetupShapeKeys]")
+        commandlist_section.append("$\\WWMIv1\\shapekey_checksum" + str(draw_ib_model.extracted_object.shapekeys.checksum))
+        commandlist_section.append("cs-t33 = ResourceShapeKeyOffsetBuffer")
+        commandlist_section.append("cs-u5 = ResourceCustomShapeKeyValuesRW")
+        commandlist_section.append("cs-u6 = ResourceShapeKeyCBRW")
+        commandlist_section.append("run = CustomShader\\WWMIv1\\ShapeKeyOverrider")
+        commandlist_section.new_line()
+
+        # CommandListLoadShapeKeys
+        commandlist_section.append("[CommandListLoadShapeKeys]")
+        commandlist_section.append("$\\WWMIv1\\shapekey_vertex_count = $shapekey_vertex_count")
+        commandlist_section.append("cs-t0 = ResourceShapeKeyVertexIdBuffer")
+        commandlist_section.append("cs-t1 = ResourceShapeKeyVertexOffsetBuffer")
+        commandlist_section.append("cs-u6 = ResourceShapeKeyCBRW")
+        commandlist_section.append("run = CustomShader\\WWMIv1\\ShapeKeyLoader")
+        commandlist_section.new_line()
+
+        # CommandListMultiplyShapeKeys
+        commandlist_section.append("[CommandListMultiplyShapeKeys]")
+        commandlist_section.append("$\\WWMIv1\\custom_vertex_count = $mesh_vertex_count")
+        commandlist_section.append("run = CustomShader\\WWMIv1\\ShapeKeyMultiplier")
         commandlist_section.new_line()
 
 
@@ -267,6 +296,148 @@ class M_UnrealIniModel:
         ini_builder.append_section(texture_override_component)
     
     @classmethod
+    def add_texture_override_shapekeys(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        texture_override_shapekeys_section = M_IniSection(M_SectionType.TextureOverrideGeneral)
+
+        texture_override_shapekeys_section.append("[TextureOverrideShapeKeyOffsets]")
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
+        texture_override_shapekeys_section.append("match_priority = 0")
+        texture_override_shapekeys_section.append("override_byte_stride = 24")
+        texture_override_shapekeys_section.append("override_vertex_count = $mesh_vertex_count")
+        texture_override_shapekeys_section.new_line()
+
+        texture_override_shapekeys_section.append("[TextureOverrideShapeKeyScale]")
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.scale_hash)
+        texture_override_shapekeys_section.append("match_priority = 0")
+        texture_override_shapekeys_section.append("override_byte_stride = 4")
+        texture_override_shapekeys_section.append("override_vertex_count = $mesh_vertex_count")
+        texture_override_shapekeys_section.new_line()
+
+        texture_override_shapekeys_section.append("[TextureOverrideShapeKeyLoaderCallback]")
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.vb0_hash)
+        texture_override_shapekeys_section.append("match_priority = 0")
+        texture_override_shapekeys_section.append("if $mod_enabled")
+        texture_override_shapekeys_section.append("  " + "if cs == 3381.3333 && ResourceMergedSkeleton !== null")
+        texture_override_shapekeys_section.append("    " + "handling = skip")
+        texture_override_shapekeys_section.append("    " + "run = CommandListSetupShapeKeys")
+        texture_override_shapekeys_section.append("    " + "run = CommandListLoadShapeKeys")
+        texture_override_shapekeys_section.append("  " + "endif")
+        texture_override_shapekeys_section.append("endif")
+        texture_override_shapekeys_section.new_line()
+
+        texture_override_shapekeys_section.append("[TextureOverrideShapeKeyMultiplierCallback]")
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.vb0_hash)
+        texture_override_shapekeys_section.append("match_priority = 0")
+        texture_override_shapekeys_section.append("if $mod_enabled")
+        texture_override_shapekeys_section.append("  " + "if cs == 3381.4444 && ResourceMergedSkeleton !== null")
+        texture_override_shapekeys_section.append("    " + "handling = skip")
+        texture_override_shapekeys_section.append("    " + "run = CommandListMultiplyShapeKeys")
+        texture_override_shapekeys_section.append("  " + "endif")
+        texture_override_shapekeys_section.append("endif")
+        texture_override_shapekeys_section.new_line()
+
+
+        ini_builder.append_section(texture_override_shapekeys_section)
+
+    @classmethod
+    def add_resource_shapekeys(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        resource_shapekeys_section = M_IniSection(M_SectionType.ResourceShapeKeysOverride)
+
+        # TODO 这些array后面的值可能是动态计算得到的
+        resource_shapekeys_section.append("[ResourceShapeKeyCBRW]")
+        resource_shapekeys_section.append("type = RWBuffer")
+        resource_shapekeys_section.append("format = R32G32B32A32_UINT")
+        resource_shapekeys_section.append("array = 66")
+
+        resource_shapekeys_section.append("[ResourceCustomShapeKeyValuesRW]")
+        resource_shapekeys_section.append("type = RWBuffer")
+        resource_shapekeys_section.append("format = R32G32B32A32_FLOAT")
+        resource_shapekeys_section.append("array = 32")
+
+        ini_builder.append_section(resource_shapekeys_section)
+
+    @classmethod
+    def add_resource_skeleton(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        resource_skeleton_section = M_IniSection(M_SectionType.ResourceSkeletonOverride)
+
+        # TODO 这些array后面的值可能是动态计算得到的
+        resource_skeleton_section.append("[ResourceMergedSkeleton]")
+        resource_skeleton_section.new_line()
+
+        resource_skeleton_section.append("[ResourceMergedSkeletonRW]")
+        resource_skeleton_section.append("type = RWBuffer")
+        resource_skeleton_section.append("format = R32G32B32A32_FLOAT")
+        resource_skeleton_section.append("array = 768")
+        resource_skeleton_section.new_line()
+
+        resource_skeleton_section.append("[ResourceExtraMergedSkeleton]")
+        resource_skeleton_section.new_line()
+
+        resource_skeleton_section.append("[ResourceExtraMergedSkeletonRW]")
+        resource_skeleton_section.append("type = RWBuffer")
+        resource_skeleton_section.append("format = R32G32B32A32_FLOAT")
+        resource_skeleton_section.append("array = 768")
+
+        ini_builder.append_section(resource_skeleton_section)
+
+    @classmethod
+    def add_resource_buffer(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+        resource_buffer_section = M_IniSection(M_SectionType.ResourceBuffer)
+
+        # IndexBuffer
+        resource_buffer_section.append("[ResourceIndexBuffer]")
+        resource_buffer_section.append("type = Buffer")
+        resource_buffer_section.append("format = DXGI_FORMAT_R32_UINT")
+        resource_buffer_section.append("stride = 12")
+        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "Head.buf")
+        resource_buffer_section.new_line()
+
+        # CategoryBuffer
+        for category_name,category_stride in draw_ib_model.d3d11GameType.CategoryStrideDict.items():
+            resource_buffer_section.append("[Resource" + category_name + "Buffer]")
+            resource_buffer_section.append("type = Buffer")
+
+            # 根据不同的分类指定不同的format
+            if category_name == "Position":
+                resource_buffer_section.append("format = DXGI_FORMAT_R32G32B32_FLOAT")
+            elif category_name == "Blend":
+                resource_buffer_section.append("format = DXGI_FORMAT_R8_UINT")
+            elif category_name == "Vector":
+                resource_buffer_section.append("format = DXGI_FORMAT_R8G8B8A8_SNORM")
+            elif category_name == "Color":
+                resource_buffer_section.append("format = DXGI_FORMAT_R8G8B8A8_UNORM")
+            elif category_name == "Texcoord":
+                resource_buffer_section.append("format = DXGI_FORMAT_R16G16_FLOAT")
+            
+            resource_buffer_section.append("stride = " + str(category_stride))
+            resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
+            resource_buffer_section.new_line()
+
+        # ShapeKeyBuffer
+        resource_buffer_section.append("[ResourceShapeKeyOffsetBuffer]")
+        resource_buffer_section.append("type = Buffer")
+        resource_buffer_section.append("format = DXGI_FORMAT_R32G32B32A32_UINT")
+        resource_buffer_section.append("stride = 16")
+        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "ShapeKeyOffset.buf")
+        resource_buffer_section.new_line()
+
+        resource_buffer_section.append("[ResourceShapeKeyVertexIdBuffer]")
+        resource_buffer_section.append("type = Buffer")
+        resource_buffer_section.append("format = DXGI_FORMAT_R32_UINT")
+        resource_buffer_section.append("stride = 4")
+        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "ShapeKeyVertexId.buf")
+        resource_buffer_section.new_line()
+
+        resource_buffer_section.append("[ResourceShapeKeyVertexOffsetBuffer]")
+        resource_buffer_section.append("type = Buffer")
+        resource_buffer_section.append("format = DXGI_FORMAT_R16_FLOAT")
+        resource_buffer_section.append("stride = 2")
+        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "ShapeKeyVertexOffset.buf")
+        resource_buffer_section.new_line()
+
+        ini_builder.append_section(resource_buffer_section)
+
+    @classmethod
     def generate_unreal_vs_config_ini(cls):
         '''
         Supported Games:
@@ -298,8 +469,11 @@ class M_UnrealIniModel:
             cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-            
+            cls.add_texture_override_shapekeys(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
+            cls.add_resource_shapekeys(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_skeleton(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_resource_buffer(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             
             # 移动槽位贴图
             M_IniHelper.move_slot_style_textures(draw_ib_model=draw_ib_model)

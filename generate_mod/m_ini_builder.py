@@ -11,6 +11,7 @@ class M_SectionType:
     TextureOverrideVertexLimitRaise = "TextureOverrideVertexLimitRaise"
     TextureOverrideTexture = "TextureOverrideTexture"
     TextureOverrideGeneral = "TextureOverrideGeneral" # 除VB IB VLR之外的通用类型
+    TextureOverrideShapeKeys = "TextureOverrideShapeKeys" # Unreal形态键专用，目前只测试了WWMI
 
     IBSkip = "IBSkip"
 
@@ -18,6 +19,8 @@ class M_SectionType:
     ResourceTexture = "ResourceTexture"
     ResourceAndTextureOverride_Texture = "ResourceAndTextureOverride_Texture" # 用于Hash风格贴图中方便Resource和TextureOverride放在一起
     ResourceModInfo = "ResourceModInfo" # WWMI里的Mod作者信息部分
+    ResourceShapeKeysOverride = "ResourceShapeKeysOverride"
+    ResourceSkeletonOverride = "ResourceSkeletonOverride"
 
     CreditInfo = "CreditInfo"
     CommandList = "CommandList"
@@ -95,7 +98,13 @@ class M_IniBuilder:
 
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
+        self.__append_section_line(M_SectionType.TextureOverrideShapeKeys)
+
         self.__append_section_line(M_SectionType.CommandList)
+
+        self.__append_section_line(M_SectionType.ResourceShapeKeysOverride)
+
+        self.__append_section_line(M_SectionType.ResourceSkeletonOverride)
 
         self.__append_section_line(M_SectionType.ResourceBuffer)
 
