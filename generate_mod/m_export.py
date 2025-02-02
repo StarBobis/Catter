@@ -449,8 +449,13 @@ class BufferModel:
                 elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                     self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendindices)
                 elif d3d11_element.Format == 'R8G8B8A8_UINT':
+                    # XXX 这里不能直接.astype(numpy.uint8)否则[0 0 0 0]转换后会变成[11 10 0 0]
+                    print("----")
+                    print(blendindices[0])
                     blendindices.astype(numpy.uint8)
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices
+                    print(self.element_vertex_ndarray[d3d11_element_name][0])
+                    print("----")
                 
                 # TODO 由于导出时没有考虑权重索引的Remap，现在到游戏里就是面筋人 
                 # 这里如果使用了Remapped技术，权重索引应该恢复到原本的索引？

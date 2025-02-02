@@ -74,10 +74,7 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
             num_vertex_groups = max(itertools.chain(*itertools.chain(*blend_indices.values()))) + 1
         else:
             num_vertex_groups = max(component.vg_map.values()) + 1
-            vg_map = list(map(int, component.vg_map.values()))
         
-        # print("num_vertex_groups: " + str(num_vertex_groups))
-        # print(vg_map)
         for i in range(num_vertex_groups):
             obj.vertex_groups.new(name=str(i))
         for vertex in mesh.vertices:
@@ -89,7 +86,8 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
                     if component is None:
                         obj.vertex_groups[i].add((vertex.index,), w, 'REPLACE')
                     else:
-                        obj.vertex_groups[vg_map[i]].add((vertex.index,), w, 'REPLACE')
+                        # 这里由于C++生成的json文件是无序的，所以我们这里读取的时候要用原始的map而不是转换成列表的索引，避免无序问题
+                        obj.vertex_groups[component.vg_map[str(i)]].add((vertex.index,), w, 'REPLACE')
 
 
 def import_uv_layers(mesh, obj, texcoords):
@@ -299,6 +297,8 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     mesh_name = os.path.basename(fmt_path)
     if mesh_name.endswith(".fmt"):
         mesh_name = mesh_name[0:len(mesh_name) - 4]
+    
+    print("import meshname: " + mesh_name)
 
     # create mesh and obj
     mesh = bpy.data.meshes.new(mesh_name)
@@ -338,6 +338,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # TimerUtils.Start("Read Metadata")
     component = None
     if bpy.context.scene.dbmt.import_merged_vgmap:
+        print("尝试读取Metadata.json")
         metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
         if os.path.exists(metadatajsonpath):
             # print("鸣潮读取Metadata.json")
@@ -345,9 +346,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
             fmt_filename = os.path.splitext(os.path.basename(fmt_path))[0]
             if "-" in fmt_filename:
                 partname_count = int(fmt_filename.split("-")[1]) - 1
+                print("import partname count: " + str(partname_count))
                 component = extracted_object.components[partname_count]
     # TimerUtils.End("Read Metadata") # 0:00:00.001490 
-
 
     import_vertex_groups(mesh, obj, blend_indices, blend_weights, component)
 
