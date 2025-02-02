@@ -5,6 +5,8 @@ from .m_ini_builder import *
 from .m_drawib_model import *
 from .m_ini_helper import M_IniHelper
 
+
+
 class M_UnityIniModel:
     '''
     This used in :
@@ -199,61 +201,12 @@ class M_UnityIniModel:
             component_name = "Component " + part_name 
             model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
-            toggle_type_number = 0
-            switch_type_number = 0
-
-            toggle_model_collection_list:list[ModelCollection] = []
-            switch_model_collection_list:list[ModelCollection] = []
-
-            for toggle_model_collection in model_collection_list:
-                if toggle_model_collection.type == "toggle":
-                    toggle_type_number = toggle_type_number + 1
-                    toggle_model_collection_list.append(toggle_model_collection)
-                elif toggle_model_collection.type == "switch":
-                    switch_type_number = switch_type_number + 1
-                    switch_model_collection_list.append(toggle_model_collection)
-
-
-
-            # Component DrawIndexed输出
-            # 输出按键切换的DrawIndexed
-            if toggle_type_number >= 2:
-                for toggle_count in range(toggle_type_number):
-                    if toggle_count == 0:
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
-                    else:
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
-
-                    toggle_model_collection = toggle_model_collection_list[toggle_count]
-                    for obj_name in toggle_model_collection.obj_name_list:
-                        m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
-
-                texture_override_ib_commandlist_section.append("endif")
-                texture_override_ib_commandlist_section.new_line()
-
-                cls.global_key_index_logic = cls.global_key_index_logic + 1
-            elif toggle_type_number != 0:
-                for toggle_model_collection in toggle_model_collection_list:
-                    for obj_name in toggle_model_collection.obj_name_list:
-                        m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + m_drawindexed.get_draw_str())
-                        texture_override_ib_commandlist_section.new_line()
-
-            # 输出按键开关的DrawIndexed
-            for switch_model_collection in switch_model_collection_list:
-                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + "  == 1")
-                for obj_name in switch_model_collection.obj_name_list:
-                    m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
-                    texture_override_ib_commandlist_section.new_line()
-                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "endif")
-                texture_override_ib_commandlist_section.new_line()
-                cls.global_key_index_logic = cls.global_key_index_logic + 1
+            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent=cls.vlr_filter_index_indent,input_global_key_index_logic=cls.global_key_index_logic)
+            for drawindexed_str in drawindexed_list:
+                texture_override_ib_commandlist_section.append(drawindexed_str)
+            cls.global_key_index_logic = added_global_key_index_logic
             
+            # 补全endif
             if cls.vlr_filter_index_indent:
                 texture_override_ib_section.append("endif")
                 texture_override_ib_section.new_line()
@@ -468,25 +421,7 @@ class M_UnityIniModel:
                         if original_category_name == draw_category_name:
                             category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
                             texture_override_ib_section.append(cls.vlr_filter_index_indent + category_original_slot + " = Resource" + draw_ib + original_category_name)
-
-            # Component DrawIndexed输出
-            component_name = "Component " + part_name 
-            model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
-
-            toggle_type_number = 0
-            switch_type_number = 0
-
-            toggle_model_collection_list:list[ModelCollection] = []
-            switch_model_collection_list:list[ModelCollection] = []
-
-            for toggle_model_collection in model_collection_list:
-                if toggle_model_collection.type == "toggle":
-                    toggle_type_number = toggle_type_number + 1
-                    toggle_model_collection_list.append(toggle_model_collection)
-                elif toggle_model_collection.type == "switch":
-                    switch_type_number = switch_type_number + 1
-                    switch_model_collection_list.append(toggle_model_collection)
-
+            
             # Initialize CommandList
             texture_override_ib_commandlist_section = M_IniSection(M_SectionType.CommandList)
             texture_override_ib_commandlist_section.append("[CommandList_" + texture_override_ib_namesuffix + "]")
@@ -495,43 +430,15 @@ class M_UnityIniModel:
             texture_override_ib_section.append("run = CommandList_" + texture_override_ib_namesuffix)
             texture_override_ib_section.new_line()
 
-            # 输出按键切换的DrawIndexed
-            if toggle_type_number >= 2:
-                for toggle_count in range(toggle_type_number):
-                    if toggle_count == 0:
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
-                    else:
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "else if $swapkey" + str(cls.global_key_index_logic) + " == " + str(toggle_count))
 
-                    toggle_model_collection = toggle_model_collection_list[toggle_count]
-                    for obj_name in toggle_model_collection.obj_name_list:
-                        m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
+            # Component DrawIndexed输出
+            component_name = "Component " + part_name 
+            model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
-                texture_override_ib_commandlist_section.append("endif")
-                texture_override_ib_commandlist_section.new_line()
-
-                cls.global_key_index_logic = cls.global_key_index_logic + 1
-            elif toggle_type_number != 0:
-                for toggle_model_collection in toggle_model_collection_list:
-                    for obj_name in toggle_model_collection.obj_name_list:
-                        m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                        texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + m_drawindexed.get_draw_str())
-                        texture_override_ib_commandlist_section.new_line()
-
-            # 输出按键开关的DrawIndexed
-            for switch_model_collection in switch_model_collection_list:
-                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "if $swapkey" + str(cls.global_key_index_logic) + "  == 1")
-                for obj_name in switch_model_collection.obj_name_list:
-                    m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
-                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
-                    texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent  + m_drawindexed.get_draw_str())
-                    texture_override_ib_commandlist_section.new_line()
-                texture_override_ib_commandlist_section.append(cls.vlr_filter_index_indent + "endif")
-                texture_override_ib_commandlist_section.new_line()
-                cls.global_key_index_logic = cls.global_key_index_logic + 1
+            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent=cls.vlr_filter_index_indent,input_global_key_index_logic=cls.global_key_index_logic)
+            for drawindexed_str in drawindexed_list:
+                texture_override_ib_commandlist_section.append(drawindexed_str)
+            cls.global_key_index_logic = added_global_key_index_logic
             
             if cls.vlr_filter_index_indent:
                 texture_override_ib_commandlist_section.append("endif")

@@ -101,7 +101,7 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
 
     every_drawib_single_ib_file:bpy.props.BoolProperty(
         name="Every DrawIB Single IB File",
-        description="If True, only generate one IndexBuffer file for every DrawIB, if False, generate IB File for every component in a DrawIB.",
+        description="If True, only generate one IndexBuffer file for every DrawIB, if False, generate IB File for every component in a DrawIB. 可修复ZZZ部分场景中由光照导致的卡顿问题，WWMI暂时需要勾选",
         default=False
     ) # type: ignore
 

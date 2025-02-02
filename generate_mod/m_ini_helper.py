@@ -4,7 +4,7 @@ import shutil
 from .m_ini_builder import *
 from ..utils.json_utils import JsonUtils
 from ..config.main_config import MainConfig, GenerateModConfig
-from .m_drawib_model import DrawIBModel
+from .m_drawib_model import DrawIBModel,ModelCollection
 
 
 class M_IniHelper:
@@ -227,3 +227,65 @@ class M_IniHelper:
                     shutil.copy2(original_texture_file_path,target_texture_file_path)
 
         texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "TextureReplace.ini")
+
+    @classmethod
+    def get_switchkey_drawindexed_list(cls,model_collection_list:list[ModelCollection],draw_ib_model:DrawIBModel,vlr_filter_index_indent:str,input_global_key_index_logic:int):
+        '''
+        生成按键开关集合喝按键切换集合的DrawIndexed以及对应注释
+        是Catter集合架构的通用方法
+        返回一个字符串列表和global_key_index_logic
+        字符串列表需要放到对应的ini_section中，global_key_index_logic需要赋值给全局的对应变量
+        '''
+        drawindexed_list = []
+        global_key_index_logic = input_global_key_index_logic
+
+        toggle_type_number = 0
+        toggle_model_collection_list:list[ModelCollection] = []
+        switch_model_collection_list:list[ModelCollection] = []
+
+        for toggle_model_collection in model_collection_list:
+            if toggle_model_collection.type == "toggle":
+                toggle_type_number = toggle_type_number + 1
+                toggle_model_collection_list.append(toggle_model_collection)
+            elif toggle_model_collection.type == "switch":
+                switch_model_collection_list.append(toggle_model_collection)
+
+        # 输出按键切换的DrawIndexed
+        if toggle_type_number >= 2:
+            for toggle_count in range(toggle_type_number):
+                if toggle_count == 0:
+                    drawindexed_list.append(vlr_filter_index_indent + "if $swapkey" + str(global_key_index_logic) + " == " + str(toggle_count))
+                else:
+                    drawindexed_list.append(vlr_filter_index_indent + "else if $swapkey" + str(global_key_index_logic) + " == " + str(toggle_count))
+
+                toggle_model_collection = toggle_model_collection_list[toggle_count]
+                for obj_name in toggle_model_collection.obj_name_list:
+                    m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
+                    drawindexed_list.append(vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                    drawindexed_list.append(vlr_filter_index_indent  + m_drawindexed.get_draw_str())
+
+            drawindexed_list.append("endif")
+            drawindexed_list.append("\n")
+
+            global_key_index_logic = global_key_index_logic + 1
+        elif toggle_type_number != 0:
+            for toggle_model_collection in toggle_model_collection_list:
+                for obj_name in toggle_model_collection.obj_name_list:
+                    m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
+                    drawindexed_list.append(vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                    drawindexed_list.append(vlr_filter_index_indent + m_drawindexed.get_draw_str())
+                    drawindexed_list.append("\n")
+
+        # 输出按键开关的DrawIndexed
+        for switch_model_collection in switch_model_collection_list:
+            drawindexed_list.append(vlr_filter_index_indent + "if $swapkey" + str(global_key_index_logic) + "  == 1")
+            for obj_name in switch_model_collection.obj_name_list:
+                m_drawindexed = draw_ib_model.obj_name_drawindexed_dict[obj_name]
+                drawindexed_list.append(vlr_filter_index_indent + "; " + m_drawindexed.AliasName)
+                drawindexed_list.append(vlr_filter_index_indent  + m_drawindexed.get_draw_str())
+                drawindexed_list.append("\n")
+            drawindexed_list.append(vlr_filter_index_indent + "endif")
+            drawindexed_list.append("\n")
+            global_key_index_logic = global_key_index_logic + 1
+        
+        return drawindexed_list, global_key_index_logic
