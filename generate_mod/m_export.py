@@ -9,8 +9,8 @@ from ..utils.migoto_utils import Fatal, MigotoUtils
 
 from .d3d11_game_type import D3D11GameType
 
-from ..config.generate_mod_config import GenerateModConfig
-
+from ..config.generate_mod_config import GenerateModConfig 
+from ..config.main_config import MainConfig,GameCategory
 
 class BufferDataConverter:
     '''
@@ -374,8 +374,11 @@ class BufferModel:
                 mesh_loops.foreach_get("tangent", tangents)
                 mesh_loops.foreach_get("bitangent_sign", bitangent_signs)
 
-                # 将副切线符号乘以 -1（因为在导入时翻转了UV，所以导出时必须翻转bitangent_signs）
-                bitangent_signs *= -1
+                # XXX 将副切线符号乘以 -1
+                # 这里翻转（翻转指的就是 *= -1）是因为如果要确保Unity游戏中渲染正确，必须翻转TANGENT的W分量
+                if MainConfig.get_game_category() == GameCategory.UnityCS or MainConfig.get_game_category() == GameCategory.UnityVS:
+                    bitangent_signs *= -1
+                # 但是Unreal引擎中无需翻转，这里必须得注意。
 
                 # 将切线分量放置到输出数组中
                 result[0::4] = tangents[0::3]  # x 分量
@@ -472,6 +475,13 @@ class BufferModel:
                         self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                         self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
+            
+            
+            # XXX 如果是UnrealVS，则必须交换NORMAL和TANGENT的W分量，才能修正游戏内阴影问题
+            if MainConfig.get_game_category() == "UnrealVS":
+                # 必须确保当前数据类型中存在NORMAL和TANGENT时，才能进行交换
+                pass
+                # self.element_vertex_ndarray["NORMAL"][3::4] = 
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
