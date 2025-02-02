@@ -90,7 +90,6 @@ class M_IniBuilder:
 
         self.__append_section_line(M_SectionType.IBSkip)
 
-        self.__append_section_line(M_SectionType.TextureOverrideGeneral)
 
         self.__append_section_line(M_SectionType.TextureOverrideVertexLimitRaise)
 
@@ -99,6 +98,8 @@ class M_IniBuilder:
         self.__append_section_line(M_SectionType.TextureOverrideIB)
 
         self.__append_section_line(M_SectionType.TextureOverrideShapeKeys)
+
+        self.__append_section_line(M_SectionType.TextureOverrideGeneral)
 
         self.__append_section_line(M_SectionType.CommandList)
 

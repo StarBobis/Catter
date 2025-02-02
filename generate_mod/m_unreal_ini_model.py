@@ -204,7 +204,7 @@ class M_UnrealIniModel:
         这里第一个版本我们暂时不提供可以指定Mod信息的功能，所以全部都用的是默认的值
         TODO 这个可以放入M_IniHelper中
         '''
-        resource_mod_info_section = M_IniSection(M_SectionType.ResourceBuffer)
+        resource_mod_info_section = M_IniSection(M_SectionType.ResourceModInfo)
 
         resource_mod_info_section.append("[ResourceModName]")
         resource_mod_info_section.append("type = Buffer")
@@ -252,6 +252,7 @@ class M_UnrealIniModel:
     def add_texture_override_component(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
         '''
         TODO 这里我们先考虑MergedSkeleton的情况，因为这个最常用，后面再写分开的VGS的情况
+        
         '''
         
         texture_override_component = M_IniSection(M_SectionType.TextureOverrideIB)
@@ -288,7 +289,7 @@ class M_UnrealIniModel:
 
             drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent="",input_global_key_index_logic=cls.global_key_index_logic)
             for drawindexed_str in drawindexed_list:
-                texture_override_component.append(drawindexed_str)
+                texture_override_component.append("    " + drawindexed_str)
             cls.global_key_index_logic = added_global_key_index_logic
 
             texture_override_component.append("    " + "run = CommandListCleanupSharedResources")
@@ -300,7 +301,7 @@ class M_UnrealIniModel:
     
     @classmethod
     def add_texture_override_shapekeys(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
-        texture_override_shapekeys_section = M_IniSection(M_SectionType.TextureOverrideGeneral)
+        texture_override_shapekeys_section = M_IniSection(M_SectionType.TextureOverrideShapeKeys)
 
         texture_override_shapekeys_section.append("[TextureOverrideShapeKeyOffsets]")
         texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
