@@ -153,6 +153,8 @@ class M_UnityIniModel:
             # If ib buf is emprt, continue to avoid add ib resource replace.
             ib_buf = draw_ib_model.componentname_ibbuf_dict.get("Component " + part_name,None)
             if ib_buf is None or len(ib_buf) == 0:
+                # 不导出对应部位时，要写ib = null，否则在部分场景会发生卡顿，原因未知但是这就是解决方案。
+                texture_override_ib_section.append("ib = null")
                 texture_override_ib_section.new_line()
                 continue
 
