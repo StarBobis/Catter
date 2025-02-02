@@ -95,7 +95,7 @@ class M_UnrealIniModel:
         commandlist_section.append("$\\WWMIv1\\required_wwmi_version = $required_wwmi_version")
         commandlist_section.append("$\\WWMIv1\\object_guid = $object_guid")
         commandlist_section.append("Resource\\WWMIv1\\ModName = ref ResourceModName")
-        commandlist_section.append("Resource\\WWMIv1\\ModAutohr = ref ResourceModAuthor")
+        commandlist_section.append("Resource\\WWMIv1\\ModAuthor = ref ResourceModAuthor")
         commandlist_section.append("Resource\\WWMIv1\\ModDesc = ref ResourceModDesc")
         commandlist_section.append("Resource\\WWMIv1\\ModLink = ref ResourceModLink")
         commandlist_section.append("Resource\\WWMIv1\\ModLogo = ref ResourceModLogo")
@@ -173,7 +173,7 @@ class M_UnrealIniModel:
         # TODO ShapeKey的CommandList只有在ShapeKey存在时才加入，物体Mod不加入
         # CommandListSetupShapeKeys
         commandlist_section.append("[CommandListSetupShapeKeys]")
-        commandlist_section.append("$\\WWMIv1\\shapekey_checksum" + str(draw_ib_model.extracted_object.shapekeys.checksum))
+        commandlist_section.append("$\\WWMIv1\\shapekey_checksum = " + str(draw_ib_model.extracted_object.shapekeys.checksum))
         commandlist_section.append("cs-t33 = ResourceShapeKeyOffsetBuffer")
         commandlist_section.append("cs-u5 = ResourceCustomShapeKeyValuesRW")
         commandlist_section.append("cs-u6 = ResourceShapeKeyCBRW")
@@ -263,6 +263,7 @@ class M_UnrealIniModel:
             # print(str(component_count))
             
             texture_override_component.append("[TextureOverrideComponent" + component_count_str + "]")
+            texture_override_component.append("hash = " + draw_ib_model.extracted_object.vb0_hash)
             texture_override_component.append("match_first_index = " + str(component_object.index_offset))
             texture_override_component.append("match_index_count = " + str(component_object.index_count))
             texture_override_component.append("$object_detected = 1")
@@ -285,7 +286,7 @@ class M_UnrealIniModel:
 
             model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
-            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent=cls.vlr_filter_index_indent,input_global_key_index_logic=cls.global_key_index_logic)
+            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent="",input_global_key_index_logic=cls.global_key_index_logic)
             for drawindexed_str in drawindexed_list:
                 texture_override_component.append(drawindexed_str)
             cls.global_key_index_logic = added_global_key_index_logic
@@ -316,7 +317,7 @@ class M_UnrealIniModel:
         texture_override_shapekeys_section.new_line()
 
         texture_override_shapekeys_section.append("[TextureOverrideShapeKeyLoaderCallback]")
-        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.vb0_hash)
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
         texture_override_shapekeys_section.append("match_priority = 0")
         texture_override_shapekeys_section.append("if $mod_enabled")
         texture_override_shapekeys_section.append("  " + "if cs == 3381.3333 && ResourceMergedSkeleton !== null")
@@ -328,7 +329,7 @@ class M_UnrealIniModel:
         texture_override_shapekeys_section.new_line()
 
         texture_override_shapekeys_section.append("[TextureOverrideShapeKeyMultiplierCallback]")
-        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.vb0_hash)
+        texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
         texture_override_shapekeys_section.append("match_priority = 0")
         texture_override_shapekeys_section.append("if $mod_enabled")
         texture_override_shapekeys_section.append("  " + "if cs == 3381.4444 && ResourceMergedSkeleton !== null")
@@ -466,13 +467,13 @@ class M_UnrealIniModel:
             # XXX 在这里添加主要的ini生成逻辑
             cls.add_constants_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
             cls.add_present_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_commandlist_section(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_commandlist_section(ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model)
+
+            cls.add_texture_override_mark_bone_data_cb(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_texture_override_component(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+            cls.add_texture_override_shapekeys(ini_builder=config_ini_builder,draw_ib_model=draw_ib_model)
+
             cls.add_resource_mod_info_section_default(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-
-            cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_texture_override_shapekeys(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-
             cls.add_resource_shapekeys(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_skeleton(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_buffer(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)

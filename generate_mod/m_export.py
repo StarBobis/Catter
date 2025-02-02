@@ -289,6 +289,7 @@ class BufferModel:
         all_groups = numpy.zeros((len(mesh_vertices), max_groups), dtype=int)
         all_weights = numpy.zeros((len(mesh_vertices), max_groups), dtype=numpy.float32)
 
+
         # Fill the pre-allocated arrays with group indices and weights.
         for v_index, groups in enumerate(sorted_groups):
             num_groups = min(len(groups), max_groups)
@@ -447,6 +448,13 @@ class BufferModel:
                     self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendindices)
                 elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                     self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendindices)
+                elif d3d11_element.Format == 'R8G8B8A8_UINT':
+                    blendindices.astype(numpy.uint8)
+                    self.element_vertex_ndarray[d3d11_element_name] = blendindices
+                
+                # TODO 由于导出时没有考虑权重索引的Remap，现在到游戏里就是面筋人 
+                # 这里如果使用了Remapped技术，权重索引应该恢复到原本的索引？
+
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
