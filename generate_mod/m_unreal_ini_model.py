@@ -11,6 +11,8 @@ class M_UnrealIniModel:
     Unreal Engine VertexShader PreSkinning
     Unreal Engine ComputeShader PreSkinning
     Unreal Engine CPU PreSkinning
+
+    TODO 暂时先用WWMI测试，走通整个流程
     '''
     drawib_drawibmodel_dict:dict[str,DrawIBModel] = {}
     shapekeys = {}
