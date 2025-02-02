@@ -197,7 +197,6 @@ class M_UnityIniModel:
             # CommandList initialize
             texture_override_ib_commandlist_section.append("[CommandList_" + texture_override_name_suffix + "]")
 
-            # TODO 抽象成方法，返回DrawIndexed对应内容的字符串列表
             component_name = "Component " + part_name 
             model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 

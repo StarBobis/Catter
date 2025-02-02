@@ -252,7 +252,12 @@ class M_UnrealIniModel:
             texture_override_component.append("    " + "run = CommandListOverrideSharedResources")
             texture_override_component.append("    " + "; Draw Component " + component_count_str)
 
-            # TODO 这里的drawindexed部分，由于之前的代码可以复用，而且要融合我们的集合架构，所以这里必须先完成对之前方法迁移到M_IniHelper中,方便复用
+            model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
+
+            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent=cls.vlr_filter_index_indent,input_global_key_index_logic=cls.global_key_index_logic)
+            for drawindexed_str in drawindexed_list:
+                texture_override_component.append(drawindexed_str)
+            cls.global_key_index_logic = added_global_key_index_logic
 
             texture_override_component.append("    " + "run = CommandListCleanupSharedResources")
             texture_override_component.append("  endif")
@@ -293,6 +298,7 @@ class M_UnrealIniModel:
             cls.add_texture_override_mark_bone_data_cb(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
 
             cls.add_texture_override_component(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+            
 
             
             # 移动槽位贴图
