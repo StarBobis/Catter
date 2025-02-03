@@ -372,6 +372,8 @@ class DrawIBModel:
         TODO 现在就差形态键部分了，还是之前的老问题
         必须得融合所有的mesh到一个mesh里，才能解决获取mesh.loop里的vertex_id与mesh.vertices的vertex_id的对应值问题
         所以这里打算重写，直接把WWMI里的搬过来。
+
+        TODO 整个导出架构都得重写，在导出之前就应该融合obj
         '''
         TimerUtils.Start("read shapekey data")
 

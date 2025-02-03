@@ -560,7 +560,8 @@ class BufferModel:
                     for blender_lvertex in mesh.loops[poly.loop_start:poly.loop_start + poly.loop_total]
                         ]for poly in mesh.polygons] 
             
-            # TODO 这里暂时还不确定，因为之前测试发现用不到这个索引数据
+            # TODO 这里100%会用到，因为必须得到一个loop_vertex_id和普通vertex_id的对应列表。
+            
             # 很显然上面注释掉的才是最快的，但是没办法，我们必须得获取每个draw的索引对应的顶点索引
             # ib = []
             # for poly in mesh.polygons:

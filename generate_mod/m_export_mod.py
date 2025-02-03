@@ -100,6 +100,7 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
             self.report({'ERROR'},result)
             return {'FINISHED'}
         
+        # TODO 首先在这里进行融合obj为一个整体
         for draw_ib_collection in workspace_collection.children:
             # Skip hide collection.
             if not CollectionUtils.is_collection_visible(draw_ib_collection.name):
@@ -110,6 +111,9 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
             draw_ib = draw_ib_alias_name.split("_")[0]
             draw_ib_model = DrawIBModel(draw_ib_collection)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
+
+        # TODO 融合后对这个obj进行生成Mod，涉及较大的架构变更
+        
 
         # ModModel填充完毕后，开始输出Mod
         M_UnrealIniModel.generate_unreal_vs_config_ini()
