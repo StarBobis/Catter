@@ -307,10 +307,10 @@ class BufferModel:
         blendindices[valid_mask] = all_groups[valid_indices]
         blendweights[valid_mask] = all_weights[valid_indices]
 
+        # XXX 必须对当前obj对象执行权重规格化，否则模型细分后会导致模型坑坑洼洼
         if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
-            if GenerateModConfig.export_normalize_all():
-                if blendweights_formatlen > 1:
-                    blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
+            if blendweights_formatlen > 1:
+                blendweights = blendweights / numpy.sum(blendweights, axis=1)[:, None]
 
         # TimerUtils.End("GET BLEND")
 

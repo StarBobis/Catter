@@ -339,7 +339,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     #  metadata.json, if contains then we can import merged vgmap.
     # TimerUtils.Start("Read Metadata")
     component = None
-    if bpy.context.scene.dbmt.import_merged_vgmap:
+    if ImportModelConfig.import_merged_vgmap():
         print("尝试读取Metadata.json")
         metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
         if os.path.exists(metadatajsonpath):
@@ -495,9 +495,8 @@ class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
         # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
         CollectionUtils.select_collection_objects(collection)
 
-        if ImportModelConfig.import_delete_loose():
-            # 用户希望导入后删除松散点
-            ObjUtils.selected_obj_delete_loose()
+        # XXX 导入后必须删除松散点，因为在游戏渲染里松散的点不是三角面，在trianglelist中无意义
+        ObjUtils.selected_obj_delete_loose()
 
         return {'FINISHED'}
 
@@ -574,9 +573,9 @@ def ImprotFromWorkSpace(self, context):
     # Select all objects under collection (因为用户习惯了导入后就是全部选中的状态). 
     CollectionUtils.select_collection_objects(workspace_collection)
 
-    if ImportModelConfig.import_delete_loose():
-        # 用户希望导入后删除松散点
-        ObjUtils.selected_obj_delete_loose()
+    
+    # XXX 导入后必须删除松散点，因为在游戏渲染里松散的点不是三角面，在trianglelist中无意义
+    ObjUtils.selected_obj_delete_loose()
 
 
 class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):

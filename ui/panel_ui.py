@@ -68,9 +68,9 @@ class PanelModelImportConfig(bpy.types.Panel):
         layout.prop(context.scene.dbmt,"model_scale")
         #import_flip_coordinate_x 
         layout.prop(context.scene.dbmt,"import_flip_scale_x")
-        layout.prop(context.scene.dbmt,"import_delete_loose")
-        layout.prop(context.scene.dbmt,"import_merged_vgmap")
-        draw_seperator(self)
+
+        if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+            layout.prop(context.scene.dbmt,"import_merged_vgmap")
 
 
 
@@ -84,21 +84,32 @@ class PanelGenerateModConfig(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
-        layout.prop(context.scene.dbmt_generatemod, "export_same_number")
-        layout.prop(context.scene.dbmt_generatemod, "export_normalize_all")
-        layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
-        layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
-        layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
-        layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
-        layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
-        layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
-        layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
-        layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
-        # every_drawib_single_ib_file
-        layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
-        # generate_to_seperate_ini
-        layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
+        # 根据当前游戏类型判断哪些应该显示哪些不显示。
+        # 因为UnrealVS显然无法支持这里所有的特性，每个游戏只能支持一部分特性。
+        # TODO panel_ui.py应该拆分为Unity和Unreal的，便于划分管理
+        # 否则全部堆在一起越来越多。
+        if MainConfig.get_game_category() == GameCategory.UnityVS or MainConfig.get_game_category() == GameCategory.UnityCS:
+            layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
+            layout.prop(context.scene.dbmt_generatemod, "export_same_number")
+            layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
+            layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
+            layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
+            layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
+            layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
+            layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
+            layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
+            layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
+            # every_drawib_single_ib_file
+            layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
+            # generate_to_seperate_ini
+            layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
+        elif MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+            layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
+            layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
+            layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
+            layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
+            
+
 
 
 class PanelButtons(bpy.types.Panel):

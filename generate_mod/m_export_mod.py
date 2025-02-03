@@ -31,7 +31,7 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
             # get drawib
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection)
+            draw_ib_model = DrawIBModel(draw_ib_collection,False)
             M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
@@ -69,7 +69,7 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
             # get drawib
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection)
+            draw_ib_model = DrawIBModel(draw_ib_collection,False)
             M_UnityIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod
@@ -109,7 +109,7 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
             # get drawib
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection)
+            draw_ib_model = DrawIBModel(draw_ib_collection,True)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # TODO 融合后对这个obj进行生成Mod，涉及较大的架构变更
@@ -152,7 +152,7 @@ class DBMTExportUnrealCSModToWorkSpace(bpy.types.Operator):
             # get drawib
             draw_ib_alias_name = CollectionUtils.get_clean_collection_name(draw_ib_collection.name)
             draw_ib = draw_ib_alias_name.split("_")[0]
-            draw_ib_model = DrawIBModel(draw_ib_collection)
+            draw_ib_model = DrawIBModel(draw_ib_collection,True)
             M_UnrealIniModel.drawib_drawibmodel_dict[draw_ib] = draw_ib_model
 
         # ModModel填充完毕后，开始输出Mod

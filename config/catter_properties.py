@@ -24,11 +24,7 @@ class CatterPropertiesImportModel(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
-    import_delete_loose :bpy.props.BoolProperty(
-        name="Delete Loose Vertices",
-        description="勾选后在导入模型时会把松散点删除，进入编辑模式就不会看见松散的没用的点影响Mod制作了，由于很常用所以默认是勾选的。",
-        default=True
-    ) # type: ignore
+
 
 
 class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
@@ -62,11 +58,6 @@ class CatterPropertiesGenerateMod(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
-    export_normalize_all: bpy.props.BoolProperty(
-        name="Normalize All Weights",
-        description="导出时把模型自动规格化权重，模型细分后必须勾选，防止模型塌陷问题。",
-        default=True
-    ) # type: ignore
 
     recalculate_tangent: bpy.props.BoolProperty(
         name="AverageNormal To TANGENT (Global)",

@@ -11,10 +11,10 @@ class ImportModelConfig:
         '''
         return bpy.context.scene.dbmt.import_flip_scale_x
     
+    # import_merged_vgmap
     @classmethod
-    def import_delete_loose(cls):
+    def import_merged_vgmap(cls):
         '''
-        bpy.context.scene.dbmt.import_delete_loose
+        bpy.context.scene.dbmt.import_merged_vgmap
         '''
-        return bpy.context.scene.dbmt.import_delete_loose
-    
+        return bpy.context.scene.dbmt.import_merged_vgmap

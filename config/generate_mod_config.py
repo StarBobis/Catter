@@ -2,7 +2,6 @@ import bpy
 
 # Simple Class to get attributes.
 # easy to use, safe to modifiy.
-# TODO 使用@property装饰器，将这些方法转换为属性，方便调用，而不是每次调用都得加()
 class GenerateModConfig:
 
     @classmethod
@@ -84,21 +83,12 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.vertex_limit_raise_add_filter_index
 
-
     @classmethod
     def slot_style_texture_add_filter_index(cls):
         '''
         bpy.context.scene.dbmt_generatemod.slot_style_texture_add_filter_index
         '''
         return bpy.context.scene.dbmt_generatemod.slot_style_texture_add_filter_index
-    
-    # export_normalize_all
-    @classmethod
-    def export_normalize_all(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.export_normalize_all
-        '''
-        return bpy.context.scene.dbmt_generatemod.export_normalize_all
     
     # every_drawib_single_ib_file
     @classmethod
@@ -115,3 +105,4 @@ class GenerateModConfig:
         bpy.context.scene.dbmt_generatemod.generate_to_seperate_ini
         '''
         return bpy.context.scene.dbmt_generatemod.generate_to_seperate_ini
+    

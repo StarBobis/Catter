@@ -62,9 +62,12 @@ class M_DrawIBHelper:
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
+
+# TODO 这个DrawIBModel应该差分，把其中内容变为工具类，然后拆分为Unity的和Unreal的两个不同类型。
+
 class DrawIBModel:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
-    def __init__(self,draw_ib_collection):
+    def __init__(self,draw_ib_collection,merge_objects:bool):
         '''
         single_ib_file 一般这个选项Unity游戏都可以填False，虚幻游戏我们沿用WWMI的传统，先使用True试验。
 
@@ -73,7 +76,10 @@ class DrawIBModel:
         self.single_ib = GenerateModConfig.every_drawib_single_ib_file()
         self.__obj_name_ib_dict:dict[str,list] = {} 
         self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
+
+        # TODO 这个WWMI的形态键生成也许会使用，当然前提是先完成obj合并功能
         # self.__obj_name_index_vertex_id_dict:dict[str,dict] = {}
+
         self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
 
@@ -85,6 +91,10 @@ class DrawIBModel:
         self.total_index_count = 0 # 每个DrawIB都有总的IndexCount数，也就是所有的IB中的所有顶点索引数量
 
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
+
+        # TODO 这几个tmp.json中的属性，需要合并一下变为一个class，然后通过class调用
+        # 和这个一起的还有WWMI的extracted_object
+        
         self.category_hash_dict = {}
         self.match_first_index_list = []
         self.part_name_list = []
@@ -240,10 +250,9 @@ class DrawIBModel:
                     # 选中当前obj对象
                     bpy.context.view_layer.objects.active = obj
 
-                    # 对当前obj对象执行权重规格化
-                    if GenerateModConfig.export_normalize_all():
-                        if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
-                            ObjUtils.normalize_all(obj)
+                    # XXX 我们在导出具体数据之前，先对模型整体的权重进行normalize_all预处理，才能让后续的具体每一个权重的normalize_all更好的工作
+                    if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
+                        ObjUtils.normalize_all(obj)
 
                     ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 
