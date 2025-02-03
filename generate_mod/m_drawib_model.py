@@ -369,8 +369,9 @@ class DrawIBModel:
         '''
         读取形态键部分
 
-        我也不想重写一遍的，但是WWMI的架构要求先合并obj，我们的架构实在是做不到优雅的合并obj
-        所以只能参照他的方法重写一份了。
+        TODO 现在就差形态键部分了，还是之前的老问题
+        必须得融合所有的mesh到一个mesh里，才能解决获取mesh.loop里的vertex_id与mesh.vertices的vertex_id的对应值问题
+        所以这里打算重写，直接把WWMI里的搬过来。
         '''
         TimerUtils.Start("read shapekey data")
 
@@ -381,35 +382,29 @@ class DrawIBModel:
 
         for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
             obj = bpy.data.objects[obj_name]
-            # LOG.newline()
             # print("Processing obj: " + obj_name)
-            # obj_index_vertex_id_dict = self.__obj_name_index_vertex_id_dict[obj_name]
             mesh = obj.data
             
             # 如果这个obj的mesh没有形态键，那就直接跳过不处理
             mesh_shapekeys = mesh.shape_keys
             if mesh_shapekeys is None:
-                print("obj: " + obj_name + " doesn't have any ShapeKey data, skip it.")
-
+                # print("obj: " + obj_name + " doesn't have any ShapeKey data, skip it.")
                 # 即使跳过了这个obj，这个顶点数偏移依然要加上，否则得到的结果是不正确的
                 vertex_count_offset = vertex_count_offset + drawindexed_obj.UniqueVertexCount
+                # vertex_count_offset = vertex_count_offset + len(mesh.vertices)
                 continue   
-
-            print(obj_name + "'s shapekey number: " + str(len(mesh.shape_keys.key_blocks)))
+            # print(obj_name + "'s shapekey number: " + str(len(mesh.shape_keys.key_blocks)))
 
             base_data = mesh_shapekeys.key_blocks['Basis'].data
-
-
             for shapekey in mesh_shapekeys.key_blocks:
                 # print(shapekey.name)
                 # 截取形态键名称中的形态键shapekey_id，获取不到就跳过
                 shapekey_pattern = re.compile(r'.*(?:deform|custom)[_ -]*(\d+).*')
                 match = shapekey_pattern.findall(shapekey.name.lower())
-                
                 if len(match) == 0:
                     continue
                 shapekey_index = int(match[0])
-                # print(shapekey_index)
+
                 # 因为WWMI的形态键数量只有128个，这里shapekey_id是从0开始的，所以到127结束，所以不能大于等于128
                 if shapekey_index >= 128:
                     break
@@ -423,11 +418,8 @@ class DrawIBModel:
                 # ib_list = self.__obj_name_ib_dict[obj_name] 
                 # ib_list中的每个值都是vertex_index，所以可以直接用来从形态键中获取数据
                 # for draw_index in ib_list:
-                for draw_index in range(len(mesh.vertices)):
-
-                    # vertex_index = obj_index_vertex_id_dict[draw_index]
-                    vertex_index = draw_index
-
+                
+                for vertex_index in range(len(mesh.vertices)):
                     base_vertex_coords = base_data[vertex_index].co
                     shapekey_vertex_coords = shapekey.data[vertex_index].co
                     vertex_offset = shapekey_vertex_coords - base_vertex_coords
@@ -438,39 +430,35 @@ class DrawIBModel:
                         shapekey_data[offseted_vertex_index] = {}
 
                     # 如果相差太小，说明无效或者是一样的，说明这个顶点没有ShapeKey，此时向ShapeKeyOffsets中添加空的0
-                    if vertex_offset.length < 0.00000001:
+                    if vertex_offset.length < 0.000000001:
                         continue
-
+                    
+                    # TODO 这里存储的值也有问题，应该以mesh.vertices的值为索引
                     # 此时如果能获取到，说明有效，此时可以直接放入准备好的字典
                     shapekey_data[offseted_vertex_index][shapekey_index] = list(vertex_offset)
 
                 # break
             # 对于每一个obj的每个顶点，都从0到128获取它的形态键对应偏移值
+            # TODO 这里
             vertex_count_offset = vertex_count_offset + drawindexed_obj.UniqueVertexCount
-        
-        # TODO 这里需要排序吗？还不确定，只能等写完ini支持再测试了
-        # shapekey_index_list.sort()
+            # vertex_count_offset = vertex_count_offset + len(mesh.vertices)
 
-        # LOG.newline()
-        # print("shapekeys: " + str(len(shapekey_index_list))) # 3
-        # print(shapekey_index_list)
         shapekey_cache = {shapekey_id:{} for shapekey_id in shapekey_index_list}
-
+        times1 = 0
+        # TODO 
+        # 这里存储的有问题，在从shapekey_data.get()中获取时，应该使用mesh.vertices中对应的值来获取
         for i in range(vertex_count_offset):
             vertex_shapekey_data = shapekey_data.get(i, None)
             if vertex_shapekey_data is not None:
                 for shapekey_index,vertex_offsets in vertex_shapekey_data.items():
                     shapekey_cache[shapekey_index][i] = vertex_offsets
+                    times1 += 1
 
-        
-
-
-
+        print(times1)
 
         shapekey_verts_count = 0
         # 从0到128去获取ShapeKey的Index，有就直接加到
         for group_id in range(128):
-
             shapekey = shapekey_cache.get(group_id, None)
             if shapekey is None or len(shapekey_cache[group_id]) == 0:
                 self.shapekey_offsets.extend([shapekey_verts_count if shapekey_verts_count != 0 else 0])
@@ -486,10 +474,6 @@ class DrawIBModel:
         LOG.newline()
         # TODO 这里的数字和WWMI导出的对不上，咱也不知道为啥，也许是WWMI中合并了一些顶点所以导致最后的形态键的顶点数量减少了？
         # 暂时无法确定，但是我们得到的内容和游戏中提取出来的一模一样，感觉90%以上的概率应该是正确的。
-        # 使用大草神测试 DrawIB:94517393
-        print(self.shapekey_offsets[0])
-        print(self.shapekey_vertex_ids[0])
-        print(self.shapekey_vertex_offsets[0])
 
         print("shapekey_offsets: " + str(len(self.shapekey_offsets))) # 128 WWMI:128
         print("shapekey_vertex_ids: " + str(len(self.shapekey_vertex_ids))) # 29161 WWMI:29404

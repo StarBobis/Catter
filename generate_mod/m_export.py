@@ -335,73 +335,100 @@ class BufferModel:
                 # TimerUtils.End("Position Get") # 0:00:00.057535 
 
             elif d3d11_element_name == 'NORMAL':
-                # TimerUtils.Start("Get NORMAL")
-                result = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
-                mesh_loops.foreach_get('normal', result)
-
-                # 将一维数组 reshape 成 (mesh_loops_length, 3) 形状的二维数组
-                result = result.reshape(-1, 3)
-
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
-                     # 转换数据类型并添加第四列，默认填充为1
+                    result = numpy.ones(mesh_loops_length * 4, dtype=numpy.float32)
+                    normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                    mesh_loops.foreach_get('normal', normals)
+                    result[0::4] = normals[0::3]
+                    result[1::4] = normals[1::3]
+                    result[2::4] = normals[2::3]
+                    result = result.reshape(-1, 4)
+
                     result = result.astype(numpy.float16)
-                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float16)
-                    new_array[:, :3] = result
-                    result = new_array
+                    self.element_vertex_ndarray[d3d11_element_name] = result
+
                 elif d3d11_element.Format == 'R8G8B8A8_SNORM':
-                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float32)
-                    new_array[:, :3] = result
-                    result = new_array
-                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(result)
+                    result = numpy.ones(mesh_loops_length * 4, dtype=numpy.float32)
+                    normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                    mesh_loops.foreach_get('normal', normals)
+                    result[0::4] = normals[0::3]
+                    result[1::4] = normals[1::3]
+                    result[2::4] = normals[2::3]
+                    
+
+                    if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+                        bitangent_signs = numpy.empty(mesh_loops_length, dtype=numpy.float32)
+                        mesh_loops.foreach_get("bitangent_sign", bitangent_signs)
+                        result[3::4] = bitangent_signs
+
+                        # XXX 3.6和3.2都需要翻转一下，原因未知
+                        if bpy.app.version < (4,0,0):
+                            result[0::4] *= -1
+                            result[1::4] *= -1
+                            result[2::4] *= -1
+                        print("Unreal: Set NORMAL.W to bitangent_sign")
+                    
+                    result = result.reshape(-1, 4)
+
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(result)
+
+
                 elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-                    new_array = numpy.ones((result.shape[0], 4), dtype=numpy.float32)
-                    new_array[:, :3] = result
-                    result = new_array
-                    result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
+                    result = numpy.ones(mesh_loops_length * 4, dtype=numpy.float32)
+                    normals = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                    mesh_loops.foreach_get('normal', normals)
+                    result[0::4] = normals[0::3]
+                    result[1::4] = normals[1::3]
+                    result[2::4] = normals[2::3]
+                    result = result.reshape(-1, 4)
 
-                self.element_vertex_ndarray[d3d11_element_name] = result
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(new_array)
 
-                # TimerUtils.End("Get NORMAL") # 0:00:00.029400 
+                else:
+                    result = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
+                    mesh_loops.foreach_get('normal', result)
+                    # 将一维数组 reshape 成 (mesh_loops_length, 3) 形状的二维数组
+                    result = result.reshape(-1, 3)
+                    self.element_vertex_ndarray[d3d11_element_name] = result
+
 
             elif d3d11_element_name == 'TANGENT':
-                # TimerUtils.Start("Get TANGENT")
                 result = numpy.empty(mesh_loops_length * 4, dtype=numpy.float32)
 
                 # 使用 foreach_get 批量获取切线和副切线符号数据
                 tangents = numpy.empty(mesh_loops_length * 3, dtype=numpy.float32)
-                bitangent_signs = numpy.empty(mesh_loops_length, dtype=numpy.float32)
-
                 mesh_loops.foreach_get("tangent", tangents)
-                mesh_loops.foreach_get("bitangent_sign", bitangent_signs)
-
-                # XXX 将副切线符号乘以 -1
-                # 这里翻转（翻转指的就是 *= -1）是因为如果要确保Unity游戏中渲染正确，必须翻转TANGENT的W分量
-                if MainConfig.get_game_category() == GameCategory.UnityCS or MainConfig.get_game_category() == GameCategory.UnityVS:
-                    bitangent_signs *= -1
-                # 但是Unreal引擎中无需翻转，这里必须得注意。
-
                 # 将切线分量放置到输出数组中
                 result[0::4] = tangents[0::3]  # x 分量
                 result[1::4] = tangents[1::3]  # y 分量
                 result[2::4] = tangents[2::3]  # z 分量
-                result[3::4] = bitangent_signs  # w 分量 (副切线符号)
 
+                if MainConfig.get_game_category() == GameCategory.UnityCS or MainConfig.get_game_category() == GameCategory.UnityVS:
+                    bitangent_signs = numpy.empty(mesh_loops_length, dtype=numpy.float32)
+                    mesh_loops.foreach_get("bitangent_sign", bitangent_signs)
+                    # XXX 将副切线符号乘以 -1
+                    # 这里翻转（翻转指的就是 *= -1）是因为如果要确保Unity游戏中渲染正确，必须翻转TANGENT的W分量
+                    bitangent_signs *= -1
+                    result[3::4] = bitangent_signs  # w 分量 (副切线符号)
+                elif MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+                    # Unreal引擎中这里要填写固定的1
+                    tangent_w = numpy.ones(mesh_loops_length, dtype=numpy.float32)
+                    result[3::4] = tangent_w
                 
                 # 重塑 output_tangents 成 (mesh_loops_length, 4) 形状的二维数组
                 result = result.reshape(-1, 4)
 
                 if d3d11_element.Format == 'R16G16B16A16_FLOAT':
                     result = result.astype(numpy.float16)
+
                 elif d3d11_element.Format == 'R8G8B8A8_SNORM':
-               
                     result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(result)
+
                 elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-              
                     result = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(result)
 
                 self.element_vertex_ndarray[d3d11_element_name] = result
 
-                # TimerUtils.End("Get TANGENT") # 0:00:00.030449
             elif d3d11_element_name.startswith('COLOR'):
                 # TimerUtils.Start("Get COLOR")
 
@@ -452,16 +479,9 @@ class BufferModel:
                 elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                     self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendindices)
                 elif d3d11_element.Format == 'R8G8B8A8_UINT':
-                    # XXX 这里不能直接.astype(numpy.uint8)否则[0 0 0 0]转换后会变成[11 10 0 0]
-                    print("----")
-                    print(blendindices[0])
                     blendindices.astype(numpy.uint8)
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices
-                    print(self.element_vertex_ndarray[d3d11_element_name][0])
-                    print("----")
                 
-                # TODO 由于导出时没有考虑权重索引的Remap，现在到游戏里就是面筋人 
-                # 这里如果使用了Remapped技术，权重索引应该恢复到原本的索引？
 
  
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
@@ -476,12 +496,9 @@ class BufferModel:
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                         self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
             
-            
-            # XXX 如果是UnrealVS，则必须交换NORMAL和TANGENT的W分量，才能修正游戏内阴影问题
-            if MainConfig.get_game_category() == "UnrealVS":
-                # 必须确保当前数据类型中存在NORMAL和TANGENT时，才能进行交换
-                pass
-                # self.element_vertex_ndarray["NORMAL"][3::4] = 
+                    
+                    
+                
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''

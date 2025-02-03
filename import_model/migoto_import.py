@@ -13,6 +13,7 @@ import itertools
 import bpy
 import json
 import math
+from mathutils import Vector
 
 from bpy_extras.io_utils import unpack_list, ImportHelper, axis_conversion
 from bpy.props import BoolProperty, StringProperty, CollectionProperty
@@ -143,7 +144,6 @@ def import_vertices(mesh, vb: VertexBuffer):
     blend_weights = {}
     texcoords = {}
     shapekeys = {}
-    vertex_layers = {}
     use_normals = False
     normals = []
 
@@ -184,8 +184,10 @@ def import_vertices(mesh, vb: VertexBuffer):
             use_normals = True
             normals = [(x[0], x[1], x[2]) for x in data]
 
+
+
         elif elem.name in ('TANGENT', 'BINORMAL'):
-            # 不需要导入TANGENT，因为导出时会重新计算。
+            # 不需要导入TANGENT和BINORMAL，因为导出时会重新计算。
             pass
         elif elem.name.startswith('BLENDINDICES'):
             blend_indices[elem.SemanticIndex] = data
@@ -196,10 +198,10 @@ def import_vertices(mesh, vb: VertexBuffer):
         elif elem.name.startswith('SHAPEKEY') and elem.is_float():
             shapekeys[elem.SemanticIndex] = data
         else:
-            print('NOTICE: Storing unhandled semantic %s %s as vertex layer' % (elem.name, elem.Format))
-            vertex_layers[elem.name] = data
+            # 不认识的不导入
+            raise Fatal("Unknown ElementName: " + elem.name)
 
-    return (blend_indices, blend_weights, texcoords, vertex_layers, use_normals,normals,shapekeys)
+    return (blend_indices, blend_weights, texcoords, use_normals,normals,shapekeys)
 
 
 def find_texture(texture_prefix, texture_suffix, directory):
@@ -330,7 +332,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     # post process for import data.
     import_faces_from_ib(mesh, ib)
 
-    (blend_indices, blend_weights, texcoords, vertex_layers, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
+    (blend_indices, blend_weights, texcoords, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
 
     import_uv_layers(mesh, obj, texcoords)
 
@@ -358,9 +360,19 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     mesh.validate(verbose=False, clean_customdata=False)  
     mesh.update()
     
+    
     # Nico: 这个方法还必须得在mesh.validate和mesh.update之后调用
+
+
     if use_normals:
-        mesh.normals_split_custom_set_from_vertices(normals)
+        if bpy.app.version < (4,0,0):
+            print("Blender 3.6 Import NORMAL")
+            mesh.create_normals_split()
+            for l in mesh.loops:
+                l.normal[:] = normals[l.vertex_index]
+        else:
+            print("Blender 4.2 Import NORMAL")
+            mesh.normals_split_custom_set_from_vertices(normals)
 
     # auto texture 
     create_material_with_texture(obj, mesh_name=mesh_name,directory= os.path.dirname(fmt_path))
