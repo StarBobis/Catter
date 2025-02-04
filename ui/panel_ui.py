@@ -89,7 +89,6 @@ class PanelGenerateModConfig(bpy.types.Panel):
         # TODO panel_ui.py应该拆分为Unity和Unreal的，便于划分管理
         # 否则全部堆在一起越来越多。
         if MainConfig.get_game_category() == GameCategory.UnityVS or MainConfig.get_game_category() == GameCategory.UnityCS:
-            layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
             layout.prop(context.scene.dbmt_generatemod, "export_same_number")
             layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
@@ -104,7 +103,6 @@ class PanelGenerateModConfig(bpy.types.Panel):
             # generate_to_seperate_ini
             layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
         elif MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
-            layout.prop(context.scene.dbmt_generatemod, "open_generate_mod_folder_after_run")
             layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
             layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")

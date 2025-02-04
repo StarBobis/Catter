@@ -3,13 +3,6 @@ import bpy
 # Simple Class to get attributes.
 # easy to use, safe to modifiy.
 class GenerateModConfig:
-
-    @classmethod
-    def open_generated_mod_folder_after_run(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
-        '''
-        return bpy.context.scene.dbmt_generatemod.open_generate_mod_folder_after_run
     
     @classmethod
     def hash_style_auto_texture(cls):
