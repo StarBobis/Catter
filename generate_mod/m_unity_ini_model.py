@@ -135,7 +135,7 @@ class M_UnityIniModel:
 
             # 读取使用的IBResourceName，如果读取不到，就使用默认的
             ib_resource_name = ""
-            if draw_ib_model.single_ib:
+            if GenerateModConfig.every_drawib_single_ib_file():
                 ib_resource_name = draw_ib_model.PartName_IBResourceName_Dict.get("1",None)
             else:
                 ib_resource_name = draw_ib_model.PartName_IBResourceName_Dict.get(part_name,None)

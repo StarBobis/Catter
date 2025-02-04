@@ -69,95 +69,79 @@ class DrawIBModel:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
     def __init__(self,draw_ib_collection,merge_objects:bool):
         '''
-        single_ib_file 一般这个选项Unity游戏都可以填False，虚幻游戏我们沿用WWMI的传统，先使用True试验。
-
-        TODO 后续WWMI支持添加完成后，测试并使single_ib_file变为可选项。
+        根据3Dmigoto的架构设计，每个DrawIB都是一个独立的Mod
         '''
-        self.single_ib = GenerateModConfig.every_drawib_single_ib_file()
-        self.__obj_name_ib_dict:dict[str,list] = {} 
-        self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
-
-        # TODO 这个WWMI的形态键生成也许会使用，当然前提是先完成obj合并功能
-        # self.__obj_name_index_vertex_id_dict:dict[str,dict] = {}
-
-        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
-        self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
-
-        # 生成Mod的ini时要使用的内容
         self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
-        self.d3d11GameType:D3D11GameType = None
 
-        self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
-        self.total_index_count = 0 # 每个DrawIB都有总的IndexCount数，也就是所有的IB中的所有顶点索引数量
-
-        self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
-
-        # TODO 这几个tmp.json中的属性，需要合并一下变为一个class，然后通过class调用
-        # 和这个一起的还有WWMI的extracted_object
-        
+        # (1) 读取工作空间中配置文件的配置项
         self.category_hash_dict = {}
         self.match_first_index_list = []
         self.part_name_list = []
         self.vertex_limit_hash = ""
-        self.key_number = 0
-        self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
         self.extract_gametype_folder_path = ""
+        self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {} # 自动贴图配置项
+        self.TextureResource_Name_FileName_Dict:dict[str,str] = {} # 自动贴图配置项
+        self.d3d11GameType:D3D11GameType = None
+        self.extracted_object:ExtractedObject = None
 
-        self.shapekey_offsets = []
-        self.shapekey_vertex_ids = []
-        self.shapekey_vertex_offsets = []
+        self.__read_config_from_workspace()
 
-        # TODO 这玩意好像不对啊，跟WWMI的注释里说的不一样，又是一个坑
-
-        # 用于自动贴图
-        self.PartName_SlotTextureReplaceDict_Dict:dict[str,dict[str,TextureReplace]] = {}
-        self.TextureResource_Name_FileName_Dict:dict[str,str] = {}
-
-        # 按顺序执行
-        self.__read_gametype_from_import_json()
+        # (2) 解析集合架构
+        self.componentname_modelcollection_list_dict:dict[str,list[ModelCollection]] = {}
         self.__parse_drawib_collection_architecture(draw_ib_collection=draw_ib_collection)
+        # (3) 解析当前有多少个key
+        self.key_number = 0
         self.__parse_key_number()
 
-        # obj转换为指定格式备用
+        # TODO 如果需要合并obj，在这一步执行来改变componentname_modelcollection_list_dict，只保留Component 0或者只保留一个obj其它的作单独处理？
+        # 如果要差分一个单独obj的架构，则其它方法还需要进一步细分
+        # 但是如果在这一步组合了obj，那么drawindexed就无法分开统计了。所以应该在统计完drawindexed之后再组合obj
+        # (4) 根据之前解析集合架构的结果，读取obj对象内容到字典中
+        self.__obj_name_ib_dict:dict[str,list] = {} 
+        self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
+        self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
+        # TODO 这个WWMI的形态键生成也许会使用，当然前提是先完成obj合并功能
+        # self.__obj_name_index_vertex_id_dict:dict[str,dict] = {}
+        self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
+        self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
+
+        self.draw_number = 0 # 每个DrawIB都有总的顶点数，对应CategoryBuffer里的顶点数。
+        self.total_index_count = 0 # 每个DrawIB都有总的IndexCount数，也就是所有的IB中的所有顶点索引数量
+
         self.__parse_obj_name_ib_category_buffer_dict()
-        
-
-
         # 构建IndexBuffer
-        if self.single_ib:
+        if GenerateModConfig.every_drawib_single_ib_file():
             self.__read_component_ib_buf_dict_merged()
         else:
             self.__read_component_ib_buf_dict_seperated()
-        
-        # 目前只有WWMI会需要读取ShapeKey数据
-        if MainConfig.gamename == "WWMI":
-            self.__read_shapekey_cateogry_buf_dict()
-
         # 构建每个Category的VertexBuffer
         self.__read_categoryname_bytelist_dict()
 
-        # 读取tmp.json中用于导出的数据
-        self.__read_tmp_json()
-
-
-        # 用于写出时便于使用
-        self.PartName_IBResourceName_Dict = {}
-        self.PartName_IBBufferFileName_Dict = {}
-
-        # Export Index Buffer files.
-        self.write_ib_files()
-        # Export Category Buffer files. (And Export ShapeKey Buffer Files.(WWMI))
-        self.write_category_buffer_files()
-
         # WWMI专用，因为它非得用到metadata.json的东西
-        self.extracted_object:ExtractedObject = None
+        # 目前只有WWMI会需要读取ShapeKey数据
+        # 用于形态键导出
+        self.shapekey_offsets = []
+        self.shapekey_vertex_ids = []
+        self.shapekey_vertex_offsets = []
         if MainConfig.gamename == "WWMI":
+            self.__read_shapekey_cateogry_buf_dict()
             metadatajsonpath = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)  + "Metadata.json"
             if os.path.exists(metadatajsonpath):
                 self.extracted_object = ExtractedObjectHelper.read_metadata(metadatajsonpath)
 
+        # (5) 导出Buffer文件，Export Index Buffer files, Category Buffer files. (And Export ShapeKey Buffer Files.(WWMI))
+        # 用于写出IB时使用
+        self.PartName_IBResourceName_Dict = {}
+        self.PartName_IBBufferFileName_Dict = {}
+        self.combine_partname_ib_resource_and_filename_dict()
+        self.write_buffer_files()
     
-    def __read_gametype_from_import_json(self):
+    def __read_config_from_workspace(self):
+        '''
+        在一键导入工作空间时，Import.json会记录导入的GameType，在生成Mod时需要用到
+        所以这里我们读取Import.json来确定要从哪个提取出来的数据类型文件夹中读取
+        然后读取tmp.json来初始化D3D11GameType
+        '''
         workspace_import_json_path = os.path.join(MainConfig.path_workspace_folder(), "Import.json")
         draw_ib_gametypename_dict = JsonUtils.LoadFromFile(workspace_import_json_path)
         gametypename = draw_ib_gametypename_dict.get(self.draw_ib,"")
@@ -169,10 +153,47 @@ class DrawIBModel:
             self.d3d11GameType:D3D11GameType = D3D11GameType(tmp_json_path)
         else:
             raise Fatal("Can't find your tmp.json for generate mod:" + tmp_json_path)
+        
+        '''
+        读取tmp.json中的内容，后续会用于生成Mod的ini文件
+        需要在确定了D3D11GameType之后再执行
+        '''
+        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
+        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
+        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
 
+        self.category_hash_dict = tmp_json_dict["CategoryHash"]
+        self.import_model_list = tmp_json_dict["ImportModelList"]
+        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
+        self.part_name_list = tmp_json_dict["PartNameList"]
+        # print(self.partname_textureresourcereplace_dict)
+        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
+        self.work_game_type = tmp_json_dict["WorkGameType"]
 
+        # 自动贴图依赖于这个字典
+        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
+        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
+            slot_texture_replace_dict = {}
+            for texture_resource_replace in texture_resource_replace_list:
+                splits = texture_resource_replace.split("=")
+                slot_name = splits[0].strip()
+                texture_filename = splits[1].strip()
 
+                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
 
+                filename_splits = os.path.splitext(texture_filename)[0].split("-")
+                texture_hash = filename_splits[1]
+
+                texture_replace = TextureReplace()
+                texture_replace.hash = texture_hash
+                texture_replace.resource_name = resource_name
+
+                slot_texture_replace_dict[slot_name] = texture_replace
+
+                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
+
+            self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
+    
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
         '''
         解析工作空间集合架构，得到方便后续访问使用的抽象数据类型ModelCollection。
@@ -538,69 +559,41 @@ class DrawIBModel:
 
 
 
-    def __read_tmp_json(self):
-        self.extract_gametype_folder_path = MainConfig.path_extract_gametype_folder(draw_ib=self.draw_ib,gametype_name=self.d3d11GameType.GameTypeName)
-        tmp_json_path = os.path.join(self.extract_gametype_folder_path,"tmp.json")
-        tmp_json_dict = JsonUtils.LoadFromFile(tmp_json_path)
 
-        self.category_hash_dict = tmp_json_dict["CategoryHash"]
-        self.import_model_list = tmp_json_dict["ImportModelList"]
-        self.match_first_index_list = tmp_json_dict["MatchFirstIndex"]
-        self.part_name_list = tmp_json_dict["PartNameList"]
-        # print(self.partname_textureresourcereplace_dict)
-        self.vertex_limit_hash = tmp_json_dict["VertexLimitVB"]
-        self.work_game_type = tmp_json_dict["WorkGameType"]
-
-        # 自动贴图依赖于这个字典
-        partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
-        for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
-            slot_texture_replace_dict = {}
-            for texture_resource_replace in texture_resource_replace_list:
-                splits = texture_resource_replace.split("=")
-                slot_name = splits[0].strip()
-                texture_filename = splits[1].strip()
-
-                resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
-
-                filename_splits = os.path.splitext(texture_filename)[0].split("-")
-                texture_hash = filename_splits[1]
-
-                texture_replace = TextureReplace()
-                texture_replace.hash = texture_hash
-                texture_replace.resource_name = resource_name
-
-                slot_texture_replace_dict[slot_name] = texture_replace
-
-                self.TextureResource_Name_FileName_Dict[resource_name] = texture_filename
-
-            self.PartName_SlotTextureReplaceDict_Dict[partname] = slot_texture_replace_dict
-
-    def write_ib_files(self):
+    def combine_partname_ib_resource_and_filename_dict(self):
+        '''
+        拼接每个PartName对应的IB文件的Resource和filename,这样生成ini的时候以及导出Mod的时候就可以直接使用了。
+        '''
         for partname in self.part_name_list:
             style_part_name = M_DrawIBHelper.get_style_alias(partname)
-            component_name = "Component " + partname
-            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
-
             ib_resource_name = "Resource_" + self.draw_ib + "_" + style_part_name
             ib_buf_filename = self.draw_ib + "-" + style_part_name + ".buf"
-
             self.PartName_IBResourceName_Dict[partname] = ib_resource_name
             self.PartName_IBBufferFileName_Dict[partname] = ib_buf_filename
+
+    def write_buffer_files(self):
+        '''
+        导出当前Mod的所有Buffer文件
+        '''
+        buf_output_folder = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib)
+
+        # Export Index Buffer files.
+        for partname in self.part_name_list:
+            component_name = "Component " + partname
+            ib_buf = self.componentname_ibbuf_dict.get(component_name,None)
 
             if ib_buf is None:
                 print("Export Skip, Can't get ib buf for partname: " + partname)
             else:
-                ib_path = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib) + ib_buf_filename
+                ib_path = buf_output_folder + self.PartName_IBBufferFileName_Dict[partname]
 
                 packed_data = struct.pack(f'<{len(ib_buf)}I', *ib_buf)
                 with open(ib_path, 'wb') as ibf:
                     ibf.write(packed_data) 
             
-            if self.single_ib:
+            if GenerateModConfig.every_drawib_single_ib_file():
                 break
 
-    def write_category_buffer_files(self):
-        buf_output_folder = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib)
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
             buf_path = buf_output_folder + self.draw_ib + "-" + category_name + ".buf"

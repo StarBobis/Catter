@@ -166,12 +166,12 @@ class M_IniHelper:
             return
         
         for texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-                target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
-                source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
-                
-                # only overwrite when there is no texture file exists.
-                if not os.path.exists(target_path):
-                    shutil.copy2(source_path,target_path)
+            target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
+            source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
+            
+            # only overwrite when there is no texture file exists.
+            if not os.path.exists(target_path):
+                shutil.copy2(source_path,target_path)
 
     @classmethod
     def generate_hash_style_texture_ini(cls,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
