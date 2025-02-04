@@ -93,7 +93,11 @@ class PanelGenerateModConfig(bpy.types.Panel):
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
             layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
             layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
-            layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
+
+            # 只有崩坏三2.0可能会用到重计算COLOR值
+            if MainConfig.gamename == "HI3":
+                layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
+                
             layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
             layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
             layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")
