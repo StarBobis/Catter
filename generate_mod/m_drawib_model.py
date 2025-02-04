@@ -174,14 +174,14 @@ class DrawIBModel:
 
 
     def __parse_drawib_collection_architecture(self,draw_ib_collection):
-        # TimerUtils.Start("__parse_drawib_collection_architecture")
+        '''
+        解析工作空间集合架构，得到方便后续访问使用的抽象数据类型ModelCollection。
+        '''
 
         LOG.info("DrawIB: " + self.draw_ib)
         LOG.info("Visiable: " + str(CollectionUtils.is_collection_visible(draw_ib_collection.name)))
 
-        '''
-        解析工作空间集合架构，得到方便后续访问使用的抽象数据类型。
-        '''
+        
         for component_collection in draw_ib_collection.children:
             # 从集合名称中获取导出后部位的名称，如果有.001这种自动添加的后缀则去除掉
             component_name = CollectionUtils.get_clean_collection_name(component_collection.name)
@@ -216,7 +216,6 @@ class DrawIBModel:
                 model_collection_list.append(model_collection)
 
             self.componentname_modelcollection_list_dict[component_name] = model_collection_list
-        # TimerUtils.End("__parse_drawib_collection_architecture")
 
     def __parse_key_number(self):
         '''
@@ -251,8 +250,11 @@ class DrawIBModel:
                     bpy.context.view_layer.objects.active = obj
 
                     # XXX 我们在导出具体数据之前，先对模型整体的权重进行normalize_all预处理，才能让后续的具体每一个权重的normalize_all更好的工作
+                    # 使用这个的前提是当前obj中没有锁定的顶点组，所以这里要先进行判断。
                     if "Blend" in self.d3d11GameType.OrderedCategoryNameList:
-                        ObjUtils.normalize_all(obj)
+                        all_vgs_locked = ObjUtils.is_all_vertex_groups_locked(obj)
+                        if not all_vgs_locked:
+                            ObjUtils.normalize_all(obj)
 
                     ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
 

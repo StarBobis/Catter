@@ -75,6 +75,41 @@ class ObjUtils:
                 bpy.ops.mesh.delete_loose()
                 # 切换回对象模式
                 bpy.ops.object.mode_set(mode='OBJECT')
+
+    @classmethod
+    def is_contains_locked_weights(cls,obj):
+        locked_groups = []
+        # 确保对象类型为MESH，因为只有这种类型的对象才有顶点组
+        if obj.type == 'MESH':
+            # 遍历对象的所有顶点组
+            for vg in obj.vertex_groups:
+                # 如果顶点组被锁定，则添加到列表中
+                if vg.lock_weight:
+                    locked_groups.append(vg.name)
+        if len(locked_groups) != 0:
+            return True
+        else:
+            return False
+        
+    @classmethod
+    def is_all_vertex_groups_locked(cls,obj):
+        '''
+        判断是否所有的顶点组都被锁定了，因为所有的顶点组都被锁定的话就无法对权重执行Normalize All了
+        '''
+        vgs_number = 0
+        locked_groups = []
+        # 确保对象类型为MESH，因为只有这种类型的对象才有顶点组
+        if obj.type == 'MESH':
+            # 遍历对象的所有顶点组
+            for vg in obj.vertex_groups:
+                vgs_number = vgs_number + 1
+                # 如果顶点组被锁定，则添加到列表中
+                if vg.lock_weight:
+                    locked_groups.append(vg.name)
+        if len(locked_groups) == vgs_number:
+            return True
+        else:
+            return False
     
 
 
