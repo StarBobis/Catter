@@ -62,9 +62,6 @@ class M_DrawIBHelper:
 
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
-
-# TODO 这个DrawIBModel应该差分，把其中内容变为工具类，然后拆分为Unity的和Unreal的两个不同类型。
-
 class DrawIBModel:
     # 通过default_factory让每个类的实例的变量分割开来，不再共享类的静态变量
     def __init__(self,draw_ib_collection,merge_objects:bool):
@@ -93,15 +90,11 @@ class DrawIBModel:
         self.key_number = 0
         self.__parse_key_number()
 
-        # TODO 如果需要合并obj，在这一步执行来改变componentname_modelcollection_list_dict，只保留Component 0或者只保留一个obj其它的作单独处理？
-        # 如果要差分一个单独obj的架构，则其它方法还需要进一步细分
-        # 但是如果在这一步组合了obj，那么drawindexed就无法分开统计了。所以应该在统计完drawindexed之后再组合obj
         # (4) 根据之前解析集合架构的结果，读取obj对象内容到字典中
         self.__obj_name_ib_dict:dict[str,list] = {} 
         self.__obj_name_category_buffer_list_dict:dict[str,list] =  {} 
         self.obj_name_drawindexed_dict:dict[str,M_DrawIndexed] = {} # 给每个obj的属性统计好，后面就能直接用了。
-        # TODO 这个WWMI的形态键生成也许会使用，当然前提是先完成obj合并功能
-        # self.__obj_name_index_vertex_id_dict:dict[str,dict] = {}
+        self.__obj_name_index_vertex_id_dict:dict[str,dict] = {} # 形态键功能必备
         self.componentname_ibbuf_dict = {} # 每个Component都生成一个IndexBuffer文件，或者所有Component共用一个IB文件。
         self.__categoryname_bytelist_dict = {} # 每个Category都生成一个CategoryBuffer文件。
 
@@ -277,8 +270,9 @@ class DrawIBModel:
                         if not all_vgs_locked:
                             ObjUtils.normalize_all(obj)
 
-                    ib, category_buffer_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
-
+                    ib, category_buffer_dict,index_vertex_id_dict = get_buffer_ib_vb_fast(self.d3d11GameType)
+                    self.__obj_name_index_vertex_id_dict[obj_name] = index_vertex_id_dict
+                    
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_category_buffer_list_dict[obj.name] = category_buffer_dict
                     # self.__obj_name_index_vertex_id_dict[obj.name] = index_vertex_id_dict
@@ -400,12 +394,6 @@ class DrawIBModel:
     def __read_shapekey_cateogry_buf_dict(self):
         '''
         读取形态键部分
-
-        TODO 现在就差形态键部分了，还是之前的老问题
-        必须得融合所有的mesh到一个mesh里，才能解决获取mesh.loop里的vertex_id与mesh.vertices的vertex_id的对应值问题
-        所以这里打算重写，直接把WWMI里的搬过来。
-
-        TODO 整个导出架构都得重写，在导出之前就应该融合obj
         '''
         TimerUtils.Start("read shapekey data")
 
@@ -424,8 +412,7 @@ class DrawIBModel:
             if mesh_shapekeys is None:
                 # print("obj: " + obj_name + " doesn't have any ShapeKey data, skip it.")
                 # 即使跳过了这个obj，这个顶点数偏移依然要加上，否则得到的结果是不正确的
-                vertex_count_offset = vertex_count_offset + drawindexed_obj.UniqueVertexCount
-                # vertex_count_offset = vertex_count_offset + len(mesh.vertices)
+                vertex_count_offset = vertex_count_offset + len(mesh.vertices)
                 continue   
             # print(obj_name + "'s shapekey number: " + str(len(mesh.shape_keys.key_blocks)))
 
@@ -467,28 +454,32 @@ class DrawIBModel:
                     if vertex_offset.length < 0.000000001:
                         continue
                     
-                    # TODO 这里存储的值也有问题，应该以mesh.vertices的值为索引
                     # 此时如果能获取到，说明有效，此时可以直接放入准备好的字典
                     shapekey_data[offseted_vertex_index][shapekey_index] = list(vertex_offset)
 
                 # break
             # 对于每一个obj的每个顶点，都从0到128获取它的形态键对应偏移值
-            # TODO 这里
-            vertex_count_offset = vertex_count_offset + drawindexed_obj.UniqueVertexCount
-            # vertex_count_offset = vertex_count_offset + len(mesh.vertices)
+            vertex_count_offset = vertex_count_offset + len(mesh.vertices)
 
         shapekey_cache = {shapekey_id:{} for shapekey_id in shapekey_index_list}
-        times1 = 0
-        # TODO 
-        # 这里存储的有问题，在从shapekey_data.get()中获取时，应该使用mesh.vertices中对应的值来获取
-        for i in range(vertex_count_offset):
-            vertex_shapekey_data = shapekey_data.get(i, None)
-            if vertex_shapekey_data is not None:
-                for shapekey_index,vertex_offsets in vertex_shapekey_data.items():
-                    shapekey_cache[shapekey_index][i] = vertex_offsets
-                    times1 += 1
 
-        print(times1)
+        # 通过这种方式避免了必须合并obj的问题，总算是不用重构了。
+        global_index_offset = 0
+        global_vertex_offset = 0
+        for obj_name, drawindexed_obj in self.obj_name_drawindexed_dict.items():
+            obj = bpy.data.objects[obj_name]
+            # print("Processing obj: " + obj_name)
+            mesh = obj.data
+
+            index_vertex_id_dict = self.__obj_name_index_vertex_id_dict[obj_name]
+            for index_id,vertex_id in index_vertex_id_dict.items():
+                vertex_shapekey_data = shapekey_data.get(vertex_id + global_vertex_offset, None)
+                if vertex_shapekey_data is not None:
+                    for shapekey_index,vertex_offsets in vertex_shapekey_data.items():
+                        shapekey_cache[shapekey_index][index_id + global_index_offset] = vertex_offsets
+
+            global_index_offset = global_index_offset + drawindexed_obj.UniqueVertexCount
+            global_vertex_offset = global_vertex_offset + len(mesh.vertices)
 
         shapekey_verts_count = 0
         # 从0到128去获取ShapeKey的Index，有就直接加到
@@ -506,9 +497,6 @@ class DrawIBModel:
                 shapekey_verts_count += 1
 
         LOG.newline()
-        # TODO 这里的数字和WWMI导出的对不上，咱也不知道为啥，也许是WWMI中合并了一些顶点所以导致最后的形态键的顶点数量减少了？
-        # 暂时无法确定，但是我们得到的内容和游戏中提取出来的一模一样，感觉90%以上的概率应该是正确的。
-
         print("shapekey_offsets: " + str(len(self.shapekey_offsets))) # 128 WWMI:128
         print("shapekey_vertex_ids: " + str(len(self.shapekey_vertex_ids))) # 29161 WWMI:29404
         print("shapekey_vertex_offsets: " + str(len(self.shapekey_vertex_offsets))) # 174966  WWMI:29404 * 6  = 176424 * 2 = 352848

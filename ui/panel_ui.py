@@ -85,8 +85,6 @@ class PanelGenerateModConfig(bpy.types.Panel):
         layout = self.layout
         # 根据当前游戏类型判断哪些应该显示哪些不显示。
         # 因为UnrealVS显然无法支持这里所有的特性，每个游戏只能支持一部分特性。
-        # TODO panel_ui.py应该拆分为Unity和Unreal的，便于划分管理
-        # 否则全部堆在一起越来越多。
         if MainConfig.get_game_category() == GameCategory.UnityVS or MainConfig.get_game_category() == GameCategory.UnityCS:
             layout.prop(context.scene.dbmt_generatemod, "export_same_number")
             layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
@@ -97,7 +95,7 @@ class PanelGenerateModConfig(bpy.types.Panel):
             # 只有崩坏三2.0可能会用到重计算COLOR值
             if MainConfig.gamename == "HI3":
                 layout.prop(context.scene.dbmt_generatemod, "recalculate_color")
-                
+
             layout.prop(context.scene.dbmt_generatemod, "position_override_filter_draw_type")
             layout.prop(context.scene.dbmt_generatemod, "vertex_limit_raise_add_filter_index")
             layout.prop(context.scene.dbmt_generatemod, "slot_style_texture_add_filter_index")

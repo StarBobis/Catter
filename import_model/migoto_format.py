@@ -204,7 +204,6 @@ class InputLayoutElement(object):
 
 class InputLayout(object):
     def __init__(self, custom_prop=[], stride=0):
-        # TODO 需要确认一下，我怎么感觉只用到了elems和stride其它的导入的属性都没用上
         self.elems:collections.OrderedDict[str,InputLayoutElement] = collections.OrderedDict()
         self.stride = stride
         if len(custom_prop) != 0:
