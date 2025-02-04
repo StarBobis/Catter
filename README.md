@@ -19,8 +19,8 @@ DBMT的Blender插件
 - Blender 4.2 LTS
 - https://github.com/JacquesLucke/blender_vscode （Blender开发用VSCode插件）
 
-# 特别感谢与致谢
-Catter的代码学习自包括但不限于以下项目，没有他们的代码，就没有现在的Catter：
+# 鸣谢与代码版权
+Catter基于GPL3.0协议开源，代码学习自包括但不限于以下项目，没有他们的代码，就没有现在的Catter：
 - https://github.com/bo3b/3Dmigoto
 - https://github.com/DarkStarSword/3d-fixes
 - https://github.com/SpectrumQT/WWMI
