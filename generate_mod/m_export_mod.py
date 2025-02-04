@@ -8,7 +8,7 @@ from .m_unreal_ini_model import M_UnrealIniModel
 
 class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_vs_mod_to_workspace_seperated"
-    bl_label = "Generate Mod"
+    bl_label = "生成Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -46,7 +46,7 @@ class DBMTExportUnityVSModToWorkSpaceSeperated(bpy.types.Operator):
 
 class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
     bl_idname = "dbmt.export_unity_cs_mod_to_workspace_seperated"
-    bl_label = "Generate Mod"
+    bl_label = "生成Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -85,7 +85,7 @@ class DBMTExportUnityCSModToWorkSpaceSeperated(bpy.types.Operator):
 
 class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.export_unreal_vs_mod_to_workspace"
-    bl_label = "Generate Mod"
+    bl_label = "生成Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):
@@ -128,7 +128,7 @@ class DBMTExportUnrealVSModToWorkSpace(bpy.types.Operator):
 
 class DBMTExportUnrealCSModToWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.export_unreal_cs_mod_to_workspace"
-    bl_label = "Generate Mod"
+    bl_label = "生成Mod"
     bl_description = "一键导出当前工作空间集合中的Mod，隐藏显示的模型不会被导出，隐藏的DrawIB为名称的集合不会被导出。"
 
     def execute(self, context):

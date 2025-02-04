@@ -339,8 +339,8 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     #  metadata.json, if contains then we can import merged vgmap.
     # TimerUtils.Start("Read Metadata")
     component = None
-    if ImportModelConfig.import_merged_vgmap():
-        print("尝试读取Metadata.json")
+    if ImportModelConfigUnreal.import_merged_vgmap():
+        # print("尝试读取Metadata.json")
         metadatajsonpath = os.path.join(os.path.dirname(fmt_path),'Metadata.json')
         if os.path.exists(metadatajsonpath):
             # print("鸣潮读取Metadata.json")
@@ -404,7 +404,7 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 class Import3DMigotoRaw(bpy.types.Operator, ImportHelper):
     """Import raw 3DMigoto vertex and index buffers"""
     bl_idname = "import_mesh.migoto_raw_buffers_mmt"
-    bl_label = "导入3Dmigoto的原始Buffer文件"
+    bl_label = "导入.ib .vb .fmt格式模型"
     bl_description = "导入3Dmigoto格式的 .ib .vb .fmt文件，只需选择.fmt文件即可"
 
     # new architecture only need .fmt file to locate.
@@ -580,7 +580,7 @@ def ImprotFromWorkSpace(self, context):
 
 class DBMTImportAllFromCurrentWorkSpace(bpy.types.Operator):
     bl_idname = "dbmt.import_all_from_workspace"
-    bl_label = "Import all .ib .vb model from current WorkSpace folder."
+    bl_label = "一键导入当前工作空间内容"
     bl_description = "一键导入当前工作空间文件夹下所有的DrawIB对应的模型为分支集合架构"
 
     def execute(self, context):

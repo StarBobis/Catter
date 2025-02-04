@@ -16,7 +16,7 @@ def draw_seperator(self):
 
 
 class MigotoAttributePanel(bpy.types.Panel):
-    bl_label = "Properties" 
+    bl_label = "特殊属性面板" 
     bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -52,11 +52,11 @@ class MigotoAttributePanel(bpy.types.Panel):
         else:
             # 如果没有选中的对象，则显示提示信息
             row = layout.row()
-            row.label(text="doesn't select any object.")
+            row.label(text="当前未选中任何物体")
 
 
 class PanelModelImportConfig(bpy.types.Panel):
-    bl_label = "Import Config" 
+    bl_label = "导入模型配置" 
     bl_idname = "VIEW3D_PT_CATTER_WorkSpace_IO_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -66,16 +66,15 @@ class PanelModelImportConfig(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.prop(context.scene.dbmt,"model_scale")
-        #import_flip_coordinate_x 
         layout.prop(context.scene.dbmt,"import_flip_scale_x")
 
         if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
-            layout.prop(context.scene.dbmt,"import_merged_vgmap")
+            layout.prop(context.scene.dbmt_import_config_unreal,"import_merged_vgmap")
 
 
 
 class PanelGenerateModConfig(bpy.types.Panel):
-    bl_label = "Generate Config" 
+    bl_label = "生成Mod配置" 
     bl_idname = "VIEW3D_PT_CATTER_GenerateMod_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -122,15 +121,15 @@ class PanelButtons(bpy.types.Panel):
         layout = self.layout
 
         MainConfig.read_from_main_json()
-        layout.label(text="DBMT Path: " + MainConfig.dbmtlocation)
+        layout.label(text="DBMT路径: " + MainConfig.dbmtlocation)
 
-        layout.label(text="Current Game: " + MainConfig.gamename)
-        layout.label(text="Current WorkSpace: " + MainConfig.workspacename)
+        layout.label(text="当前游戏: " + MainConfig.gamename)
+        layout.label(text="当前工作空间: " + MainConfig.workspacename)
 
-        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt", text="Import .ib.vb.fmt Model Manually")
+        operator_import_ib_vb = layout.operator("import_mesh.migoto_raw_buffers_mmt")
         operator_import_ib_vb.filepath = MainConfig.path_workspace_folder()
 
-        layout.operator("dbmt.import_all_from_workspace", text="Import All From WorkSpace")
+        layout.operator("dbmt.import_all_from_workspace")
 
         if MainConfig.get_game_category() == GameCategory.UnityVS:
             layout.operator("dbmt.export_unity_vs_mod_to_workspace_seperated")

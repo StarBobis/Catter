@@ -46,8 +46,9 @@ bl_info = {
 
 register_classes = (
     # Global Property Config
-    CatterPropertiesImportModel,
-    CatterPropertiesGenerateMod,
+    CatterProperties_ImportModel_General,
+    CatterProperties_ImportModel_Unreal,
+    CatterProperties_GenerateMod_General,
 
     # 3Dmigoto Import Model 
     Import3DMigotoRaw,
@@ -90,8 +91,9 @@ def register():
     for cls in register_classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.dbmt = bpy.props.PointerProperty(type=CatterPropertiesImportModel)
-    bpy.types.Scene.dbmt_generatemod = bpy.props.PointerProperty(type=CatterPropertiesGenerateMod)
+    bpy.types.Scene.dbmt = bpy.props.PointerProperty(type=CatterProperties_ImportModel_General)
+    bpy.types.Scene.dbmt_import_config_unreal = bpy.props.PointerProperty(type=CatterProperties_ImportModel_Unreal)
+    bpy.types.Scene.dbmt_generatemod = bpy.props.PointerProperty(type=CatterProperties_GenerateMod_General)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(menu_func_migoto_right_click)
     bpy.types.OUTLINER_MT_collection.append(menu_dbmt_mark_collection_switch)
