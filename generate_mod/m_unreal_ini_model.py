@@ -3,6 +3,7 @@ import shutil
 from .m_ini_builder import *
 from .m_drawib_model import *
 from .m_ini_helper import M_IniHelper
+from ..config.import_model_config import ImportModelConfigUnreal
 
 
 
@@ -56,7 +57,9 @@ class M_UnrealIniModel:
         # WWMI中每个mod的mod_id都是-1000，暂时不知道是为了什么，难道是保留设计？不管了，为保证兼容性，暂时先留着
         constants_section.append("global $mod_id = -1000")
 
-        constants_section.append("global $state_id = 0")
+        # 只有Merged顶点组才需要用到$state_id
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            constants_section.append("global $state_id = 0")
 
         constants_section.append("global $mod_enabled = 0")
 
@@ -73,7 +76,11 @@ class M_UnrealIniModel:
         present_section.append("if $object_detected")
         present_section.append("  if $mod_enabled")
         present_section.append("    post $object_detected = 0")
-        present_section.append("    run = CommandListUpdateMergedSkeleton")
+
+        # 只有Merged顶点组需要运行UpdateMergedSkeleton
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            present_section.append("    run = CommandListUpdateMergedSkeleton")
+
         present_section.append("  else")
         present_section.append("    if $mod_id == -1000")
         present_section.append("      run = CommandListRegisterMod")
@@ -104,27 +111,28 @@ class M_UnrealIniModel:
         commandlist_section.append("endif")
         commandlist_section.new_line()
 
+        if ImportModelConfigUnreal.import_merged_vgmap():
         # CommandListUpdateMergedSkeleton
-        commandlist_section.append("[CommandListUpdateMergedSkeleton]")
-        commandlist_section.append("if $state_id")
-        commandlist_section.append("  $state_id = 0")
-        commandlist_section.append("else")
-        commandlist_section.append("  $state_id = 1")
-        commandlist_section.append("endif")
-        commandlist_section.append("ResourceMergedSkeleton = copy ResourceMergedSkeletonRW")
-        commandlist_section.append("ResourceExtraMergedSkeleton = copy ResourceExtraMergedSkeletonRW")
-        commandlist_section.new_line()
+            commandlist_section.append("[CommandListUpdateMergedSkeleton]")
+            commandlist_section.append("if $state_id")
+            commandlist_section.append("  $state_id = 0")
+            commandlist_section.append("else")
+            commandlist_section.append("  $state_id = 1")
+            commandlist_section.append("endif")
+            commandlist_section.append("ResourceMergedSkeleton = copy ResourceMergedSkeletonRW")
+            commandlist_section.append("ResourceExtraMergedSkeleton = copy ResourceExtraMergedSkeletonRW")
+            commandlist_section.new_line()
 
-        # CommandListMergeSkeleton
-        commandlist_section.append("[CommandListMergeSkeleton]")
-        commandlist_section.append("$\\WWMIv1\\custom_mesh_scale = 1.0")
-        commandlist_section.append("cs-cb8 = ref vs-cb4")
-        commandlist_section.append("cs-u6 = ResourceMergedSkeletonRW")
-        commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
-        commandlist_section.append("cs-cb8 = ref vs-cb3")
-        commandlist_section.append("cs-u6 = ResourceExtraMergedSkeletonRW")
-        commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
-        commandlist_section.new_line()
+            # CommandListMergeSkeleton
+            commandlist_section.append("[CommandListMergeSkeleton]")
+            commandlist_section.append("$\\WWMIv1\\custom_mesh_scale = 1.0")
+            commandlist_section.append("cs-cb8 = ref vs-cb4")
+            commandlist_section.append("cs-u6 = ResourceMergedSkeletonRW")
+            commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
+            commandlist_section.append("cs-cb8 = ref vs-cb3")
+            commandlist_section.append("cs-u6 = ResourceExtraMergedSkeletonRW")
+            commandlist_section.append("run = CustomShader\\WWMIv1\\SkeletonMerger")
+            commandlist_section.new_line()
 
         # CommandListTriggerResourceOverrides
         commandlist_section.append("[CommandListTriggerResourceOverrides]")
@@ -136,8 +144,12 @@ class M_UnrealIniModel:
         commandlist_section.append("CheckTextureOverride = ps-t5")
         commandlist_section.append("CheckTextureOverride = ps-t6")
         commandlist_section.append("CheckTextureOverride = ps-t7")
-        commandlist_section.append("CheckTextureOverride = vs-cb3")
-        commandlist_section.append("CheckTextureOverride = vs-cb4")
+
+        # 只有Merged顶点组需要check vs-cb3和vs-cb4
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            commandlist_section.append("CheckTextureOverride = vs-cb3")
+            commandlist_section.append("CheckTextureOverride = vs-cb4")
+
         commandlist_section.new_line()
 
         # CommandListOverrideSharedResources
@@ -154,12 +166,15 @@ class M_UnrealIniModel:
         commandlist_section.append("vb2 = ResourceTexcoordBuffer")
         commandlist_section.append("vb3 = ResourceColorBuffer")
         commandlist_section.append("vb4 = ResourceBlendBuffer")
-        commandlist_section.append("if vs-cb3 == 3381.7777")
-        commandlist_section.append("  vs-cb3 = ResourceExtraMergedSkeleton")
-        commandlist_section.append("endif")
-        commandlist_section.append("if vs-cb4 == 3381.7777")
-        commandlist_section.append("  vs-cb4 = ResourceMergedSkeleton")
-        commandlist_section.append("endif")
+
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            commandlist_section.append("if vs-cb3 == 3381.7777")
+            commandlist_section.append("  vs-cb3 = ResourceExtraMergedSkeleton")
+            commandlist_section.append("endif")
+            commandlist_section.append("if vs-cb4 == 3381.7777")
+            commandlist_section.append("  vs-cb4 = ResourceMergedSkeleton")
+            commandlist_section.append("endif")
+
         commandlist_section.new_line()
 
         # CommandListCleanupSharedResources
@@ -268,30 +283,48 @@ class M_UnrealIniModel:
             texture_override_component.append("$object_detected = 1")
             texture_override_component.append("if $mod_enabled")
 
-            state_id_var_str = "$state_id_" + component_count_str
-            texture_override_component.append("  " + "local " + state_id_var_str)
-            texture_override_component.append("  " + "if " + state_id_var_str + " != $state_id")
-            texture_override_component.append("    " + state_id_var_str + " = $state_id")
-            texture_override_component.append("    " + "$\\WWMIv1\\vg_offset = " + str(component_object.vg_offset))
-            texture_override_component.append("    " + "$\\WWMIv1\\vg_count = " + str(component_object.vg_count))
-            texture_override_component.append("    " + "run = CommandListMergeSkeleton")
-            texture_override_component.append("  endif")
-            # TODO 有空的话，搞清楚这里为啥用!==
-            texture_override_component.append("  " + "if ResourceMergedSkeleton !== null")
-            texture_override_component.append("    " + "handling = skip")
-            texture_override_component.append("    " + "run = CommandListTriggerResourceOverrides")
-            texture_override_component.append("    " + "run = CommandListOverrideSharedResources")
-            texture_override_component.append("    " + "; Draw Component " + component_count_str)
+            if ImportModelConfigUnreal.import_merged_vgmap():
+                state_id_var_str = "$state_id_" + component_count_str
+                texture_override_component.append("  " + "local " + state_id_var_str)
+                texture_override_component.append("  " + "if " + state_id_var_str + " != $state_id")
+                texture_override_component.append("    " + state_id_var_str + " = $state_id")
+                texture_override_component.append("    " + "$\\WWMIv1\\vg_offset = " + str(component_object.vg_offset))
+                texture_override_component.append("    " + "$\\WWMIv1\\vg_count = " + str(component_object.vg_count))
+                texture_override_component.append("    " + "run = CommandListMergeSkeleton")
+                texture_override_component.append("  endif")
+                # TODO 有空的话，搞清楚这里为啥用!==
+                texture_override_component.append("  " + "if ResourceMergedSkeleton !== null")
 
-            model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
+                texture_override_component.append("    " + "handling = skip")
+                texture_override_component.append("    " + "run = CommandListTriggerResourceOverrides")
+                texture_override_component.append("    " + "run = CommandListOverrideSharedResources")
+                texture_override_component.append("    " + "; Draw Component " + component_count_str)
 
-            drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent="",input_global_key_index_logic=cls.global_key_index_logic)
-            for drawindexed_str in drawindexed_list:
-                texture_override_component.append("    " + drawindexed_str)
-            cls.global_key_index_logic = added_global_key_index_logic
+                model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
 
-            texture_override_component.append("    " + "run = CommandListCleanupSharedResources")
-            texture_override_component.append("  endif")
+                drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent="",input_global_key_index_logic=cls.global_key_index_logic)
+                for drawindexed_str in drawindexed_list:
+                    texture_override_component.append("    " + drawindexed_str)
+                cls.global_key_index_logic = added_global_key_index_logic
+
+                texture_override_component.append("    " + "run = CommandListCleanupSharedResources")
+                
+                texture_override_component.append("  endif")
+            else:
+                texture_override_component.append("  " + "handling = skip")
+                texture_override_component.append("  " + "run = CommandListTriggerResourceOverrides")
+                texture_override_component.append("  " + "run = CommandListOverrideSharedResources")
+                texture_override_component.append("  " + "; Draw Component " + component_count_str)
+
+                model_collection_list = draw_ib_model.componentname_modelcollection_list_dict[component_name]
+
+                drawindexed_list, added_global_key_index_logic = M_IniHelper.get_switchkey_drawindexed_list(model_collection_list=model_collection_list, draw_ib_model=draw_ib_model,vlr_filter_index_indent="",input_global_key_index_logic=cls.global_key_index_logic)
+                for drawindexed_str in drawindexed_list:
+                    texture_override_component.append("  " + drawindexed_str)
+                cls.global_key_index_logic = added_global_key_index_logic
+
+                texture_override_component.append("  " + "run = CommandListCleanupSharedResources")
+
             texture_override_component.append("endif")
             texture_override_component.new_line()
 
@@ -319,11 +352,17 @@ class M_UnrealIniModel:
         texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
         texture_override_shapekeys_section.append("match_priority = 0")
         texture_override_shapekeys_section.append("if $mod_enabled")
-        texture_override_shapekeys_section.append("  " + "if cs == 3381.3333 && ResourceMergedSkeleton !== null")
+
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            texture_override_shapekeys_section.append("  " + "if cs == 3381.3333 && ResourceMergedSkeleton !== null")
+        else:
+            texture_override_shapekeys_section.append("  " + "if cs == 3381.3333")
+
         texture_override_shapekeys_section.append("    " + "handling = skip")
         texture_override_shapekeys_section.append("    " + "run = CommandListSetupShapeKeys")
         texture_override_shapekeys_section.append("    " + "run = CommandListLoadShapeKeys")
         texture_override_shapekeys_section.append("  " + "endif")
+
         texture_override_shapekeys_section.append("endif")
         texture_override_shapekeys_section.new_line()
 
@@ -331,7 +370,12 @@ class M_UnrealIniModel:
         texture_override_shapekeys_section.append("hash = " + draw_ib_model.extracted_object.shapekeys.offsets_hash)
         texture_override_shapekeys_section.append("match_priority = 0")
         texture_override_shapekeys_section.append("if $mod_enabled")
-        texture_override_shapekeys_section.append("  " + "if cs == 3381.4444 && ResourceMergedSkeleton !== null")
+
+        if ImportModelConfigUnreal.import_merged_vgmap():
+            texture_override_shapekeys_section.append("  " + "if cs == 3381.4444 && ResourceMergedSkeleton !== null")
+        else:
+            texture_override_shapekeys_section.append("  " + "if cs == 3381.4444")
+
         texture_override_shapekeys_section.append("    " + "handling = skip")
         texture_override_shapekeys_section.append("    " + "run = CommandListMultiplyShapeKeys")
         texture_override_shapekeys_section.append("  " + "endif")
@@ -359,7 +403,7 @@ class M_UnrealIniModel:
         ini_builder.append_section(resource_shapekeys_section)
 
     @classmethod
-    def add_resource_skeleton(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
+    def add_resource_merged_skeleton(cls,ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
         resource_skeleton_section = M_IniSection(M_SectionType.ResourceSkeletonOverride)
 
         # TODO 这些array后面的值可能是动态计算得到的
@@ -474,7 +518,10 @@ class M_UnrealIniModel:
 
             cls.add_resource_mod_info_section_default(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             cls.add_resource_shapekeys(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
-            cls.add_resource_skeleton(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+
+            if ImportModelConfigUnreal.import_merged_vgmap():
+                cls.add_resource_merged_skeleton(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
+
             cls.add_resource_buffer(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             
             # 移动槽位贴图
