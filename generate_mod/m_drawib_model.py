@@ -112,8 +112,8 @@ class DrawIBModel:
                 self.__read_component_ib_buf_dict_merged()
             else:
                 self.__read_component_ib_buf_dict_seperated()
-            # 构建每个Category的VertexBuffer
-            self.__read_categoryname_bytelist_dict()
+        # 构建每个Category的VertexBuffer
+        self.__read_categoryname_bytelist_dict()
 
         # WWMI专用，因为它非得用到metadata.json的东西
         # 目前只有WWMI会需要读取ShapeKey数据
@@ -197,8 +197,8 @@ class DrawIBModel:
         解析工作空间集合架构，得到方便后续访问使用的抽象数据类型ModelCollection。
         '''
 
-        LOG.info("DrawIB: " + self.draw_ib)
-        LOG.info("Visiable: " + str(CollectionUtils.is_collection_visible(draw_ib_collection.name)))
+        # LOG.info("DrawIB: " + self.draw_ib)
+        # LOG.info("Visiable: " + str(CollectionUtils.is_collection_visible(draw_ib_collection.name)))
 
         
         for component_collection in draw_ib_collection.children:
@@ -212,7 +212,7 @@ class DrawIBModel:
                     LOG.info("Skip " + m_collection.name + " because it's invisiable.")
                     continue
 
-                LOG.info("Current Processing Collection: " + m_collection.name)
+                # LOG.info("Current Processing Collection: " + m_collection.name)
 
                 # 声明一个model_collection对象
                 model_collection = ModelCollection()
@@ -296,7 +296,7 @@ class DrawIBModel:
         for component_name, moel_collection_list in self.componentname_modelcollection_list_dict.items():
             for model_collection in moel_collection_list:
                 for obj_name in model_collection.obj_name_list:
-                    print("processing: " + obj_name)
+                    # print("processing: " + obj_name)
                     ib = self.__obj_name_ib_dict.get(obj_name,None)
 
                     # ib的数据类型是list[int]
@@ -311,8 +311,8 @@ class DrawIBModel:
                     for ib_number in ib:
                         offset_ib.append(ib_number + vertex_number_ib_offset)
                     
-                    print("Component name: " + component_name)
-                    print("Draw Offset: " + str(vertex_number_ib_offset))
+                    # print("Component name: " + component_name)
+                    # print("Draw Offset: " + str(vertex_number_ib_offset))
                     ib_buf.extend(offset_ib)
 
                     drawindexed_obj = M_DrawIndexed()
@@ -325,10 +325,10 @@ class DrawIBModel:
                     draw_offset = draw_offset + draw_number
 
                     # Add UniqueVertexNumber to show vertex count in mod ini.
-                    print("Draw Number: " + str(unique_vertex_number))
+                    # print("Draw Number: " + str(unique_vertex_number))
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
 
-                    LOG.newline()
+                    # LOG.newline()
         # 累加完毕后draw_offset的值就是总的index_count的值，正好作为WWMI的$object_id
         self.total_index_count = draw_offset
 
@@ -351,7 +351,7 @@ class DrawIBModel:
             offset = 0
             for model_collection in moel_collection_list:
                 for obj_name in model_collection.obj_name_list:
-                    print("processing: " + obj_name)
+                    # print("processing: " + obj_name)
                     ib = self.__obj_name_ib_dict.get(obj_name,None)
 
                     # ib的数据类型是list[int]
@@ -366,8 +366,8 @@ class DrawIBModel:
                     for ib_number in ib:
                         offset_ib.append(ib_number + vertex_number_ib_offset)
                     
-                    print("Component name: " + component_name)
-                    print("Draw Offset: " + str(vertex_number_ib_offset))
+                    # print("Component name: " + component_name)
+                    # print("Draw Offset: " + str(vertex_number_ib_offset))
                     ib_buf.extend(offset_ib)
 
                     drawindexed_obj = M_DrawIndexed()
@@ -383,10 +383,10 @@ class DrawIBModel:
                     total_offset = total_offset + draw_number
 
                     # Add UniqueVertexNumber to show vertex count in mod ini.
-                    print("Draw Number: " + str(unique_vertex_number))
+                    # print("Draw Number: " + str(unique_vertex_number))
                     vertex_number_ib_offset = vertex_number_ib_offset + unique_vertex_number
 
-                    LOG.newline()
+                    # LOG.newline()
             
             # Only export if it's not empty.
             if len(ib_buf) != 0:
@@ -400,7 +400,7 @@ class DrawIBModel:
         '''
         读取形态键部分
         '''
-        TimerUtils.Start("read shapekey data")
+        # TimerUtils.Start("read shapekey data")
 
         shapekey_index_list = []
         shapekey_data = {}
@@ -501,11 +501,11 @@ class DrawIBModel:
                 self.shapekey_vertex_offsets.extend(vertex_offsets + [0, 0, 0])
                 shapekey_verts_count += 1
 
-        LOG.newline()
-        print("shapekey_offsets: " + str(len(self.shapekey_offsets))) # 128 WWMI:128
-        print("shapekey_vertex_ids: " + str(len(self.shapekey_vertex_ids))) # 29161 WWMI:29404
-        print("shapekey_vertex_offsets: " + str(len(self.shapekey_vertex_offsets))) # 174966  WWMI:29404 * 6  = 176424 * 2 = 352848
-        TimerUtils.End("read shapekey data")
+        # LOG.newline()
+        # print("shapekey_offsets: " + str(len(self.shapekey_offsets))) # 128 WWMI:128
+        # print("shapekey_vertex_ids: " + str(len(self.shapekey_vertex_ids))) # 29161 WWMI:29404
+        # print("shapekey_vertex_offsets: " + str(len(self.shapekey_vertex_offsets))) # 174966  WWMI:29404 * 6  = 176424 * 2 = 352848
+        # TimerUtils.End("read shapekey data")
 
 
     def __read_categoryname_bytelist_dict(self):
@@ -569,7 +569,7 @@ class DrawIBModel:
         导出当前Mod的所有Buffer文件
         '''
         buf_output_folder = MainConfig.path_generatemod_buffer_folder(draw_ib=self.draw_ib)
-
+        # print("Write Buffer Files::")
         # Export Index Buffer files.
         for partname in self.part_name_list:
             component_name = "Component " + partname
@@ -589,10 +589,11 @@ class DrawIBModel:
             else:
                 if GenerateModConfig.every_drawib_single_ib_file():
                     break
-
+        # print("Export Category Buffers::")
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
             buf_path = buf_output_folder + self.draw_ib + "-" + category_name + ".buf"
+            # print("write: " + buf_path)
             # print(type(category_buf[0]))
              # 将 list 转换为 numpy 数组
             # category_array = numpy.array(category_buf, dtype=numpy.uint8)

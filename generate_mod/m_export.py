@@ -366,7 +366,7 @@ class BufferModel:
                             result[0::4] *= -1
                             result[1::4] *= -1
                             result[2::4] *= -1
-                        print("Unreal: Set NORMAL.W to bitangent_sign")
+                        # print("Unreal: Set NORMAL.W to bitangent_sign")
                     
                     result = result.reshape(-1, 4)
 

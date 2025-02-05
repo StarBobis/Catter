@@ -16,7 +16,7 @@ class ObjUtils:
         '''
         调用前需确保选中了这个obj，也就是当前的active对象是这个obj
         '''
-        print("Normalize All Weights For: " + obj.name)
+        # print("Normalize All Weights For: " + obj.name)
         # 选择你要操作的对象，这里假设场景中只有一个导入的OBJ对象
         if obj and obj.type == 'MESH':
             # 进入权重编辑模式（如果需要）
