@@ -104,7 +104,6 @@ class PanelGenerateModConfig(bpy.types.Panel):
             # generate_to_seperate_ini
             layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
         elif MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
-            layout.prop(context.scene.dbmt_generatemod, "every_drawib_single_ib_file")
             layout.prop(context.scene.dbmt_generatemod, "hash_style_auto_texture")
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
             

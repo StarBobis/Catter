@@ -102,13 +102,18 @@ class DrawIBModel:
         self.total_index_count = 0 # 每个DrawIB都有总的IndexCount数，也就是所有的IB中的所有顶点索引数量
 
         self.__parse_obj_name_ib_category_buffer_dict()
-        # 构建IndexBuffer
-        if GenerateModConfig.every_drawib_single_ib_file():
+
+        if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS: 
+            # UnrealVS目前只能一个IB
             self.__read_component_ib_buf_dict_merged()
         else:
-            self.__read_component_ib_buf_dict_seperated()
-        # 构建每个Category的VertexBuffer
-        self.__read_categoryname_bytelist_dict()
+            # 构建IndexBuffer
+            if GenerateModConfig.every_drawib_single_ib_file():
+                self.__read_component_ib_buf_dict_merged()
+            else:
+                self.__read_component_ib_buf_dict_seperated()
+            # 构建每个Category的VertexBuffer
+            self.__read_categoryname_bytelist_dict()
 
         # WWMI专用，因为它非得用到metadata.json的东西
         # 目前只有WWMI会需要读取ShapeKey数据
@@ -579,8 +584,11 @@ class DrawIBModel:
                 with open(ib_path, 'wb') as ibf:
                     ibf.write(packed_data) 
             
-            if GenerateModConfig.every_drawib_single_ib_file():
+            if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS: 
                 break
+            else:
+                if GenerateModConfig.every_drawib_single_ib_file():
+                    break
 
         # Export category buffer files.
         for category_name, category_buf in self.__categoryname_bytelist_dict.items():
