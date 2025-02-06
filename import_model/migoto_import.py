@@ -366,12 +366,14 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
 
     if use_normals:
         if bpy.app.version < (4,0,0):
-            print("Blender 3.6 Import NORMAL")
-            mesh.create_normals_split()
-            for l in mesh.loops:
-                l.normal[:] = normals[l.vertex_index]
+            if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+                # print("Blender 3.6 Import NORMAL")
+                # XXX 只有Unreal游戏会用到这个，否则面是翻转的
+                mesh.create_normals_split()
+                for l in mesh.loops:
+                    l.normal[:] = normals[l.vertex_index]
         else:
-            print("Blender 4.2 Import NORMAL")
+            # print("Blender 4.2 Import NORMAL")
             mesh.normals_split_custom_set_from_vertices(normals)
 
     # auto texture 
