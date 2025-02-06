@@ -361,20 +361,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     mesh.update()
     
     
-    # Nico: 这个方法还必须得在mesh.validate和mesh.update之后调用
-
-
+    # XXX 这个方法还必须得在mesh.validate和mesh.update之后调用 3.6和4.2都可以用这个
     if use_normals:
-        if bpy.app.version < (4,0,0):
-            if MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
-                # print("Blender 3.6 Import NORMAL")
-                # XXX 只有Unreal游戏会用到这个，否则面是翻转的
-                mesh.create_normals_split()
-                for l in mesh.loops:
-                    l.normal[:] = normals[l.vertex_index]
-        else:
-            # print("Blender 4.2 Import NORMAL")
-            mesh.normals_split_custom_set_from_vertices(normals)
+        mesh.normals_split_custom_set_from_vertices(normals)
 
     # auto texture 
     create_material_with_texture(obj, mesh_name=mesh_name,directory= os.path.dirname(fmt_path))
