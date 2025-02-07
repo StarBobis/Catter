@@ -191,6 +191,7 @@ class M_IniHelper:
                     texture_hash = texture_file_name.split("_")[2]
                     slot_style_texture_hash_list.append(texture_hash)
                     
+        repeat_hash_list = []
         # 遍历当前drawib的Render文件夹
         for draw_ib,draw_ib_model in drawib_drawibmodel_dict.items():
             render_texture_folder_path = MainConfig.path_workspace_folder() + draw_ib + "\\" + "RenderTextures\\"
@@ -202,6 +203,11 @@ class M_IniHelper:
 
                 if texture_hash in slot_style_texture_hash_list:
                     continue
+
+                if texture_hash in repeat_hash_list:
+                    continue
+
+                repeat_hash_list.append(texture_hash)
 
                 original_texture_file_path = render_texture_folder_path + render_texture_name
 
