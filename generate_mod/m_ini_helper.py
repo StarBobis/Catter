@@ -162,16 +162,15 @@ class M_IniHelper:
         if GenerateModConfig.forbid_auto_texture_ini():
             return
         
-        if GenerateModConfig.hash_style_auto_texture():
-            return
-        
         for texture_filename in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-            target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
-            source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
-            
-            # only overwrite when there is no texture file exists.
-            if not os.path.exists(target_path):
-                shutil.copy2(source_path,target_path)
+            # 只有槽位风格会移动到目标位置
+            if "_Slot_" in texture_filename:
+                target_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib_model.draw_ib) + texture_filename
+                source_path = draw_ib_model.extract_gametype_folder_path + texture_filename
+                
+                # only overwrite when there is no texture file exists.
+                if not os.path.exists(target_path):
+                    shutil.copy2(source_path,target_path)
 
     @classmethod
     def generate_hash_style_texture_ini(cls,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
@@ -181,40 +180,45 @@ class M_IniHelper:
         if GenerateModConfig.forbid_auto_texture_ini():
             return
         
-        if not GenerateModConfig.hash_style_auto_texture():
-            return 
         
         texture_ini_builder = M_IniBuilder()
-        hash_texture_filename_dict:dict[str,str] = {}
 
+        # 先统计当前标记的具有Slot风格的Hash值，后续Render里搞图片的时候跳过这些
+        slot_style_texture_hash_list = []
         for draw_ib_model in drawib_drawibmodel_dict.values():
             for texture_file_name in draw_ib_model.TextureResource_Name_FileName_Dict.values():
-                texture_hash = texture_file_name.split("-")[1]
-                hash_texture_filename_dict[texture_hash] = texture_file_name
-        
-        if len(hash_texture_filename_dict) == 0:
-            return
-        
+                if "_Slot_" in texture_file_name:
+                    texture_hash = texture_file_name.split("_")[2]
+                    slot_style_texture_hash_list.append(texture_hash)
+                    
+        # 遍历当前drawib的Render文件夹
         for draw_ib,draw_ib_model in drawib_drawibmodel_dict.items():
-            for texture_hash, texture_file_name in hash_texture_filename_dict.items():
-                original_texture_file_path = draw_ib_model.extract_gametype_folder_path + texture_file_name
+            render_texture_folder_path = MainConfig.path_workspace_folder() + draw_ib + "\\" + "RenderTextures\\"
+
+            render_texture_files = os.listdir(render_texture_folder_path)
+
+            for render_texture_name in render_texture_files:
+                texture_hash = render_texture_name.split("_")[0]
+
+                if texture_hash in slot_style_texture_hash_list:
+                    continue
+
+                original_texture_file_path = render_texture_folder_path + render_texture_name
 
                 # same hash usually won't exists in two folder.
                 if not os.path.exists(original_texture_file_path):
                     continue
 
-                # new_texture_file_name = draw_ib + "_" + texture_hash + "_" + texture_file_name.split("-")[3]
-                new_texture_file_name = texture_hash + "_" + texture_file_name.split("-")[3]
                 
-                target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + new_texture_file_name
+                target_texture_file_path = MainConfig.path_generatemod_texture_folder(draw_ib=draw_ib) + render_texture_name
                 
                 resource_and_textureoverride_texture_section = M_IniSection(M_SectionType.ResourceAndTextureOverride_Texture)
                 resource_and_textureoverride_texture_section.append("[Resource_Texture_" + texture_hash + "]")
-                resource_and_textureoverride_texture_section.append("filename = Texture/" + new_texture_file_name)
+                resource_and_textureoverride_texture_section.append("filename = Texture/" + render_texture_name)
                 resource_and_textureoverride_texture_section.new_line()
 
                 resource_and_textureoverride_texture_section.append("[TextureOverride_" + texture_hash + "]")
-                resource_and_textureoverride_texture_section.append("; " + new_texture_file_name)
+                resource_and_textureoverride_texture_section.append("; " + render_texture_name)
                 resource_and_textureoverride_texture_section.append("hash = " + texture_hash)
                 resource_and_textureoverride_texture_section.append("match_priority = 0")
                 resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)

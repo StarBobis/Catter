@@ -34,12 +34,6 @@ class CatterProperties_GenerateMod_General(bpy.types.PropertyGroup):
         default=False
     ) # type: ignore
 
-    hash_style_auto_texture: bpy.props.BoolProperty(
-        name="使用Hash风格自动贴图",
-        description="在生成Mod时使用Hash风格的自动贴图而不是槽位风格的",
-        default=False
-    ) # type: ignore
-
     forbid_auto_texture_ini: bpy.props.BoolProperty(
         name="禁止自动贴图流程",
         description="生成Mod时禁止生成贴图相关ini部分",

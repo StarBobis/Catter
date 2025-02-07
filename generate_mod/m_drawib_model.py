@@ -37,6 +37,7 @@ class TextureReplace:
         self.resource_name = ""
         self.filter_index = 0
         self.hash = ""
+        self.style = ""
         
 
 class ModelCollection:
@@ -179,12 +180,13 @@ class DrawIBModel:
 
                 resource_name = "Resource_" + os.path.splitext(texture_filename)[0]
 
-                filename_splits = os.path.splitext(texture_filename)[0].split("-")
-                texture_hash = filename_splits[1]
+                filename_splits = os.path.splitext(texture_filename)[0].split("_")
+                texture_hash = filename_splits[2]
 
                 texture_replace = TextureReplace()
                 texture_replace.hash = texture_hash
                 texture_replace.resource_name = resource_name
+                texture_replace.style = filename_splits[3]
 
                 slot_texture_replace_dict[slot_name] = texture_replace
 

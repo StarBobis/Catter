@@ -5,14 +5,6 @@ import bpy
 class GenerateModConfig:
     
     @classmethod
-    def hash_style_auto_texture(cls):
-        '''
-        bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-        '''
-        return bpy.context.scene.dbmt_generatemod.hash_style_auto_texture
-    
-    
-    @classmethod
     def forbid_auto_texture_ini(cls):
         '''
         bpy.context.scene.dbmt_generatemod.forbid_auto_texture_ini
