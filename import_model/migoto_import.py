@@ -227,7 +227,7 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
     texture_prefix = mesh_name_split[0] # IB Hash
     if len(mesh_name_split) > 1:
         # new name style need to minus 1.
-        texture_suffix = f"{mesh_name_split[1]}-DiffuseMap.tga" # Part Name
+        texture_suffix = f"{mesh_name_split[1]}_DiffuseMap.tga" # Part Name
     else:
         texture_suffix = "-DiffuseMap.tga"
 
@@ -240,18 +240,18 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
     # 如果不存在，试试查找jpg文件
     if texture_path is None:
         if len(mesh_name_split) > 1:
-            texture_suffix = f"{mesh_name_split[1]}-DiffuseMap.jpg"  # Part Name
+            texture_suffix = f"{mesh_name_split[1]}_DiffuseMap.jpg"  # Part Name
         else:
-            texture_suffix = "-DiffuseMap.jpg"
+            texture_suffix = "_DiffuseMap.jpg"
         # 查找jpg文件，如果这里没找到的话后面也是正常的，但是这里如果找到了就能起到兼容旧版本jpg文件的作用
         texture_path = find_texture(texture_prefix, texture_suffix, directory)
 
     # 如果还不存在，试试查找png文件
     if texture_path is None:
         if len(mesh_name_split) > 1:
-            texture_suffix = f"{mesh_name_split[1]}-DiffuseMap.png"  # Part Name
+            texture_suffix = f"{mesh_name_split[1]}_DiffuseMap.png"  # Part Name
         else:
-            texture_suffix = "-DiffuseMap.png"
+            texture_suffix = "_DiffuseMap.png"
         # 查找jpg文件，如果这里没找到的话后面也是正常的，但是这里如果找到了就能起到兼容旧版本jpg文件的作用
         texture_path = find_texture(texture_prefix, texture_suffix, directory)
 
