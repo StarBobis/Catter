@@ -224,6 +224,9 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
     else:
         mesh_name_split = str(mesh_name).split("-")
     
+    if len(mesh_name_split) < 2:
+        return
+    
     texture_prefix = mesh_name_split[0] + "_" + mesh_name_split[1] # IB Hash
     
     texture_suffix = "-DiffuseMap.tga"
