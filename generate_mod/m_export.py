@@ -100,8 +100,8 @@ class BufferDataConverter:
         return normalized_weights
     
     @classmethod
-    def convert_4x_float32_to_r8g8b8a8_unorm_wwmi(cls, input_array):
-        print(f"Input shape: {input_array.shape}")  # 输出形状 (1896, 4)
+    def convert_4x_float32_to_r8g8b8a8_unorm_blendweights(cls, input_array):
+        # print(f"Input shape: {input_array.shape}")  # 输出形状 (1896, 4)
 
         result = numpy.zeros_like(input_array, dtype=numpy.uint8)
 
@@ -555,7 +555,7 @@ class BufferModel:
                         self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
                         # self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
-                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm_wwmi(blendweights)
+                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm_blendweights(blendweights)
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
