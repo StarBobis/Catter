@@ -51,6 +51,68 @@ class BufferDataConverter:
         return numpy.round(input_array * 255).astype(numpy.uint8)
     
     @classmethod
+    def normalize_weights(cls, weights):
+        '''
+        Normalizes provided list of float weights in an 8-bit friendly way.
+        Returns list of 8-bit integers (0-255) with sum of 255.
+
+        Credit To @SpectrumQT https://github.com/SpectrumQT
+        '''
+        total = sum(weights)
+
+        if total == 0:
+            return [0] * len(weights)
+
+        precision_error = 255
+        tickets = [0] * len(weights)
+        normalized_weights = [0] * len(weights)
+
+        for idx, weight in enumerate(weights):
+            # Ignore zero weight
+            if weight == 0:
+                continue
+            weight = weight / total * 255
+            # Ignore weight below minimal precision (1/255)
+            if weight < 1:
+                normalized_weights[idx] = 0
+                continue
+            # Strip float part from the weight
+            int_weight = int(weight)
+            normalized_weights[idx] = int_weight
+            # Reduce precision_error by the integer weight value
+            precision_error -= int_weight
+            # Calculate weight 'significance' index to prioritize lower weights with float loss
+            tickets[idx] = 255 / weight * (weight - int_weight)
+
+        while precision_error > 0:
+            ticket = max(tickets)
+            if ticket > 0:
+                # Route `1` from precision_error to weights with non-zero ticket value first
+                i = tickets.index(ticket)
+                tickets[i] = 0
+            else:
+                # Route remaining precision_error to highest weight to reduce its impact
+                i = normalized_weights.index(max(normalized_weights))
+            # Distribute `1` from precision_error
+            normalized_weights[i] += 1
+            precision_error -= 1
+
+        return normalized_weights
+    
+    @classmethod
+    def convert_4x_float32_to_r8g8b8a8_unorm_wwmi(cls, input_array):
+        print(f"Input shape: {input_array.shape}")  # 输出形状 (1896, 4)
+
+        result = numpy.zeros_like(input_array, dtype=numpy.uint8)
+
+        for i in range(input_array.shape[0]):
+            # 对每一行调用 normalize_weights 方法
+            row_normalized = cls.normalize_weights(input_array[i])
+            result[i] = numpy.array(row_normalized, dtype=numpy.uint8)
+
+        return result
+    
+    @classmethod
     def convert_4x_float32_to_r16g16b16a16_unorm(cls, input_array):
         return numpy.round(input_array * 65535).astype(numpy.uint16)
     
@@ -482,8 +544,6 @@ class BufferModel:
                     blendindices.astype(numpy.uint8)
                     self.element_vertex_ndarray[d3d11_element_name] = blendindices
                 
-
- 
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
                 if not self.d3d11GameType.PatchBLENDWEIGHTS:
@@ -494,11 +554,8 @@ class BufferModel:
                     elif d3d11_element.Format == 'R8G8B8A8_SNORM':
                         self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
                     elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
-            
-                    
-                    
-                
+                        # self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
+                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm_wwmi(blendweights)
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''
