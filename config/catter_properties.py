@@ -87,7 +87,7 @@ class CatterProperties_GenerateMod_General(bpy.types.PropertyGroup):
     
     generate_to_seperate_ini:bpy.props.BoolProperty(
         name="使用多个ini文件架构",
-        description="Generate mod config to CommandList.ini, Resource.ini and Config.ini for better organization.",
+        description="拆分生成额外的CommandList.ini和Resource.ini便于更好地组织Mod的架构,便于Mod部分加密只暴露Hash值部分在外面方便Hash值变更后用户可以自己更新",
         default=False
     ) # type: ignore
     

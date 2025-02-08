@@ -602,31 +602,31 @@ class M_UnityIniModel:
                 if not os.path.exists(draw_ib_output_folder):
                     os.makedirs(draw_ib_output_folder)
 
-                config_ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                config_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename + ".ini")
                 config_ini_builder.clear()
                 if GenerateModConfig.generate_to_seperate_ini():
-                    resource_ini_builder.save_to_file(draw_ib_output_folder + "Resource.ini")
+                    resource_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename +"_Resource.ini")
                     resource_ini_builder.clear()
-                    commandlist_ini_builder.save_to_file(draw_ib_output_folder + "CommandList.ini")
+                    commandlist_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename +"_CommandList.ini")
                     commandlist_ini_builder.clear()
                 else:
-                    if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
-                        os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                    if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
-                        os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
         M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
-            config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+            config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + ".ini")
             if GenerateModConfig.generate_to_seperate_ini():
-                resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
             else:
-                if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
-                    os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
-                    os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
 
 
@@ -693,31 +693,31 @@ class M_UnityIniModel:
                 if not os.path.exists(draw_ib_output_folder):
                     os.makedirs(draw_ib_output_folder)
 
-                config_ini_builder.save_to_file(draw_ib_output_folder + "Config.ini")
+                config_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename + ".ini")
                 config_ini_builder.clear()
                 if GenerateModConfig.generate_to_seperate_ini():
-                    resource_ini_builder.save_to_file(draw_ib_output_folder + "Resource.ini")
+                    resource_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename +"_Resource.ini")
                     resource_ini_builder.clear()
-                    commandlist_ini_builder.save_to_file(draw_ib_output_folder + "CommandList.ini")
+                    commandlist_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename +"_CommandList.ini")
                     commandlist_ini_builder.clear()
                 else:
-                    if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
-                        os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                    if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
-                        os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                    if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
+                        os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
         M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
-            config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Config.ini")
+            config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + ".ini")
             if GenerateModConfig.generate_to_seperate_ini():
-                resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                resource_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                commandlist_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
             else:
-                if os.path.exists(MainConfig.path_generate_mod_folder() + "Resource.ini"):
-                    os.remove(MainConfig.path_generate_mod_folder() + "Resource.ini")
-                if os.path.exists(MainConfig.path_generate_mod_folder() + "CommandList.ini"):
-                    os.remove(MainConfig.path_generate_mod_folder() + "CommandList.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_Resource.ini")
+                if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
+                    os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
 
 

@@ -423,7 +423,7 @@ bpy.utils.register_class(PropertyCollectionModifierItem)
 
 class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
     bl_idname = "wwmi_tools.apply_modifier_for_object_with_shape_keys"
-    bl_label = "Apply Modifiers For Object With Shape Keys"
+    bl_label = "在有形态键的模型上应用修改器"
     bl_description = "Apply selected modifiers and remove from the stack for object with shape keys (Solves 'Modifier cannot be applied to a mesh with shape keys' error when pushing 'Apply' button in 'Object modifiers'). Sourced by Przemysław Bągard"
  
     def item_list(self, context):
