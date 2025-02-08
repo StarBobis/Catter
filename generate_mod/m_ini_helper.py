@@ -76,6 +76,7 @@ class M_IniHelper:
         '''
         if draw_ib_model.key_number != 0:
             constants_section = M_IniSection(M_SectionType.Constants)
+            constants_section.SectionName = "Constants"
             constants_section.append("global $active" + str(global_generate_mod_number))
             for i in range(draw_ib_model.key_number):
                 key_str = "global persist $swapkey" + str(i + global_key_index_constants) + " = 0"
@@ -90,6 +91,7 @@ class M_IniHelper:
         '''
         if draw_ib_model.key_number != 0:
             present_section = M_IniSection(M_SectionType.Present)
+            present_section.SectionName = "Present"
             present_section.append("post $active" + str(global_generate_mod_number) + " = 0")
             ini_builder.append_section(present_section)
 

@@ -1,5 +1,6 @@
 import hashlib
 
+
 class M_SectionType:
     NameSpace = "NameSpace"
     Present = "Present"
@@ -31,6 +32,16 @@ class M_IniSection:
         self.SectionType:M_SectionType = section_type
         self.SectionName = ""
         self.SectionLineList = []
+    
+    def empty(self)->bool:
+        '''
+        调用此方法判断是否为空，或换行，如果内容出现不为空或换行的，就说明不是空的返回False，
+        否则一直遍历完都没找到实际有效内容则返回True代表是空的
+        '''
+        for line in self.SectionLineList:
+            if line != "" and line != "\n":
+                return False
+        return True
 
     def append(self,line:str):
         self.SectionLineList.append(line)
@@ -47,8 +58,8 @@ class M_IniBuilder:
         self.line_list = []
         self.ini_section_list:list[M_IniSection] = []
 
-        # 用于控制是否是第一次出现这个Section
-        self.ini_section_type_set:set = set()
+        # 用于控制是否是第一次出现这个名字的Section
+        self.ini_section_name_set:set = set()
     
     def clear(self):
         self.line_list.clear()
@@ -60,24 +71,24 @@ class M_IniBuilder:
         '''
         for ini_section in self.ini_section_list:
             if ini_section.SectionType == ini_section_type:
-                
-                if ini_section_type not in self.ini_section_type_set:
+                section_name_exists = ini_section.SectionName in self.ini_section_name_set
+                if not section_name_exists:
                     self.line_list.append("\n;MARK:" + ini_section_type + "----------------------------------------------------------\n")
-                    self.ini_section_type_set.add(ini_section_type)
-                
-                    if ini_section_type == M_SectionType.Constants:
-                        self.line_list.append("[Constants]\n")
-                    
-                    if ini_section_type == M_SectionType.Present:
-                        self.line_list.append("[Present]\n")
 
+                # SectionName不为空的时候才会自动补SectionName，否则由用户控制
+                if ini_section.SectionName != "" and not section_name_exists:
+                    self.line_list.append("[" + ini_section.SectionName + "]\n")
+                    self.ini_section_name_set.add(ini_section.SectionName)
+
+                # 添加Section的内容
                 for line in ini_section.SectionLineList:
                     self.line_list.append(line + "\n")
                 
-                
 
     def append_section(self,m_inisection:M_IniSection):
-        self.ini_section_list.append(m_inisection)
+        # 先判断是否为空，如果为空就不往里放了
+        if not m_inisection.empty():
+            self.ini_section_list.append(m_inisection)
 
     def save_to_file(self,config_ini_path:str):
         self.__append_section_line(M_SectionType.NameSpace)

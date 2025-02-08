@@ -53,70 +53,75 @@ class M_UnityIniModel:
         d3d11GameType = draw_ib_model.d3d11GameType
         draw_ib = draw_ib_model.draw_ib
 
-        if d3d11GameType.GPU_PreSkinning:
-            texture_override_vb_section = M_IniSection(M_SectionType.TextureOverrideVB)
-            texture_override_vb_section.append("; " + draw_ib + " ----------------------------")
-            for category_name in d3d11GameType.OrderedCategoryNameList:
-                category_hash = draw_ib_model.category_hash_dict[category_name]
-                category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
+        # 只有GPU-PreSkinning需要生成TextureOverrideVB部分，CPU类型不需要
+        if not d3d11GameType.GPU_PreSkinning:
+            return
 
-                texture_override_vb_name_suffix = "VB_" + draw_ib + "_" + category_name
-                texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_name_suffix + "]")
-                texture_override_vb_section.append("hash = " + category_hash)
+        texture_override_vb_section = M_IniSection(M_SectionType.TextureOverrideVB)
+        texture_override_vb_section.append("; " + draw_ib + " ----------------------------")
+        for category_name in d3d11GameType.OrderedCategoryNameList:
+            category_hash = draw_ib_model.category_hash_dict[category_name]
+            category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
 
-                # Call CommandList
-                texture_override_vb_section.append("run = CommandList_" + texture_override_vb_name_suffix)
+            texture_override_vb_name_suffix = "VB_" + draw_ib + "_" + category_name
+            texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_name_suffix + "]")
+            texture_override_vb_section.append("hash = " + category_hash)
+
+            
+            # (1) 先初始化CommandList
+            texture_override_vb_commandlist_section = M_IniSection(M_SectionType.CommandList)
+            texture_override_vb_commandlist_section.SectionName = "CommandList_" + texture_override_vb_name_suffix
+            
+            drawtype_indent_prefix = ""
+            if GenerateModConfig.position_override_filter_draw_type():
+                if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
+                    drawtype_indent_prefix = "  "
+                    texture_override_vb_commandlist_section.append("if DRAW_TYPE == 1")
+            
+            # 如果出现了VertexLimitRaise，Texcoord槽位需要检测filter_index才能替换
+            filterindex_indent_prefix = ""
+            if GenerateModConfig.vertex_limit_raise_add_filter_index():
+                if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
+                    if cls.vlr_filter_index_indent != "":
+                        texture_override_vb_commandlist_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
+                        filterindex_indent_prefix = "  "
+
+            # 遍历获取所有在当前分类hash下进行替换的分类，并添加对应的资源替换
+            for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
+                if category_name == draw_category_name:
+                    category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
+                    texture_override_vb_commandlist_section.append(filterindex_indent_prefix + drawtype_indent_prefix + category_original_slot + " = Resource" + draw_ib + original_category_name)
+
+            # draw一般都是在Blend槽位上进行的，所以我们这里要判断确定是Blend要替换的hash才能进行draw。
+            if category_name == d3d11GameType.CategoryDrawCategoryDict["Blend"]:
+                texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "handling = skip")
+                texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "draw = " + str(draw_ib_model.draw_number) + ", 0")
+
+            if GenerateModConfig.position_override_filter_draw_type():
+                # 对应if DRAW_TYPE == 1的结束
+                if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
+                    texture_override_vb_commandlist_section.append("endif")
+            
+            if GenerateModConfig.vertex_limit_raise_add_filter_index():
+                # 对应if vb0 == 3000的结束
+                if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
+                    if cls.vlr_filter_index_indent != "":
+                        texture_override_vb_commandlist_section.append("endif")
+            
+            # 分支架构，如果是Position则需提供激活变量
+            if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
+                if draw_ib_model.key_number != 0:
+                    texture_override_vb_commandlist_section.append("$active" + str(cls.global_generate_mod_number) + " = 1")
+
+            texture_override_vb_commandlist_section.new_line()
+            commandlist_ini_builder.append_section(texture_override_vb_commandlist_section)
+
+            # (2) 如果不为空的CommandList，则调用CommandList
+            if not texture_override_vb_commandlist_section.empty():
+                texture_override_vb_section.append("run = " + texture_override_vb_commandlist_section.SectionName)
                 texture_override_vb_section.new_line()
 
-                # Initialize CommandList
-                texture_override_vb_commandlist_section = M_IniSection(M_SectionType.CommandList)
-                texture_override_vb_commandlist_section.append("[CommandList_" + texture_override_vb_name_suffix + "]")
-                
-                drawtype_indent_prefix = ""
-                if GenerateModConfig.position_override_filter_draw_type():
-                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                        drawtype_indent_prefix = "  "
-                        texture_override_vb_commandlist_section.append("if DRAW_TYPE == 1")
-                
-                # 如果出现了VertexLimitRaise，Texcoord槽位需要检测filter_index才能替换
-                filterindex_indent_prefix = ""
-                if GenerateModConfig.vertex_limit_raise_add_filter_index():
-                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
-                        if cls.vlr_filter_index_indent != "":
-                            texture_override_vb_commandlist_section.append("if vb0 == " + str(3000 + cls.global_generate_mod_number))
-                            filterindex_indent_prefix = "  "
-
-                # 遍历获取所有在当前分类hash下进行替换的分类，并添加对应的资源替换
-                for original_category_name, draw_category_name in d3d11GameType.CategoryDrawCategoryDict.items():
-                    if category_name == draw_category_name:
-                        category_original_slot = d3d11GameType.CategoryExtractSlotDict[original_category_name]
-                        texture_override_vb_commandlist_section.append(filterindex_indent_prefix + drawtype_indent_prefix + category_original_slot + " = Resource" + draw_ib + original_category_name)
-
-                # draw一般都是在Blend槽位上进行的，所以我们这里要判断确定是Blend要替换的hash才能进行draw。
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Blend"]:
-                    texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "handling = skip")
-                    texture_override_vb_commandlist_section.append(drawtype_indent_prefix + "draw = " + str(draw_ib_model.draw_number) + ", 0")
-
-                if GenerateModConfig.position_override_filter_draw_type():
-                    # 对应if DRAW_TYPE == 1的结束
-                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                        texture_override_vb_commandlist_section.append("endif")
-                
-                if GenerateModConfig.vertex_limit_raise_add_filter_index():
-                    # 对应if vb0 == 3000的结束
-                    if category_name == d3d11GameType.CategoryDrawCategoryDict["Texcoord"]:
-                        if cls.vlr_filter_index_indent != "":
-                            texture_override_vb_commandlist_section.append("endif")
-                
-                # 分支架构，如果是Position则需提供激活变量
-                if category_name == d3d11GameType.CategoryDrawCategoryDict["Position"]:
-                    if draw_ib_model.key_number != 0:
-                        texture_override_vb_commandlist_section.append("$active" + str(cls.global_generate_mod_number) + " = 1")
-
-                texture_override_vb_commandlist_section.new_line()
-                commandlist_ini_builder.append_section(texture_override_vb_commandlist_section)
-
-            config_ini_builder.append_section(texture_override_vb_section)
+        config_ini_builder.append_section(texture_override_vb_section)
 
     @classmethod
     def add_unity_vs_texture_override_ib_sections(cls,config_ini_builder:M_IniBuilder,commandlist_ini_builder:M_IniBuilder,draw_ib_model:DrawIBModel):
