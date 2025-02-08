@@ -128,6 +128,7 @@ class M_UnityIniModel:
         texture_override_ib_section = M_IniSection(M_SectionType.TextureOverrideIB)
         texture_override_ib_commandlist_section = M_IniSection(M_SectionType.CommandList)
         draw_ib = draw_ib_model.draw_ib
+        
         d3d11GameType = draw_ib_model.d3d11GameType
 
         for count_i in range(len(draw_ib_model.part_name_list)):
@@ -136,7 +137,9 @@ class M_UnityIniModel:
 
             style_part_name = M_DrawIBHelper.get_style_alias(part_name)
 
-            texture_override_name_suffix = "IB_" + draw_ib + "_" + style_part_name
+            texture_override_name_suffix = "IB_" + MainConfig.workspacename + "_" + draw_ib + "_" + style_part_name
+            if draw_ib_model.draw_ib_alias != "":
+                texture_override_name_suffix = "IB_" + MainConfig.workspacename + "_" + draw_ib_model.draw_ib_alias + "_" + style_part_name
 
             # 读取使用的IBResourceName，如果读取不到，就使用默认的
             ib_resource_name = ""

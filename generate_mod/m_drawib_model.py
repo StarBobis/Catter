@@ -69,7 +69,9 @@ class DrawIBModel:
         '''
         根据3Dmigoto的架构设计，每个DrawIB都是一个独立的Mod
         '''
-        self.draw_ib = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")[0]
+        drawib_collection_name_splits = CollectionUtils.get_clean_collection_name(draw_ib_collection.name).split("_")
+        self.draw_ib = drawib_collection_name_splits[0]
+        self.draw_ib_alias = drawib_collection_name_splits[1]
 
         # (1) 读取工作空间中配置文件的配置项
         self.category_hash_dict = {}
