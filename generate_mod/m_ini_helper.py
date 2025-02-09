@@ -278,7 +278,8 @@ class M_IniHelper:
                 if not os.path.exists(target_texture_file_path):
                     shutil.copy2(original_texture_file_path,target_texture_file_path)
 
-        texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + "_Texture.ini")
+        if len(repeat_hash_list) != 0:
+            texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + "_Texture.ini")
 
     @classmethod
     def get_switchkey_drawindexed_list(cls,model_collection_list:list[ModelCollection],draw_ib_model:DrawIBModel,vlr_filter_index_indent:str,input_global_key_index_logic:int):
