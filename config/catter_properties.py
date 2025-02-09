@@ -2,10 +2,23 @@
 
 import bpy
 from bpy.props import FloatProperty, IntProperty
-
+from .main_config import MainConfig
 
 class CatterProperties_ImportModel_General(bpy.types.PropertyGroup):
     # ------------------------------------------------------------------------------------------------------------
+    path: bpy.props.StringProperty(
+        name="DBMT.exe Location",
+        description="插件需要先选择DBMT-GUI.exe的所在路径才能正常工作",
+        default=MainConfig.load_dbmt_path(),
+        subtype='DIR_PATH'
+    ) # type: ignore
+
+    use_specified_dbmt :bpy.props.BoolProperty(
+        name="Use Specified DBMT path",
+        description="Use specified DBMT path to work for specified DBMT instead of current opening DBMT",
+        default=False
+    ) # type: ignore
+
     model_scale: FloatProperty(
         name="模型导入大小比例",
         description="默认为1.0",

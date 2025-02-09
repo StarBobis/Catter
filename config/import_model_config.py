@@ -10,7 +10,19 @@ class ImportModelConfig:
         '''
         return bpy.context.scene.dbmt.import_flip_scale_x
     
+    @classmethod
+    def path(cls):
+        '''
+        bpy.context.scene.dbmt.path
+        '''
+        return bpy.context.scene.dbmt.path
 
+    @classmethod
+    def use_specified_dbmt(cls):
+        '''
+        bpy.context.scene.dbmt.use_specified_dbmt
+        '''
+        return bpy.context.scene.dbmt.use_specified_dbmt
 
 class ImportModelConfigUnreal:
     # import_merged_vgmap

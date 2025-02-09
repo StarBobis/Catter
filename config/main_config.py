@@ -3,6 +3,7 @@ import os
 import json
 
 from .generate_mod_config import *
+from .import_model_config import ImportModelConfig
 
 class GameCategory:
     UnityVS = "UnityVS"
@@ -35,6 +36,47 @@ class MainConfig:
         else:
             return GameCategory.Unknown
         
+    @classmethod
+    def save_dbmt_path(cls):
+        # 获取当前脚本文件的路径
+        script_path = os.path.abspath(__file__)
+
+        # 获取当前插件的工作目录
+        plugin_directory = os.path.dirname(script_path)
+
+        # 构建保存文件的路径
+        config_path = os.path.join(plugin_directory, 'Config.json')
+
+        # 创建字典对象
+        config = {'dbmt_path': bpy.context.scene.dbmt.path}
+
+        # 将字典对象转换为 JSON 格式的字符串
+        json_data = json.dumps(config)
+
+        # 保存到文件
+        with open(config_path, 'w') as file:
+            file.write(json_data)
+
+    @classmethod
+    def load_dbmt_path(cls):
+        # 获取当前脚本文件的路径
+        script_path = os.path.abspath(__file__)
+
+        # 获取当前插件的工作目录
+        plugin_directory = os.path.dirname(script_path)
+
+        # 构建配置文件的路径
+        config_path = os.path.join(plugin_directory, 'Config.json')
+
+        # 读取文件
+        with open(config_path, 'r') as file:
+            json_data = file.read()
+
+        # 将 JSON 格式的字符串解析为字典对象
+        config = json.loads(json_data)
+
+        # 读取保存的路径
+        return config['dbmt_path']
 
     @classmethod
     def read_from_main_json(cls) :
@@ -46,6 +88,8 @@ class MainConfig:
             cls.workspacename = main_setting_json.get("WorkSpaceName","")
             cls.gamename = main_setting_json.get("GameName","")
             cls.dbmtlocation = main_setting_json.get("DBMTLocation","") + "\\"
+        else:
+            print("Can't find: " + main_json_path)
 
     @classmethod
     def base_path(cls):
@@ -110,10 +154,15 @@ class MainConfig:
     # 定义基础的Json文件路径---------------------------------------------------------------------------------
     @classmethod
     def path_main_json(cls):
-        return os.path.join(MainConfig.path_appdata_local(), "DBMT-Main.json")
+        if ImportModelConfig.use_specified_dbmt():
+            return os.path.join(ImportModelConfig.path(),"Configs\\Main.json")
+        else:
+            return os.path.join(MainConfig.path_appdata_local(), "DBMT-Main.json")
     
     @classmethod
     def path_setting_json(cls):
-        return os.path.join(MainConfig.path_appdata_local(), "DBMT-Setting.json")
+        if ImportModelConfig.use_specified_dbmt():
+            return os.path.join(ImportModelConfig.path(),"Configs\\Setting.json")
+        else:
+            return os.path.join(MainConfig.path_appdata_local(), "DBMT-Setting.json")
     
-

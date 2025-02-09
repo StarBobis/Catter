@@ -38,7 +38,7 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 1, 0, 2),
+    "version": (1, 1, 0, 3),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
@@ -49,6 +49,8 @@ register_classes = (
     CatterProperties_ImportModel_General,
     CatterProperties_ImportModel_Unreal,
     CatterProperties_GenerateMod_General,
+
+    OBJECT_OT_select_dbmt_folder,
 
     # 3Dmigoto Import Model 
     Import3DMigotoRaw,

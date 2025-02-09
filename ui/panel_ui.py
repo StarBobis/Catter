@@ -4,6 +4,7 @@ import os
 from ..utils.migoto_utils import *
 from ..config.main_config import * 
 from ..generate_mod.m_export_mod import *
+from ..config.import_model_config import ImportModelConfig
 
 # 用于绘制分割线，由于3.6和4.2行为不一样所以做了包装方法
 def draw_seperator(self):
@@ -14,7 +15,35 @@ def draw_seperator(self):
     else:
         layout.separator(type="LINE")
 
+# 用于选择DBMT所在文件夹，主要是这里能自定义逻辑从而实现保存DBMT路径，这样下次打开就还能读取到。
+class OBJECT_OT_select_dbmt_folder(bpy.types.Operator):
+    bl_idname = "object.select_dbmt_folder"
+    bl_label = "Select DBMT Folder"
 
+    directory: bpy.props.StringProperty(
+        subtype='DIR_PATH',
+        options={'HIDDEN'},
+    ) # type: ignore
+
+    def execute(self, context):
+        scene = context.scene
+        if self.directory:
+            scene.dbmt.path = self.directory
+            print(f"Selected folder: {self.directory}")
+            # 在这里放置你想要执行的逻辑
+            # 比如验证路径是否有效、初始化某些资源等
+            MainConfig.save_dbmt_path()
+            
+            self.report({'INFO'}, f"Folder selected: {self.directory}")
+        else:
+            self.report({'WARNING'}, "No folder selected.")
+        
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+    
 class MigotoAttributePanel(bpy.types.Panel):
     bl_label = "特殊属性面板" 
     bl_idname = "VIEW3D_PT_CATTER_MigotoAttribute_panel"
@@ -119,8 +148,25 @@ class PanelButtons(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
+
+        # use_sepecified_dbmt
+        layout.prop(context.scene.dbmt, "use_specified_dbmt")
+
+        if ImportModelConfig.use_specified_dbmt():
+
+            # Path button to choose DBMT-GUI.exe location folder.
+            row = layout.row()
+            row.operator("object.select_dbmt_folder")
+
+            # 获取DBMT.exe的路径
+            dbmt_gui_exe_path = os.path.join(context.scene.dbmt.path, "DBMT.exe")
+            if not os.path.exists(dbmt_gui_exe_path):
+                layout.label(text="Error:Please select DBMT.exe location ", icon='ERROR')
+        
         MainConfig.read_from_main_json()
+
         layout.label(text="DBMT路径: " + MainConfig.dbmtlocation)
+        # print(MainConfig.dbmtlocation)
 
         layout.label(text="当前游戏: " + MainConfig.gamename)
         layout.label(text="当前工作空间: " + MainConfig.workspacename)
