@@ -116,9 +116,11 @@ class PanelGenerateModConfig(bpy.types.Panel):
         # 因为UnrealVS显然无法支持这里所有的特性，每个游戏只能支持一部分特性。
         if MainConfig.get_game_category() == GameCategory.UnityVS or MainConfig.get_game_category() == GameCategory.UnityCS:
             layout.prop(context.scene.dbmt_generatemod, "export_same_number")
+            layout.prop(context.scene.dbmt_generatemod, "only_use_marked_texture")
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
             layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_folder")
             layout.prop(context.scene.dbmt_generatemod, "recalculate_tangent")
+            
 
             # 只有崩坏三2.0可能会用到重计算COLOR值
             if MainConfig.gamename == "HI3":
@@ -132,6 +134,7 @@ class PanelGenerateModConfig(bpy.types.Panel):
             # generate_to_seperate_ini
             layout.prop(context.scene.dbmt_generatemod, "generate_to_seperate_ini")
         elif MainConfig.get_game_category() == GameCategory.UnrealVS or MainConfig.get_game_category() == GameCategory.UnrealCS:
+            layout.prop(context.scene.dbmt_generatemod, "only_use_marked_texture")
             layout.prop(context.scene.dbmt_generatemod, "forbid_auto_texture_ini")
             
 

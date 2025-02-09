@@ -236,7 +236,9 @@ class M_IniHelper:
                     if not os.path.exists(target_texture_file_path):
                         shutil.copy2(original_texture_file_path,target_texture_file_path)
 
-
+            # 如果只使用标记过的贴图，则跳过RenderTextures的生成
+            if GenerateModConfig.only_use_marked_texture():
+                continue
 
             # 添加RenderTextures里的的贴图
             for render_texture_name in render_texture_files:

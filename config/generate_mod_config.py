@@ -91,3 +91,12 @@ class GenerateModConfig:
         '''
         return bpy.context.scene.dbmt_generatemod.generate_to_seperate_ini
     
+    # only_use_marked_texture
+    @classmethod
+    def only_use_marked_texture(cls):
+        '''
+        bpy.context.scene.dbmt_generatemod.only_use_marked_texture
+        '''
+        return bpy.context.scene.dbmt_generatemod.only_use_marked_texture
+    
+    

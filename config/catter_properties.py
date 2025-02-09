@@ -103,4 +103,10 @@ class CatterProperties_GenerateMod_General(bpy.types.PropertyGroup):
         description="拆分生成额外的CommandList.ini和Resource.ini便于更好地组织Mod的架构,便于Mod部分加密只暴露Hash值部分在外面方便Hash值变更后用户可以自己更新",
         default=False
     ) # type: ignore
+
+    only_use_marked_texture:bpy.props.BoolProperty(
+        name="只使用标记过的贴图",
+        description="勾选后不会再生成Hash风格的RenderTextures里的自动贴图，而是完全使用用户标记过的贴图，如果用户遗漏了标记，则不会生成对应没标记过的贴图的ini内容",
+        default=False
+    ) # type: ignore
     
