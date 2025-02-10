@@ -435,7 +435,7 @@ class M_UnrealIniModel:
         resource_buffer_section.append("type = Buffer")
         resource_buffer_section.append("format = DXGI_FORMAT_R32_UINT")
         resource_buffer_section.append("stride = 12")
-        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "Head.buf")
+        resource_buffer_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + "Component1.buf")
         resource_buffer_section.new_line()
 
         # CategoryBuffer
