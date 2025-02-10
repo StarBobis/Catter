@@ -6,6 +6,7 @@ from .config.catter_properties import *
 from .import_model.migoto_import import *
 from .generate_mod.m_export_mod import *
 
+
 '''
 Catter is compatible with all version start from Blender 3.6 LTS To 4.2LTS To Latest version.
 To do this, we need keep track Blender's changelog:
@@ -38,11 +39,12 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 1, 0, 4),
+    "version": (1, 1, 0, 5),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
 }
+
 
 register_classes = (
     # Global Property Config

@@ -3,6 +3,7 @@
 import bpy
 from bpy.props import FloatProperty, IntProperty
 from .main_config import MainConfig
+from ..utils.translation_utils import TR
 
 class CatterProperties_ImportModel_General(bpy.types.PropertyGroup):
     # ------------------------------------------------------------------------------------------------------------
@@ -14,7 +15,7 @@ class CatterProperties_ImportModel_General(bpy.types.PropertyGroup):
     ) # type: ignore
 
     use_specified_dbmt :bpy.props.BoolProperty(
-        name="Use Specified DBMT path",
+        name="使用指定的DBMT路径",
         description="Use specified DBMT path to work for specified DBMT instead of current opening DBMT",
         default=False
     ) # type: ignore
