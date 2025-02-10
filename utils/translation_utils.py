@@ -62,7 +62,7 @@ class TR:
     def translate(cls,chinese_txt) -> str:
         current_language = bpy.app.translations.locale
         # 中文是zh_HANS
-        print(current_language)
+        # print(current_language)
         if current_language not in ["zh_HANS","zh_CN"]:
             # 获取尝试获取英文翻译，如果没有的话，就直接返回原字符串
             return cls.cn_to_en_dict.get(chinese_txt,chinese_txt)
