@@ -135,7 +135,7 @@ class M_UnityIniModel:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = M_DrawIBHelper.get_style_alias(part_name)
+            style_part_name = "Component" + part_name
 
             texture_override_name_suffix = "IB_" + MainConfig.workspacename + "_" + draw_ib + "_" + style_part_name
             if draw_ib_model.draw_ib_alias != "":
@@ -387,7 +387,7 @@ class M_UnityIniModel:
             match_first_index = draw_ib_model.match_first_index_list[count_i]
             part_name = draw_ib_model.part_name_list[count_i]
 
-            style_part_name = M_DrawIBHelper.get_style_alias(part_name)
+            style_part_name = "Component" + part_name
             ib_resource_name = "Resource_" + draw_ib + "_" + style_part_name
             texture_override_ib_namesuffix = "IB_" + draw_ib + "_" + style_part_name
             texture_override_ib_section.append("[TextureOverride_" + texture_override_ib_namesuffix + "]")
@@ -490,7 +490,7 @@ class M_UnityIniModel:
         '''
         for count_i in range(len(draw_ib_model.part_name_list)):
             partname = draw_ib_model.part_name_list[count_i]
-            style_partname = M_DrawIBHelper.get_style_alias(partname)
+            style_partname = "Component" + partname
             ib_resource_name = "Resource_" + draw_ib_model.draw_ib + "_" + style_partname
 
             

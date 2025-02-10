@@ -1,5 +1,6 @@
 from ..utils.shapekey_utils import *
 from ..utils.obj_utils import SmoothNormal,ObjUtils
+from ..utils.translation_utils import TR
 import bmesh
 from mathutils import Vector
 
@@ -10,7 +11,7 @@ from bpy.props import BoolProperty,  CollectionProperty
 
 class RemoveAllVertexGroupOperator(bpy.types.Operator):
     bl_idname = "object.remove_all_vertex_group"
-    bl_label = "移除所有顶点组"
+    bl_label = TR.translate("移除所有顶点组")
     bl_description = "移除当前选中obj的所有顶点组"
 
     def execute(self, context):
@@ -23,7 +24,7 @@ class RemoveAllVertexGroupOperator(bpy.types.Operator):
 
 class RemoveUnusedVertexGroupOperator(bpy.types.Operator):
     bl_idname = "object.remove_unused_vertex_group"
-    bl_label = "移除未使用的空顶点组"
+    bl_label = TR.translate("移除未使用的空顶点组")
     bl_description = "移除当前选中obj的所有空顶点组，也就是移除未使用的顶点组"
 
     def execute(self, context):
@@ -49,7 +50,7 @@ class RemoveUnusedVertexGroupOperator(bpy.types.Operator):
 
 class MergeVertexGroupsWithSameNumber(bpy.types.Operator):
     bl_idname = "object.merge_vertex_group_with_same_number"
-    bl_label = "合并具有相同数字前缀名称的顶点组"
+    bl_label = TR.translate("合并具有相同数字前缀名称的顶点组")
     bl_description = "把当前选中obj的所有数字前缀名称相同的顶点组进行合并"
 
     def execute(self, context):
@@ -129,7 +130,7 @@ class MergeVertexGroupsWithSameNumber(bpy.types.Operator):
 
 class FillVertexGroupGaps(bpy.types.Operator):
     bl_idname = "object.fill_vertex_group_gaps"
-    bl_label = "填充数字顶点组的间隙"
+    bl_label = TR.translate("填充数字顶点组的间隙")
     bl_description = "把当前选中obj的所有数字顶点组的间隙用数字命名的空顶点组填补上，比如有顶点组1,2,5,8则填补后得到1,2,3,4,5,6,7,8"
 
     def execute(self, context):
@@ -164,7 +165,7 @@ class FillVertexGroupGaps(bpy.types.Operator):
 
 class AddBoneFromVertexGroup(bpy.types.Operator):
     bl_idname = "object.add_bone_from_vertex_group"
-    bl_label = "根据顶点组自动生成骨骼"
+    bl_label = TR.translate("根据顶点组自动生成骨骼")
     bl_description = "把当前选中的obj的每个顶点组都生成一个默认位置的骨骼，方便接下来手动调整骨骼位置和父级关系来绑骨"
     def execute(self, context):
         # 获取当前选中的物体
@@ -221,7 +222,7 @@ class AddBoneFromVertexGroup(bpy.types.Operator):
 
 class RemoveNotNumberVertexGroup(bpy.types.Operator):
     bl_idname = "object.remove_not_number_vertex_group"
-    bl_label = "移除非数字名称的顶点组"
+    bl_label = TR.translate("移除非数字名称的顶点组")
     bl_description = "把当前选中的obj的所有不是纯数字命名的顶点组都移除"
 
     def execute(self, context):
@@ -234,91 +235,9 @@ class RemoveNotNumberVertexGroup(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ConvertToFragmentOperator(bpy.types.Operator):
-    bl_idname = "object.convert_to_fragment"
-    bl_label = "转换为一个3Dmigoto碎片用于合并"
-    bl_description = "把当前选中的obj删除所有顶点，用于合并到这个空的obj上使你的模型获取此obj的3Dmigoto属性"
-    
-    def execute(self, context):
-        # 获取当前选中的对象
-        selected_objects = bpy.context.selected_objects
-
-        # 检查是否选中了一个Mesh对象
-        if len(selected_objects) != 1 or selected_objects[0].type != 'MESH':
-            raise ValueError("请选中一个Mesh对象")
-
-        # 获取选中的网格对象
-        mesh_obj = selected_objects[0]
-        mesh = mesh_obj.data
-
-        # 遍历所有面
-        selected_face_index = -1
-        for i, face in enumerate(mesh.polygons):
-            # 检查当前面是否已经是一个三角形
-            if len(face.vertices) == 3:
-                selected_face_index = i
-                break
-
-        if selected_face_index == -1:
-            raise ValueError("没有选中的三角形面")
-
-        # 选择指定索引的面
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-
-        # 选择指定面的所有顶点
-        bpy.context.tool_settings.mesh_select_mode[0] = True
-        bpy.context.tool_settings.mesh_select_mode[1] = False
-        bpy.context.tool_settings.mesh_select_mode[2] = False
-
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        # 获取选中面的所有顶点索引
-        selected_face = mesh.polygons[selected_face_index]
-        selected_vertices = [v for v in selected_face.vertices]
-
-        # 删除非选定面的顶点
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-
-        bpy.context.tool_settings.mesh_select_mode[0] = True
-        bpy.context.tool_settings.mesh_select_mode[1] = False
-        bpy.context.tool_settings.mesh_select_mode[2] = False
-
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        for vertex in mesh.vertices:
-            if vertex.index not in selected_vertices:
-                vertex.select = True
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.delete(type='VERT')
-
-        # 切换回对象模式
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        # 顶点位置全部归0，这样就不会显示出来了
-        for v_index in selected_vertices:
-            mesh.vertices[v_index].co = (0, 0, 0)
-
-        # 移除这些顶点的权重数据，这样即使动画中发生了很大的位置偏移，这三个顶点由于没有权重也不会显示。
-        for v_index in selected_vertices:
-            for group in mesh_obj.vertex_groups:
-                try:
-                    group.remove([v_index])
-                except RuntimeError:
-                    # 如果顶点不在该顶点组中，则会抛出异常，我们只需要忽略它
-                    pass
-
-        # 更新网格数据
-        mesh_obj.data.update()
-
-        return {'FINISHED'}
-
-
 class MMTDeleteLoose(bpy.types.Operator):
     bl_idname = "object.mmt_delete_loose"
-    bl_label = "删除物体的松散点"
+    bl_label = TR.translate("删除物体的松散点")
     bl_description = "把当前选中的obj的所有松散点都删除"
     
     def execute(self, context):
@@ -328,7 +247,7 @@ class MMTDeleteLoose(bpy.types.Operator):
 
 class MMTResetRotation(bpy.types.Operator):
     bl_idname = "object.mmt_reset_rotation"
-    bl_label = "重置x,y,z的旋转角度为0 (UE Model)"
+    bl_label = TR.translate("重置x,y,z的旋转角度为0 (UE Model)")
     bl_description = "把当前选中的obj的x,y,z的旋转角度全部归0"
     
     def execute(self, context):
@@ -349,7 +268,7 @@ class MMTResetRotation(bpy.types.Operator):
 
 class SplitMeshByCommonVertexGroup(bpy.types.Operator):
     bl_idname = "object.split_mesh_by_common_vertex_group"
-    bl_label = "根据相同的顶点组分割物体"
+    bl_label = TR.translate("根据相同的顶点组分割物体")
     bl_description = "把当前选中的obj按顶点组进行分割，适用于部分精细刷权重并重新组合模型的场景"
     
     def execute(self, context):
@@ -383,7 +302,7 @@ class SplitMeshByCommonVertexGroup(bpy.types.Operator):
 
 class RecalculateTANGENTWithVectorNormalizedNormal(bpy.types.Operator):
     bl_idname = "object.recalculate_tangent_arithmetic_average_normal"
-    bl_label = "使用向量相加归一化算法重计算TANGENT"
+    bl_label = TR.translate("使用向量相加归一化算法重计算TANGENT")
     bl_description = "近似修复轮廓线算法，可以达到99%的轮廓线相似度，适用于GI,HSR,ZZZ,HI3 2.0之前的老角色" 
     def execute(self, context):
         for obj in bpy.context.selected_objects:
@@ -398,7 +317,7 @@ class RecalculateTANGENTWithVectorNormalizedNormal(bpy.types.Operator):
 
 class RecalculateCOLORWithVectorNormalizedNormal(bpy.types.Operator):
     bl_idname = "object.recalculate_color_arithmetic_average_normal"
-    bl_label = "使用算术平均归一化算法重计算COLOR"
+    bl_label = TR.translate("使用算术平均归一化算法重计算COLOR")
     bl_description = "近似修复轮廓线算法，可以达到99%的轮廓线相似度，仅适用于HI3 2.0新角色" 
 
     def execute(self, context):
@@ -423,7 +342,7 @@ bpy.utils.register_class(PropertyCollectionModifierItem)
 
 class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
     bl_idname = "wwmi_tools.apply_modifier_for_object_with_shape_keys"
-    bl_label = "在有形态键的模型上应用修改器"
+    bl_label = TR.translate("在有形态键的模型上应用修改器")
     bl_description = "Apply selected modifiers and remove from the stack for object with shape keys (Solves 'Modifier cannot be applied to a mesh with shape keys' error when pushing 'Apply' button in 'Object modifiers'). Sourced by Przemysław Bągard"
  
     def item_list(self, context):
@@ -484,7 +403,7 @@ class WWMI_ApplyModifierForObjectWithShapeKeysOperator(bpy.types.Operator):
 
 class SmoothNormalSaveToUV(bpy.types.Operator):
     bl_idname = "object.smooth_normal_save_to_uv"
-    bl_label = "平滑法线存UV(近似)"
+    bl_label = TR.translate("平滑法线存UV(近似)")
     bl_description = "平滑法线存UV算法，可用于修复ZZZ,WuWa的某些UV(只是近似实现60%的效果)" 
 
     def execute(self, context):
@@ -499,7 +418,6 @@ class CatterRightClickMenu(bpy.types.Menu):
     
     def draw(self, context):
         layout = self.layout
-        # layout.operator(ConvertToFragmentOperator.bl_idname)
         # layout.separator()
         # XXX 这里调用时直接类名.bl_idname，避免出现魔法值，且修改后可避免无法同步的问题
         layout.operator(RemoveUnusedVertexGroupOperator.bl_idname)

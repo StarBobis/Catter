@@ -47,20 +47,6 @@ class ModelCollection:
         self.obj_name_list = []
 
 
-class M_DrawIBHelper:
-
-    @classmethod
-    def get_style_alias(cls,partname:str):
-        '''
-        Convert to alia name style because it's widely used by Mod author.
-        TODO 后续不再支持这种格式，全部切换为Component风格
-        '''
-        partname_alias_dict = {
-            "1":"Head","2":"Body","3":"Dress","4":"Extra"
-            ,"5":"Extra1","6":"Extra2","7":"Extra3","8":"Extra4","9":"Extra5"
-            ,"10":"Extra6","11":"Extra7","12":"Extra8"}
-        return partname_alias_dict.get(partname,partname)
-
 # 这个代表了一个DrawIB的Mod导出模型
 # 后面的Mod导出都可以调用这个模型来进行业务逻辑部分
 class DrawIBModel:
@@ -562,7 +548,7 @@ class DrawIBModel:
         拼接每个PartName对应的IB文件的Resource和filename,这样生成ini的时候以及导出Mod的时候就可以直接使用了。
         '''
         for partname in self.part_name_list:
-            style_part_name = M_DrawIBHelper.get_style_alias(partname)
+            style_part_name = "Component" + partname
             ib_resource_name = "Resource_" + self.draw_ib + "_" + style_part_name
             ib_buf_filename = self.draw_ib + "-" + style_part_name + ".buf"
             self.PartName_IBResourceName_Dict[partname] = ib_resource_name

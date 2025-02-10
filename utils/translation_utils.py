@@ -37,6 +37,24 @@ class TR:
         "一键导入当前工作空间内容":"Import All From WorkSpace",
         "导入.ib .vb .fmt格式模型":"Import .ib .vb .fmt model",
         "生成Mod":"Generate Mod",
+
+        "移除所有顶点组":"Remove All Vertex Groups",
+        "移除未使用的空顶点组":"Remove All Unused Vertex Groups",
+        "合并具有相同数字前缀名称的顶点组":"Merge Vertex Groupx With Same Number Prefix",
+        "填充数字顶点组的间隙":"Fill Number Named Vertex Group Gaps",
+        "根据顶点组自动生成骨骼":"Generate Bones By Vertex Groups",
+        "移除非数字名称的顶点组":"Remove Not Number Named Vertex Groups",
+        "删除物体的松散点":"Delete Mesh's Loose Vertex",
+        "重置x,y,z的旋转角度为0 (UE Model)":"Reset xyz's rotaion to 0 (UE Model)",
+        "根据相同的顶点组分割物体":"Split Mesh By Same Vertex Groups",
+        "使用向量相加归一化算法重计算TANGENT":"AverageNormal To TANGENT",
+        "使用算术平均归一化算法重计算COLOR":"AverageNormal To COLOR",
+        "在有形态键的模型上应用修改器":"Apply Modifier For Object With ShapeKeys",
+        "平滑法线存UV(近似)":"Smooth Normal Save To UV",
+
+        "分支:标记为按键切换类型":"Mark As Switch Type",
+        "分支:标记为按键开关类型":"Mark As Toggle Type",
+
     }
 
 
