@@ -289,6 +289,7 @@ def create_material_with_texture(obj, mesh_name:str, directory:str):
 
 
 def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib_path:str):
+    operator.report({'INFO'}, "Import From " + fmt_path)
     TimerUtils.Start("import_3dmigoto_raw_buffers")
     # get import prefix
     mesh_name = os.path.basename(fmt_path)
