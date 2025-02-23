@@ -494,6 +494,8 @@ class M_UnrealIniModel:
         resource_ini_builder = M_IniBuilder()
         commandlist_ini_builder = M_IniBuilder()
 
+        M_IniHelper.generate_hash_style_texture_ini(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+
         # Add namespace 
         if not GenerateModConfig.generate_to_seperate_folder():
             M_IniHelper.add_namespace_sections_merged(ini_builder=config_ini_builder, drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
@@ -539,8 +541,6 @@ class M_UnrealIniModel:
                 resource_ini_builder.clear()
                 commandlist_ini_builder.save_to_file(draw_ib_output_folder + MainConfig.workspacename +"_CommandList.ini")
                 commandlist_ini_builder.clear()
-
-        M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
             config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + ".ini")

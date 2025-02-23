@@ -175,15 +175,13 @@ class M_IniHelper:
                     shutil.copy2(source_path,target_path)
 
     @classmethod
-    def generate_hash_style_texture_ini(cls,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
+    def generate_hash_style_texture_ini(cls,ini_builder:M_IniBuilder,drawib_drawibmodel_dict:dict[str,DrawIBModel]):
         '''
         Generate Hash style TextureReplace.ini
         '''
         if GenerateModConfig.forbid_auto_texture_ini():
             return
         
-        
-        texture_ini_builder = M_IniBuilder()
 
         # 先统计当前标记的具有Slot风格的Hash值，后续Render里搞图片的时候跳过这些
         slot_style_texture_hash_list = []
@@ -230,7 +228,7 @@ class M_IniHelper:
                     resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
                     resource_and_textureoverride_texture_section.new_line()
 
-                    texture_ini_builder.append_section(resource_and_textureoverride_texture_section)
+                    ini_builder.append_section(resource_and_textureoverride_texture_section)
 
                     # copy only if target not exists avoid overwrite texture manually replaced by mod author.
                     if not os.path.exists(target_texture_file_path):
@@ -272,14 +270,14 @@ class M_IniHelper:
                 resource_and_textureoverride_texture_section.append("this = Resource_Texture_" + texture_hash)
                 resource_and_textureoverride_texture_section.new_line()
 
-                texture_ini_builder.append_section(resource_and_textureoverride_texture_section)
+                ini_builder.append_section(resource_and_textureoverride_texture_section)
 
                 # copy only if target not exists avoid overwrite texture manually replaced by mod author.
                 if not os.path.exists(target_texture_file_path):
                     shutil.copy2(original_texture_file_path,target_texture_file_path)
 
-        if len(repeat_hash_list) != 0:
-            texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + "_Texture.ini")
+        # if len(repeat_hash_list) != 0:
+        #     texture_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + "_Texture.ini")
 
     @classmethod
     def get_switchkey_drawindexed_list(cls,model_collection_list:list[ModelCollection],draw_ib_model:DrawIBModel,vlr_filter_index_indent:str,input_global_key_index_logic:int):

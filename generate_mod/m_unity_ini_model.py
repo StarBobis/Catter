@@ -551,6 +551,8 @@ class M_UnityIniModel:
         resource_ini_builder = M_IniBuilder()
         commandlist_ini_builder = M_IniBuilder()
 
+        M_IniHelper.generate_hash_style_texture_ini(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+
         if not GenerateModConfig.generate_to_seperate_folder():
             if GenerateModConfig.generate_to_seperate_ini():
                 M_IniHelper.add_namespace_sections_merged(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
@@ -618,7 +620,6 @@ class M_UnityIniModel:
                     if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
                         os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
-        M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         if not GenerateModConfig.generate_to_seperate_folder():
             config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + ".ini")
@@ -647,6 +648,8 @@ class M_UnityIniModel:
         config_ini_builder = M_IniBuilder()
         resource_ini_builder = M_IniBuilder()
         commandlist_ini_builder = M_IniBuilder()
+
+        M_IniHelper.generate_hash_style_texture_ini(ini_builder=config_ini_builder,drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
 
         # Add namespace 
         if not GenerateModConfig.generate_to_seperate_folder():
@@ -709,7 +712,7 @@ class M_UnityIniModel:
                     if os.path.exists(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini"):
                         os.remove(MainConfig.path_generate_mod_folder() + MainConfig.workspacename +"_CommandList.ini")
 
-        M_IniHelper.generate_hash_style_texture_ini(drawib_drawibmodel_dict=cls.drawib_drawibmodel_dict)
+        
 
         if not GenerateModConfig.generate_to_seperate_folder():
             config_ini_builder.save_to_file(MainConfig.path_generate_mod_folder() + MainConfig.workspacename + ".ini")
