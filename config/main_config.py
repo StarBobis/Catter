@@ -108,6 +108,10 @@ class MainConfig:
         return os.path.join(MainConfig.path_games_folder(), MainConfig.gamename + "\\")
     
     @classmethod
+    def path_mods_folder(cls):
+        return os.path.join(MainConfig.path_current_game_folder(),"3Dmigoto\\Mods\\") 
+
+    @classmethod
     def path_output_folder(cls):
         return os.path.join(MainConfig.path_current_game_folder(),"3Dmigoto\\Mods\\output\\") 
     
@@ -118,7 +122,7 @@ class MainConfig:
     @classmethod
     def path_generate_mod_folder(cls):
         # 确保用的时候直接拿到的就是已经存在的目录
-        generate_mod_folder_path = os.path.join(MainConfig.path_workspace_folder(),"GeneratedMod\\")
+        generate_mod_folder_path = os.path.join(MainConfig.path_mods_folder(),"Mod_"+MainConfig.workspacename + "\\")
         if not os.path.exists(generate_mod_folder_path):
             os.makedirs(generate_mod_folder_path)
         return generate_mod_folder_path
