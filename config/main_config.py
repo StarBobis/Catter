@@ -23,7 +23,7 @@ class MainConfig:
 
     @classmethod
     def get_game_category(cls) -> str:
-        if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","Unity-CPU-PreSkinning"]:
+        if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","GF2"]:
             return GameCategory.UnityVS
         
         elif cls.gamename in ["Game001"]:
@@ -102,22 +102,16 @@ class MainConfig:
         return os.path.join(MainConfig.base_path(),"Configs\\")
     
     @classmethod
-    def path_games_folder(cls):
-        return os.path.join(MainConfig.base_path(),"Games\\")
-    
-
-    # 旧的设计，由于3Dmigoto固定死了，不方便使用，所以废弃了
-    # @classmethod
-    # def path_current_game_folder(cls):
-    #     return os.path.join(MainConfig.path_games_folder(), MainConfig.gamename + "\\")
+    def path_3Dmigoto_folder(cls):
+        return cls.current_game_migoto_folder
     
     @classmethod
     def path_mods_folder(cls):
-        return os.path.join(MainConfig.path_current_game_folder(),"3Dmigoto\\Mods\\") 
+        return os.path.join(MainConfig.path_3Dmigoto_folder(),"Mods\\") 
 
     @classmethod
     def path_output_folder(cls):
-        return os.path.join(MainConfig.path_current_game_folder(),"3Dmigoto\\Mods\\output\\") 
+        return os.path.join(MainConfig.path_mods_folder(),"output\\") 
     
     @classmethod
     def path_workspace_folder(cls):

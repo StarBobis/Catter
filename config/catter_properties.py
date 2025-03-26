@@ -44,7 +44,7 @@ class CatterProperties_ImportModel_Unreal(bpy.types.PropertyGroup):
 class CatterProperties_GenerateMod_General(bpy.types.PropertyGroup):
     export_same_number: bpy.props.BoolProperty(
         name="使用共享TANGENT避免增加顶点数",
-        description="使用共享的TANGENT值从而避免hashable计算导致的顶点数增加 (在Unity-CPU-PreSkinning技术中常用，避免顶点数变多导致无法和原本模型顶点数对应)",
+        description="使用共享的TANGENT值从而避免hashable计算导致的顶点数增加 (在Unity-CPU-PreSkinning技术中常用，GF2常用，避免顶点数变多导致无法和原本模型顶点数对应)",
         default=False
     ) # type: ignore
 

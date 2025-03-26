@@ -66,6 +66,10 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
     #                     continue
     #                 obj.vertex_groups[i].add((vertex.index,), w, 'REPLACE')
 
+    # 查看具体格式
+    # print(blend_indices[0][0])
+    # print(blend_weights[0][0])
+
     assert (len(blend_indices) == len(blend_weights))
     if blend_indices:
         # We will need to make sure we re-export the same blend indices later -
@@ -148,6 +152,7 @@ def import_vertices(mesh, vb: VertexBuffer):
     use_normals = False
     normals = []
 
+
     for elem in vb.layout:
         if elem.InputSlotClass != 'per-vertex':
             continue
@@ -184,8 +189,6 @@ def import_vertices(mesh, vb: VertexBuffer):
         elif elem.name == 'NORMAL':
             use_normals = True
             normals = [(x[0], x[1], x[2]) for x in data]
-
-
 
         elif elem.name in ('TANGENT', 'BINORMAL'):
             # 不需要导入TANGENT和BINORMAL，因为导出时会重新计算。
@@ -329,6 +332,19 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     import_faces_from_ib(mesh, ib)
 
     (blend_indices, blend_weights, texcoords, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
+
+    # 导入完之后，如果发现blend_weights是空的，则自动补充默认值为1,0,0,0的BLENDWEIGHTS
+    # 这个是之前的PatchBLENDWEIGHTS机制的进化版本。
+    if len(blend_weights) == 0 and len(blend_indices) != 0:
+        print("检测到BLENDWEIGHTS为空，但是含有BLENDINDICES数据，特殊情况，默认补充1,0,0,0的BLENDWEIGHTS")
+        tmpi = 0
+        for blendindices_turple in blend_indices.values():
+            print(blendindices_turple)
+            new_dict = []
+            for indices in blendindices_turple:
+                new_dict.append((1.0,0,0,0))
+            blend_weights[tmpi] = tuple(new_dict)
+            tmpi = tmpi + 1
 
     import_uv_layers(mesh, obj, texcoords)
 
