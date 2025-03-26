@@ -19,6 +19,7 @@ class MainConfig:
     gamename = ""
     workspacename = ""
     dbmtlocation = ""
+    current_game_migoto_folder = ""
 
     @classmethod
     def get_game_category(cls) -> str:
@@ -88,6 +89,7 @@ class MainConfig:
             cls.workspacename = main_setting_json.get("WorkSpaceName","")
             cls.gamename = main_setting_json.get("GameName","")
             cls.dbmtlocation = main_setting_json.get("DBMTLocation","") + "\\"
+            cls.current_game_migoto_folder = main_setting_json.get("CurrentGameMigotoFolder","") + "\\"
         else:
             print("Can't find: " + main_json_path)
 
@@ -103,9 +105,11 @@ class MainConfig:
     def path_games_folder(cls):
         return os.path.join(MainConfig.base_path(),"Games\\")
     
-    @classmethod
-    def path_current_game_folder(cls):
-        return os.path.join(MainConfig.path_games_folder(), MainConfig.gamename + "\\")
+
+    # 旧的设计，由于3Dmigoto固定死了，不方便使用，所以废弃了
+    # @classmethod
+    # def path_current_game_folder(cls):
+    #     return os.path.join(MainConfig.path_games_folder(), MainConfig.gamename + "\\")
     
     @classmethod
     def path_mods_folder(cls):

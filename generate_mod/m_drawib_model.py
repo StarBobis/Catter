@@ -159,6 +159,9 @@ class DrawIBModel:
 
         # 自动贴图依赖于这个字典
         partname_textureresourcereplace_dict:dict[str,str] = tmp_json_dict["PartNameTextureResourceReplaceList"]
+
+        print(tmp_json_path)
+        print(partname_textureresourcereplace_dict)
         for partname, texture_resource_replace_list in partname_textureresourcereplace_dict.items():
             slot_texture_replace_dict = {}
             for texture_resource_replace in texture_resource_replace_list:
