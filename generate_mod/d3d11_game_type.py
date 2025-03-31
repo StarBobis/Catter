@@ -62,8 +62,6 @@ class D3D11GameType:
     OrderedCategoryNameList:list[str] = field(init=False,repr=False)
     # Category name and draw category name, used to decide the category should draw on which category's TextureOverrideVB.
     CategoryDrawCategoryDict:Dict[str,str] = field(init=False,repr=False)
-    # PatchBLENDWEIGHTS
-    PatchBLENDWEIGHTS:bool = field(init=False,repr=False)
     # TexcoordPatchNull
     TexcoordPatchNull:bool = field(init=False,repr=False)
     # UE4PatchNullInBlend
@@ -98,7 +96,6 @@ class D3D11GameType:
             game_type_json = json.load(f)
         
         self.GPU_PreSkinning = game_type_json.get("GPU-PreSkinning",False)
-        self.PatchBLENDWEIGHTS = game_type_json.get("PatchBLENDWEIGHTS",False)
         self.TexcoordPatchNull = game_type_json.get("TexcoordPatchNull",False)
         self.UE4PatchNullInBlend = game_type_json.get("UE4PatchNullInBlend",False)
         self.RootComputeShaderHash = game_type_json.get("RootComputeShaderHash","")
@@ -135,15 +132,9 @@ class D3D11GameType:
             self.ElementNameD3D11ElementDict[d3d11_element.ElementName] = d3d11_element
     
     def get_real_category_stride_dict(self) -> dict:
-        '''
-        获取考虑过patchBLENDWEIGHTS之后的CategoryStrideDict
-        '''
         new_dict = {}
         for categoryname,category_stride in self.CategoryStrideDict.items():
-            split_category_stride = category_stride
-            if categoryname == "Blend" and self.PatchBLENDWEIGHTS:
-                split_category_stride = self.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
-            new_dict[categoryname] = split_category_stride
+            new_dict[categoryname] = category_stride
         return new_dict
 
   

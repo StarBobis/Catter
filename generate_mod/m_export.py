@@ -322,10 +322,6 @@ class BufferModel:
             if d3d11_element_name in ["BLENDWEIGHTS","BLENDWEIGHT"]:
                 blendweights_formatlen = format_len
 
-            # patchBLENDWEIGHTS时必须跳过处理，否则会导致步长不正确
-            if self.d3d11GameType.PatchBLENDWEIGHTS and d3d11_element_name in ["BLENDWEIGHTS","BLENDWEIGHT"]:
-                continue
-
             # XXX 长度为1时必须手动指定为(1,)否则会变成1维数组
             if format_len == 1:
                 self.dtype = numpy.dtype(self.dtype.descr + [(d3d11_element_name, (np_type, (1,)))])
@@ -546,16 +542,15 @@ class BufferModel:
                 
             elif d3d11_element_name.startswith('BLENDWEIGHT'):
                 # patch时跳过生成数据
-                if not self.d3d11GameType.PatchBLENDWEIGHTS:
-                    if d3d11_element.Format == "R32G32B32A32_FLOAT":
-                        self.element_vertex_ndarray[d3d11_element_name] = blendweights
-                    elif d3d11_element.Format == "R32G32_FLOAT":
-                        self.element_vertex_ndarray[d3d11_element_name] = blendweights[:, :2]
-                    elif d3d11_element.Format == 'R8G8B8A8_SNORM':
-                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
-                    elif d3d11_element.Format == 'R8G8B8A8_UNORM':
-                        # self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
-                        self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm_blendweights(blendweights)
+                if d3d11_element.Format == "R32G32B32A32_FLOAT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendweights
+                elif d3d11_element.Format == "R32G32_FLOAT":
+                    self.element_vertex_ndarray[d3d11_element_name] = blendweights[:, :2]
+                elif d3d11_element.Format == 'R8G8B8A8_SNORM':
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_snorm(blendweights)
+                elif d3d11_element.Format == 'R8G8B8A8_UNORM':
+                    # self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm(blendweights)
+                    self.element_vertex_ndarray[d3d11_element_name] = BufferDataConverter.convert_4x_float32_to_r8g8b8a8_unorm_blendweights(blendweights)
 
     def calc_index_vertex_buffer(self,obj,mesh:bpy.types.Mesh):
         '''

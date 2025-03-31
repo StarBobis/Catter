@@ -334,7 +334,6 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     (blend_indices, blend_weights, texcoords, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
 
     # 导入完之后，如果发现blend_weights是空的，则自动补充默认值为1,0,0,0的BLENDWEIGHTS
-    # 这个是之前的PatchBLENDWEIGHTS机制的进化版本。
     if len(blend_weights) == 0 and len(blend_indices) != 0:
         print("检测到BLENDWEIGHTS为空，但是含有BLENDINDICES数据，特殊情况，默认补充1,0,0,0的BLENDWEIGHTS")
         tmpi = 0

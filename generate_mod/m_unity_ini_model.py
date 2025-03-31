@@ -271,11 +271,7 @@ class M_UnityIniModel:
             resource_vb_section.append("[Resource" + draw_ib_model.draw_ib + category_name + "]")
             resource_vb_section.append("type = Buffer")
 
-            if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
-                blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
-                resource_vb_section.append("stride = " + str(blend_stride))
-            else:
-                resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
+            resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
             
             resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
             # resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
@@ -473,11 +469,7 @@ class M_UnityIniModel:
             else:
                 resource_vb_section.append("type = Buffer")
 
-            if category_name == "Blend" and draw_ib_model.d3d11GameType.PatchBLENDWEIGHTS:
-                blend_stride = draw_ib_model.d3d11GameType.ElementNameD3D11ElementDict["BLENDINDICES"].ByteWidth
-                resource_vb_section.append("stride = " + str(blend_stride))
-            else:
-                resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
+            resource_vb_section.append("stride = " + str(draw_ib_model.d3d11GameType.CategoryStrideDict[category_name]))
             
             resource_vb_section.append("filename = Buffer/" + draw_ib_model.draw_ib + "-" + category_name + ".buf")
             # resource_vb_section.append(";VertexCount: " + str(draw_ib_model.draw_number))
