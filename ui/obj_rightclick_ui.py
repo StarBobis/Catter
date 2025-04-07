@@ -222,61 +222,61 @@ class AddBoneFromVertexGroupV2(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AddBoneFromVertexGroup(bpy.types.Operator):
-    bl_idname = "object.add_bone_from_vertex_group"
-    bl_label = TR.translate("根据顶点组自动生成骨骼")
-    bl_description = "把当前选中的obj的每个顶点组都生成一个默认位置的骨骼，方便接下来手动调整骨骼位置和父级关系来绑骨"
-    def execute(self, context):
-        # 获取当前选中的物体
-        selected_object = bpy.context.object
+# class AddBoneFromVertexGroup(bpy.types.Operator):
+#     bl_idname = "object.add_bone_from_vertex_group"
+#     bl_label = TR.translate("根据顶点组自动生成骨骼")
+#     bl_description = "把当前选中的obj的每个顶点组都生成一个默认位置的骨骼，方便接下来手动调整骨骼位置和父级关系来绑骨"
+#     def execute(self, context):
+#         # 获取当前选中的物体
+#         selected_object = bpy.context.object
 
-        # 创建骨骼
-        bpy.ops.object.armature_add()
-        armature_object = bpy.context.object
-        armature = armature_object.data
+#         # 创建骨骼
+#         bpy.ops.object.armature_add()
+#         armature_object = bpy.context.object
+#         armature = armature_object.data
 
-        # 切换到编辑模式
-        bpy.ops.object.mode_set(mode='EDIT')
+#         # 切换到编辑模式
+#         bpy.ops.object.mode_set(mode='EDIT')
 
-        # 遍历所有的顶点组
-        for vertex_group in selected_object.vertex_groups:
-            # 获取顶点组的名称
-            vertex_group_name = vertex_group.name
+#         # 遍历所有的顶点组
+#         for vertex_group in selected_object.vertex_groups:
+#             # 获取顶点组的名称
+#             vertex_group_name = vertex_group.name
 
-            # 创建骨骼
-            bone = armature.edit_bones.new(vertex_group_name)
+#             # 创建骨骼
+#             bone = armature.edit_bones.new(vertex_group_name)
 
-            # 根据顶点组位置生成骨骼
-            for vertex in selected_object.data.vertices:
-                for group_element in vertex.groups:
-                    if group_element.group == vertex_group.index:
-                        # 获取顶点位置
-                        vertex_position = selected_object.matrix_world @ vertex.co
+#             # 根据顶点组位置生成骨骼
+#             for vertex in selected_object.data.vertices:
+#                 for group_element in vertex.groups:
+#                     if group_element.group == vertex_group.index:
+#                         # 获取顶点位置
+#                         vertex_position = selected_object.matrix_world @ vertex.co
 
-                        # 设置骨骼位置
-                        bone.head = vertex_position
-                        bone.tail = Vector(vertex_position) + Vector((0, 0, 0.1))  # 设置骨骼长度
+#                         # 设置骨骼位置
+#                         bone.head = vertex_position
+#                         bone.tail = Vector(vertex_position) + Vector((0, 0, 0.1))  # 设置骨骼长度
 
-                        # 分配顶点到骨骼
-                        bone_vertex_group = selected_object.vertex_groups[vertex_group_name]
-                        bone_vertex_group.add([vertex.index], 0, 'ADD')
+#                         # 分配顶点到骨骼
+#                         bone_vertex_group = selected_object.vertex_groups[vertex_group_name]
+#                         bone_vertex_group.add([vertex.index], 0, 'ADD')
 
-        # 刷新场景
-        bpy.context.view_layer.update()
+#         # 刷新场景
+#         bpy.context.view_layer.update()
 
-        # 切换回对象模式
-        bpy.ops.object.mode_set(mode='OBJECT')
+#         # 切换回对象模式
+#         bpy.ops.object.mode_set(mode='OBJECT')
 
-        # 选择骨骼并绑定物体到骨骼
-        # bpy.context.view_layer.objects.active = armature_object  # 激活骨骼
-        # bpy.ops.object.select_all(action='DESELECT')  # 取消选择所有
-        # selected_object.select_set(True)  # 选择物体
-        # bpy.ops.object.parent_set(type='ARMATURE_AUTO')  # 绑定物体到骨骼
+#         # 选择骨骼并绑定物体到骨骼
+#         # bpy.context.view_layer.objects.active = armature_object  # 激活骨骼
+#         # bpy.ops.object.select_all(action='DESELECT')  # 取消选择所有
+#         # selected_object.select_set(True)  # 选择物体
+#         # bpy.ops.object.parent_set(type='ARMATURE_AUTO')  # 绑定物体到骨骼
 
-        # 刷新场景
-        bpy.context.view_layer.update()
+#         # 刷新场景
+#         bpy.context.view_layer.update()
 
-        return {'FINISHED'}
+#         return {'FINISHED'}
 
 
 class RemoveNotNumberVertexGroup(bpy.types.Operator):
@@ -482,7 +482,7 @@ class CatterRightClickMenu(bpy.types.Menu):
         layout.operator(RemoveUnusedVertexGroupOperator.bl_idname)
         layout.operator(MergeVertexGroupsWithSameNumber.bl_idname)
         layout.operator(FillVertexGroupGaps.bl_idname)
-        layout.operator(AddBoneFromVertexGroup.bl_idname)
+        # layout.operator(AddBoneFromVertexGroup.bl_idname)
         layout.operator(AddBoneFromVertexGroupV2.bl_idname)
         layout.operator(RemoveNotNumberVertexGroup.bl_idname)
         layout.operator(RemoveAllVertexGroupOperator.bl_idname)

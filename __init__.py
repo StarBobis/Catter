@@ -68,7 +68,6 @@ register_classes = (
     RemoveUnusedVertexGroupOperator,
     MergeVertexGroupsWithSameNumber,
     FillVertexGroupGaps,
-    AddBoneFromVertexGroup,
     AddBoneFromVertexGroupV2,
     RemoveNotNumberVertexGroup,
     MMTDeleteLoose,
