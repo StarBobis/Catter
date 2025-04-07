@@ -163,6 +163,65 @@ class FillVertexGroupGaps(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# 由虹汐哥改进的版本，骨骼位置放到了几何中心
+def create_armature_from_vertex_groups(bone_length=0.1):
+    # 验证选择对象
+    obj = bpy.context.active_object
+    if not obj or obj.type != 'MESH':
+        raise Exception("请先选择一个网格物体")
+    
+    if not obj.vertex_groups:
+        raise Exception("目标物体没有顶点组")
+
+    # 预计算世界变换矩阵
+    matrix = obj.matrix_world
+
+    # 创建骨架物体
+    armature = bpy.data.armatures.new("AutoRig_Armature")
+    armature_obj = bpy.data.objects.new("AutoRig", armature)
+    bpy.context.scene.collection.objects.link(armature_obj)
+
+    # 设置活动对象
+    bpy.context.view_layer.objects.active = armature_obj
+    armature_obj.select_set(True)
+
+    # 预收集顶点组数据 {顶点组索引: [顶点列表]}
+    vg_verts = {vg.index: [] for vg in obj.vertex_groups}
+    for v in obj.data.vertices:
+        for g in v.groups:
+            if g.group in vg_verts:
+                vg_verts[g.group].append(v)
+
+    # 进入编辑模式创建骨骼
+    bpy.ops.object.mode_set(mode='EDIT')
+    try:
+        for vg in obj.vertex_groups:
+            verts = vg_verts.get(vg.index)
+            if not verts:
+                continue
+
+            # 计算几何中心（世界坐标）
+            coords = [matrix @ v.co for v in verts]
+            center = sum(coords, Vector()) / len(coords)
+
+            # 创建垂直方向骨骼
+            bone = armature.edit_bones.new(vg.name)
+            bone.head = center
+            bone.tail = center + Vector((0, 0, 0.1))  # 固定Z轴方向
+
+    finally:
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+
+class AddBoneFromVertexGroupV2(bpy.types.Operator):
+    bl_idname = "object.add_bone_from_vertex_group_v2"
+    bl_label = TR.translate("根据顶点组自动生成骨骼V2")
+    bl_description = "把当前选中的obj的每个顶点组都生成一个默认位置的骨骼，方便接下来手动调整骨骼位置和父级关系来绑骨，虹汐哥改进版本"
+    def execute(self, context):
+        create_armature_from_vertex_groups()
+        return {'FINISHED'}
+
+
 class AddBoneFromVertexGroup(bpy.types.Operator):
     bl_idname = "object.add_bone_from_vertex_group"
     bl_label = TR.translate("根据顶点组自动生成骨骼")
@@ -424,6 +483,7 @@ class CatterRightClickMenu(bpy.types.Menu):
         layout.operator(MergeVertexGroupsWithSameNumber.bl_idname)
         layout.operator(FillVertexGroupGaps.bl_idname)
         layout.operator(AddBoneFromVertexGroup.bl_idname)
+        layout.operator(AddBoneFromVertexGroupV2.bl_idname)
         layout.operator(RemoveNotNumberVertexGroup.bl_idname)
         layout.operator(RemoveAllVertexGroupOperator.bl_idname)
         layout.operator(MMTDeleteLoose.bl_idname)

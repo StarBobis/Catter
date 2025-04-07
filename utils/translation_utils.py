@@ -43,6 +43,7 @@ class TR:
         "合并具有相同数字前缀名称的顶点组":"Merge Vertex Groupx With Same Number Prefix",
         "填充数字顶点组的间隙":"Fill Number Named Vertex Group Gaps",
         "根据顶点组自动生成骨骼":"Generate Bones By Vertex Groups",
+        "根据顶点组自动生成骨骼V2":"Generate Bones By Vertex Groups V2",
         "移除非数字名称的顶点组":"Remove Not Number Named Vertex Groups",
         "删除物体的松散点":"Delete Mesh's Loose Vertex",
         "重置x,y,z的旋转角度为0 (UE Model)":"Reset xyz's rotaion to 0 (UE Model)",

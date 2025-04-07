@@ -39,7 +39,7 @@ bl_info = {
     "name": "Catter",
     "description": "A blender plugin for game mod with 3Dmigoto.",
     "blender": (3, 6, 0),
-    "version": (1, 1, 0, 7),
+    "version": (1, 1, 0, 9),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
@@ -69,6 +69,7 @@ register_classes = (
     MergeVertexGroupsWithSameNumber,
     FillVertexGroupGaps,
     AddBoneFromVertexGroup,
+    AddBoneFromVertexGroupV2,
     RemoveNotNumberVertexGroup,
     MMTDeleteLoose,
     MMTResetRotation,
