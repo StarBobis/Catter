@@ -576,9 +576,7 @@ class M_UnityIniModel:
 
 
             if GenerateModConfig.generate_to_seperate_ini():
-                # UnityCS好像不需要这个突破顶点数的东西，好像只有崩铁不需要.
-                if MainConfig.gamename != "HSR":
-                    cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
+                cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_vb_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_ib_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
 
@@ -588,9 +586,7 @@ class M_UnityIniModel:
                 cls.add_unity_cs_resource_vb_sections(config_ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_resource_texture_sections(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             else:
-                # UnityCS好像不需要这个突破顶点数的东西，好像只有崩铁不需要.
-                if MainConfig.gamename != "HSR":
-                    cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
+                cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_vb_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_ib_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
 
