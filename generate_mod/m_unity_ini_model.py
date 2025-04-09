@@ -348,8 +348,14 @@ class M_UnityIniModel:
                     if category_name == draw_category_name:
                         if original_category_name == "Position":
                             texture_override_vb_commandlist_section.append("cs-cb0 = Resource_" + draw_ib + "_VertexLimit")
-                            texture_override_vb_commandlist_section.append("cs-t0 = Resource" + draw_ib + "Position")
-                            texture_override_vb_commandlist_section.append("cs-t1 = Resource" + draw_ib + "Blend")
+
+                            position_category_slot = d3d11GameType.CategoryExtractSlotDict["Position"]
+                            blend_category_slot = d3d11GameType.CategoryExtractSlotDict["Blend"]
+                            # print(position_category_slot)
+
+                            texture_override_vb_commandlist_section.append(position_category_slot + " = Resource" + draw_ib + "Position")
+                            texture_override_vb_commandlist_section.append(blend_category_slot + " = Resource" + draw_ib + "Blend")
+
                             texture_override_vb_commandlist_section.append("handling = skip")
 
                             dispatch_number = int(math.ceil(draw_ib_model.draw_number / 64)) + 1
