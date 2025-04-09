@@ -23,10 +23,10 @@ class MainConfig:
 
     @classmethod
     def get_game_category(cls) -> str:
-        if cls.gamename in ["GI","HSR","HI3","ZZZ","BloodySpell","GF2","IdentityV"]:
+        if cls.gamename in ["GI","HI3","ZZZ","BloodySpell","GF2","IdentityV"]:
             return GameCategory.UnityVS
         
-        elif cls.gamename in ["Game001","Naraka"]:
+        elif cls.gamename in ["Game001","Naraka","HSR"]:
             return GameCategory.UnityCS
         
         elif cls.gamename in ["WWMI","Game002"]:
