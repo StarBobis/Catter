@@ -327,10 +327,13 @@ class M_UnityIniModel:
                 category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
                 texture_override_vb_namesuffix = "VB_" + draw_ib + "_" + category_name
 
-                if MainConfig.gamename == "HSR" and category_name == "Position":
-                    texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "_VertexLimitRaise]")
-                    texture_override_vb_section.append("override_byte_stride = " + str(d3d11GameType.CategoryStrideDict["Position"]))
-                    texture_override_vb_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))
+                if MainConfig.gamename == "HSR":
+                    if category_name == "Position":
+                        texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "_VertexLimitRaise]")
+                        texture_override_vb_section.append("override_byte_stride = " + str(d3d11GameType.CategoryStrideDict["Position"]))
+                        texture_override_vb_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))
+                    else:
+                        texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "]")
                 else:
                     texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "]")
                 texture_override_vb_section.append("hash = " + category_hash)
