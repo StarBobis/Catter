@@ -326,7 +326,13 @@ class M_UnityIniModel:
                 category_hash = draw_ib_model.category_hash_dict[category_name]
                 category_slot = d3d11GameType.CategoryExtractSlotDict[category_name]
                 texture_override_vb_namesuffix = "VB_" + draw_ib + "_" + category_name
-                texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "]")
+
+                if MainConfig.gamename == "HSR":
+                    texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "_VertexLimitRaise]")
+                    texture_override_vb_section.append("override_byte_stride = " + str(d3d11GameType.CategoryStrideDict["Position"]))
+                    texture_override_vb_section.append("override_vertex_count = " + str(draw_ib_model.draw_number))
+                else:
+                    texture_override_vb_section.append("[TextureOverride_" + texture_override_vb_namesuffix + "]")
                 texture_override_vb_section.append("hash = " + category_hash)
                 
                 # Initialize CommandList
@@ -576,7 +582,8 @@ class M_UnityIniModel:
 
 
             if GenerateModConfig.generate_to_seperate_ini():
-                cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
+                if MainConfig.gamename != "HSR":
+                    cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_vb_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_ib_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=commandlist_ini_builder,draw_ib_model=draw_ib_model) 
 
@@ -586,7 +593,8 @@ class M_UnityIniModel:
                 cls.add_unity_cs_resource_vb_sections(config_ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
                 cls.add_resource_texture_sections(ini_builder=resource_ini_builder,draw_ib_model=draw_ib_model)
             else:
-                cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
+                if MainConfig.gamename != "HSR":
+                    cls.add_unity_vs_texture_override_vlr_section(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_vb_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
                 cls.add_unity_cs_texture_override_ib_sections(config_ini_builder=config_ini_builder,commandlist_ini_builder=config_ini_builder,draw_ib_model=draw_ib_model) 
 
