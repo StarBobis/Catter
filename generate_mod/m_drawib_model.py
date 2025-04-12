@@ -249,7 +249,6 @@ class DrawIBModel:
         self.key_number = tmp_number
 
     def __parse_obj_name_ib_category_buffer_dict(self):
-        # TimerUtils.Start("__parse_obj_name_ib_vb_dict")
         '''
         把之前统计的所有obj都转为ib和category_buffer_dict格式备用
         '''
@@ -274,8 +273,6 @@ class DrawIBModel:
                     self.__obj_name_ib_dict[obj.name] = ib
                     self.__obj_name_category_buffer_list_dict[obj.name] = category_buffer_dict
                     # self.__obj_name_index_vertex_id_dict[obj.name] = index_vertex_id_dict
-        
-        # TimerUtils.End("__parse_obj_name_ib_vb_dict")
 
 
     def __read_component_ib_buf_dict_merged(self):
@@ -593,7 +590,7 @@ class DrawIBModel:
             with open(buf_path, 'wb') as ibf:
                 category_buf.tofile(ibf)
 
-        # ShapeKey三个Buffer的导出
+        # 鸣潮的ShapeKey三个Buffer的导出
         if len(self.shapekey_offsets) != 0:
             with open(buf_output_folder + self.draw_ib + "-" + "ShapeKeyOffset.buf", 'wb') as file:
                 for number in self.shapekey_offsets:

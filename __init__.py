@@ -37,9 +37,9 @@ https://github.com/BlackStartx/PyCharm-Blender-Plugin
 
 bl_info = {
     "name": "Catter",
-    "description": "A blender plugin for game mod with 3Dmigoto.",
+    "description": "一个用于3Dmigoto Mod制作的Blender插件.",
     "blender": (3, 6, 0),
-    "version": (1, 1, 1, 2),
+    "version": (1, 1, 1, 3),
     "location": "View3D",
     "category": "Generic",
     "tracker_url":"https://github.com/StarBobis/Catter"
@@ -47,17 +47,18 @@ bl_info = {
 
 
 register_classes = (
-    # Global Property Config
+    # 全局配置
     CatterProperties_ImportModel_General,
     CatterProperties_ImportModel_Unreal,
     CatterProperties_GenerateMod_General,
 
+    # DBMT所在位置
     OBJECT_OT_select_dbmt_folder,
 
-    # 3Dmigoto Import Model 
+    # 导入3Dmigoto模型功能
     Import3DMigotoRaw,
     DBMTImportAllFromCurrentWorkSpace,
-    # Generate Mod
+    # 生成Mod功能
     DBMTExportUnityVSModToWorkSpaceSeperated,
     DBMTExportUnityCSModToWorkSpaceSeperated,
     DBMTExportUnrealVSModToWorkSpace,
@@ -79,7 +80,7 @@ register_classes = (
     WWMI_ApplyModifierForObjectWithShapeKeysOperator,
     SmoothNormalSaveToUV,
     
-    # Collection's right click menu item.
+    # 集合的右键菜单栏
     Catter_MarkCollection_Switch,
     Catter_MarkCollection_Toggle,
 
