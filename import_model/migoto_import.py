@@ -70,6 +70,11 @@ def import_vertex_groups(mesh, obj, blend_indices, blend_weights,component):
     # print(blend_indices[0][0])
     # print(blend_weights[0][0])
 
+    for number in blend_indices[0]:
+        for blendindex in number:
+            if blendindex > 1000 or blendindex < 0:
+                raise Fatal("当前导入模型的BLENDINDICES数值为:" +str(blendindex) + "，该数值大于1000或小于0，数据不正确！BLENDINDEX代表顶点组索引，它的值在实际使用过程中几乎不可能大于1000，也不可能小于0！请确认您的.vb文件中的数据排列是否与.fmt文件中的数据排列相符，例如在Mod逆向中如果遇到Texcoord和Blend分类长度相同的Buffer文件则每种排列可能都会逆向出来一份，您当前导入的可能就是数据排列错误的那一份")
+
     assert (len(blend_indices) == len(blend_weights))
     if blend_indices:
         # We will need to make sure we re-export the same blend indices later -
@@ -318,8 +323,10 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     vb.parse_vb_bin(open(vb_path, 'rb'))
     TimerUtils.End("Read VB Data")
 
+    TimerUtils.Start("Read IB Data")
     ib = IndexBuffer(open(fmt_path, 'r'))
     ib.parse_ib_bin(open(ib_path, 'rb'))
+    TimerUtils.End("Read IB Data")
 
     # 设置GameTypeName，方便在Catter的Properties面板中查看
     obj['3DMigoto:GameTypeName'] = ib.gametypename
@@ -329,9 +336,13 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
     obj["3DMigoto:RecalculateCOLOR"] = False
 
     # post process for import data.
+    TimerUtils.Start("Import Face From IB")
     import_faces_from_ib(mesh, ib)
+    TimerUtils.End("Import Face From IB")
 
+    TimerUtils.Start("Import Vertices From VB")
     (blend_indices, blend_weights, texcoords, use_normals, normals, shapekeys) = import_vertices(mesh, vb)
+    TimerUtils.End("Import Vertices From VB")
 
     # 导入完之后，如果发现blend_weights是空的，则自动补充默认值为1,0,0,0的BLENDWEIGHTS
     if len(blend_weights) == 0 and len(blend_indices) != 0:
@@ -345,7 +356,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
             blend_weights[tmpi] = tuple(new_dict)
             tmpi = tmpi + 1
 
+    TimerUtils.Start("Import UV Laters")
     import_uv_layers(mesh, obj, texcoords)
+    TimerUtils.End("Import UV Laters")
 
     #  metadata.json, if contains then we can import merged vgmap.
     # TimerUtils.Start("Read Metadata")
@@ -363,7 +376,9 @@ def import_3dmigoto_raw_buffers(operator, context, fmt_path:str, vb_path:str, ib
                 component = extracted_object.components[partname_count]
     # TimerUtils.End("Read Metadata") # 0:00:00.001490 
 
+    TimerUtils.Start("Import VertexGroups")
     import_vertex_groups(mesh, obj, blend_indices, blend_weights, component)
+    TimerUtils.End("Import VertexGroups")
 
     import_shapekeys(mesh, obj, shapekeys)
 
